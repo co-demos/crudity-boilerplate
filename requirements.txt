@@ -3,8 +3,10 @@ aniso8601==7.0.0
 async-exit-stack==1.0.1
 async-generator==1.10
 certifi==2019.9.11
+cffi==1.13.2
 chardet==3.0.4
 Click==7.0
+cryptography==2.8
 dnspython==1.16.0
 elasticsearch==7.1.0
 email-validator==1.0.5
@@ -17,9 +19,13 @@ httptools==0.0.13
 idna==2.8
 itsdangerous==1.1.0
 Jinja2==2.10.3
+jwt==0.6.1
 MarkupSafe==1.1.1
 promise==2.2.1
+pycparser==2.19
 pydantic==0.32.2
+pymongo==3.9.0
+python-dotenv==0.10.3
 python-multipart==0.0.5
 PyYAML==5.1.2
 requests==2.22.0
