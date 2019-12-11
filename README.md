@@ -22,12 +22,17 @@ So to :
 
 ### stack
 
-- language : python 3.7
-- framework : FastAPI
-- DB : Elastic Search and/or MongoDB
+- language : [python 3.7](https://docs.python.org/3.7/)
+- framework : [FastAPI](https://fastapi.tiangolo.com/)
+- DB : [Elastic Search](https://www.elastic.co) and/or [MongoDB](https://www.mongodb.com/)
+
+### dependencies
+
+You must have `mongodb` and/or `ElasticSearch` running on your machine to use CRUDity. Check | Edit your `.env` files (see below)
 
 -----
-### install app 
+
+### Install CRUDity 
 
 Go to your destination folder and type : 
 
@@ -48,22 +53,20 @@ cp env-mongodb.example.env env-mongodb.env
 You can edit those `.env` files and add real credentials inside. 
 
 
-### notes
-
-You must have `mongodb` and/or `ElasticSearch`running on your machine to use CRUDity
-
-### run app 
+### run CRUDity 
 ```sh
 uvicorn main:app --reload
 ```
-then check : `http://127.0.0.1:8000/docs`
+then check : [`http://127.0.0.1:8000/docs`](http://127.0.0.1:8000/docs)
 
-or 
+... or* ... 
 
 ```sh
 python main.py --port=8001
 ```
-then check : `http://localhost:8001/docs`
+then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
+
+*note : if you run CRUdity with Python instead of uvicorn the hot reload will be disabled. Also running CRUDity with Python allows you to inject some parameters like `--port` with the command line (see the `main.py` file for the list of the CLI parameters you can use).  
 
 -----
 
@@ -73,15 +76,27 @@ cf : https://fastapi.tiangolo.com/
 ### doc uvicorn
 cf : https://www.uvicorn.org/deployment/
 
-### Doc Elastic search / Python 
+### doc Elastic search / Python 
 cf : https://elasticsearch-py.readthedocs.io/en/master/
 
+
+----
+
+### (currently in development)
+### Push your first datasets
+
+You can store your dataseets in the `./_data` folder.
+
+Use the Jupyter notebooks of your choice from the `./_notebooks` folder to push datasets from `./_data` to CRUDity...
 
 ----
 
 ### Inspirations
 
 - Solidata (open source)
+- Datasette (open source)
+- CSVapi
+- AirTable
 - Dataiku 
 - Tablo
 - Forest Admin
@@ -91,4 +106,4 @@ cf : https://elasticsearch-py.readthedocs.io/en/master/
 ### logs
 
 - **v.0.1 / 2019-12-11** : 
-  first draft of the application. Tests with local ES db
+  first draft of the application. Adding models for parameters on endpoints. Discovering FastAPI. Tests with local ES db... 
