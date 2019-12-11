@@ -29,13 +29,28 @@ So to :
 -----
 ### install app 
 
+Go to your destination folder and type : 
+
 ```sh
-git clone ...
-cd ./crudity-boilerplate
+git clone https://github.com/co-demos/crudity-boilerplate.git
 python3 -m venv ven
 source venv/bin/activate
 pip install -r requirements.txt
 ```
+
+Then copy and rename the `.example.env` files to create real `.env` files:
+
+```bash
+cp env-backend.example.env env-backend.env
+cp env-elasticsearch.example.env env-elasticsearch.env
+cp env-mongodb.example.env env-mongodb.env
+```
+You can edit those `.env` files and add real credentials inside. 
+
+
+### notes
+
+You must have `mongodb` and/or `ElasticSearch`running on your machine to use CRUDity
 
 ### run app 
 ```sh
@@ -66,11 +81,14 @@ cf : https://elasticsearch-py.readthedocs.io/en/master/
 
 ### Inspirations
 
-- Solidata
+- Solidata (open source)
+- Dataiku 
+- Tablo
 - Forest Admin
 
 --------
 
 ### logs
 
-- v.0.1 / 2019-12-10 : first draft
+- **v.0.1 / 2019-12-11** : 
+  first draft of the application. Tests with local ES db

@@ -3,6 +3,9 @@ from elasticsearch import Elasticsearch
 
 
 from core.config import (
+  DB_ELASTICSEARCH,
+  DB_MONGODB,
+
   ELASTICSEARCH_HOSTS,
   ELASTICSEARCH_PORT,
   ELASTICSEARCH_USER,

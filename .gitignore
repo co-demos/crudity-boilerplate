@@ -1,11 +1,21 @@
+# virtual env for Python
 /venv
 
+# VS code
 .vscode
 
+# ENV variables
 .env 
 *.env
+!*.example.env
 
+# contents / 
 *.pdf
 
+# Python
 __pycache__
 */__pycache__
+
+# local data
+/_data/*
+!/_data/*.md

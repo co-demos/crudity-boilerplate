@@ -2,9 +2,6 @@
 import os
 import click 
 
-from pprint import pprint, pformat, PrettyPrinter
-pp = PrettyPrinter(indent=4)
-
 from dotenv import load_dotenv
 from pathlib import Path  # python3 only
 
@@ -14,6 +11,9 @@ import uvicorn
 
 from utils.env import get_boolean, getenv_boolean
 
+
+from pprint import pprint, pformat, PrettyPrinter
+pp = PrettyPrinter(indent=4)
 
 ### READ ENV VARS FROM HIDDEN .ENV FILES
 env_path_global = Path('.') / 'env-backend.env'
@@ -70,12 +70,12 @@ load_dotenv(env_path_global, verbose=True)
 ### APP RUNNER
 @click.command()
 @click.option('--mode',     default="default",     nargs=1,  help="The <mode> you need to run the app : default | testing | preprod | production" )
+@click.option('--auth',     default="default",     nargs=1,  help="The <auth> mode you need to run the app : default | default_docker | server | server_docker | distant_preprod | distant_prod" )
 @click.option('--host',     default="localhost",   nargs=1,  help="The <host> name you want the app to run on : <IP_NUMBER> " )
 @click.option('--port',     default="8000",        nargs=1,  help="The <port> number you want the app to run on : <PORT_NUMBER>")
 @click.option('--docker',   default="docker_off",  nargs=1,  help="Are you running the app with <docker> : docker_off | docker_on" )
-@click.option('--mongodb',  default="false",       nargs=1,  help="The <mongodb> you need to run the app : local | distant | server" )
-@click.option('--esdb',     default="false",       nargs=1,  help="The <esdb> you need to run the app : local | distant | server" )
-@click.option('--auth',     default="default",     nargs=1,  help="The <auth> mode you need to run the app : default | default_docker | server | server_docker | distant_preprod | distant_prod" )
+@click.option('--mongodb',  default="local",       nargs=1,  help="The <mongodb> you need to run the app : disabled | local | distant | server" )
+@click.option('--esdb',     default="local",       nargs=1,  help="The <esdb> you need to run the app : disabled | local | distant | server" )
 @click.option('--https',    default="false",       nargs=1,  help="The <https> mode you want the app to run on : true | false")
 def app_runner(mode, docker, mongodb, esdb, auth, host, port, https) :
   """
@@ -94,19 +94,21 @@ def app_runner(mode, docker, mongodb, esdb, auth, host, port, https) :
   print ("=== port    : ", port)
   print ("=== auth    : ", auth)
   # print ("=== docker  : ", docker)
-  # print ("=== mongodb : ", mongodb)
-  # print ("=== esdb    : ", esdb)
+  print ("=== mongodb : ", mongodb)
+  print ("=== esdb    : ", esdb)
   # print ("=== https   : ", https)
 
   ### OVERRIDE ENV VARS FROM CLI 
   os.environ["APP_MODE"]      = mode
-  os.environ["DOMAIN_ROOT"]   = host
-  os.environ["DOMAIN_PORT"]   = port
   os.environ["AUTH_MODE"]     = auth
 
+  os.environ["SERVER_NAME"]   = host
+  os.environ["SERVER_HOST"]   = port
+
   # os.environ["DOCKER_MODE"]   = docker
-  # os.environ["MONGODB_MODE"]  = get_boolean(mongodb)
-  # os.environ["ES_MODE"]       = get_boolean(esdb)
+
+  os.environ["DB_ELASTICSEARCH"] = mongodb # get_boolean(mongodb)
+  os.environ["DB_MONGODB"]       = esdb # get_boolean(esdb)
 
   pp.pprint(config.__dict__)
 
