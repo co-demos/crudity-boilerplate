@@ -1,14 +1,12 @@
 import os
+
 from dotenv import load_dotenv
 from pathlib import Path  # python3 only
 
 from utils.env import getenv_boolean
 
-from pprint import pprint, pformat, PrettyPrinter
-pp = PrettyPrinter(indent=4)
+print(">>> core/config.py ...")
 
-print ("... os.environ : ")
-pp.pprint(os.environ.__dict__)
 
 
 ### APP SERVER CONFIG ENV
@@ -16,6 +14,7 @@ PROJECT_NAME = os.getenv("PROJECT_NAME")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION")
 API_V1_STR = f"/api/{PROJECT_VERSION}"
 
+APP_MODE = os.getenv("APP_MODE", "default")
 AUTH_MODE = os.getenv("AUTH_MODE", "default")
 
 SECRET_KEY = os.getenvb(b"SECRET_KEY")
@@ -88,3 +87,10 @@ if DB_MONGODB and DB_MONGODB != 'disabled' :
   MONGO_COLL_DATASETS_RAWS=os.getenv("MONGO_COLL_DATASETS_RAWS")
   MONGO_COLL_DATAMODELS_FIELDS=os.getenv("MONGO_COLL_DATAMODELS_FIELDS")
   MONGO_COLL_DATAMODELS_TEMPLATES=os.getenv("MONGO_COLL_DATAMODELS_TEMPLATES")
+
+
+### LOGS CONFIG
+# LOGS_FOLDER=os.getenv("LOGS_FOLDER", '_logs')
+# LOGS_FILE_INFOS=os.getenv("LOGS_FILE_INFOS", 'infos_logs.log')
+# LOGS_FILE_WARNINGS=os.getenv("LOGS_FILE_WARNINGS", "warning_logs.log")
+# LOGS_FILE_ERRORS=os.getenv("LOGS_FILE_ERRORS", "error_logs.log")

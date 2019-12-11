@@ -1,3 +1,5 @@
+from log_config import log_, pformat
+
 from typing import List, Dict, Optional
 from datetime import date, datetime, time, timedelta
 import uuid
@@ -33,12 +35,17 @@ async def list_dsis(
   ):
   """ get a paginated list of DSIs """
 
+  ### DEBUGGING
+  print()
+  print("-+- "*40)
+  log_.debug( "new request" )
+
   time_start = datetime.now()
   query = {
     "dsi_uuid": dsi_uuid,
     **commons,
   }
-  print ("query : \n", query)
+  log_.debug("query : \n %s", pformat(query))
 
 
   ### TO DO / retrieve results given the query 

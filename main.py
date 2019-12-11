@@ -1,4 +1,10 @@
 
+print()
+print("/\ _ "*40)
+print("     "*18, "RESTARTING")
+print("\/   "*40)
+
+
 import os
 import click 
 
@@ -14,6 +20,7 @@ from utils.env import get_boolean, getenv_boolean
 
 from pprint import pprint, pformat, PrettyPrinter
 pp = PrettyPrinter(indent=4)
+
 
 ### READ ENV VARS FROM HIDDEN .ENV FILES
 env_path_global = Path('.') / 'env-backend.env'
@@ -33,6 +40,10 @@ if db_mongo_enabled :
 
 # load config
 from core import config
+
+from log_config import log_, pformat
+log_.debug( "... starting to log stuff ..." )
+
 
 ### LOAD ROUTER
 from api.api_v1.api import api_router
@@ -60,11 +71,6 @@ if config.BACKEND_CORS_ORIGINS:
 
 app.include_router(api_router, prefix=config.API_V1_STR)
 
-
-
-### READ ENV VARS FROM HIDDEN FILE
-env_path_global = Path('.') / 'env-backend.env'
-load_dotenv(env_path_global, verbose=True)
 
 
 ### APP RUNNER
@@ -116,9 +122,5 @@ def app_runner(mode, docker, mongodb, esdb, auth, host, port, https) :
 
 
 if __name__ == "__main__":
-
-  # pp.pprint(config.__dict__)
-  # print ("... os.environ : ")
-  # pp.pprint(os.environ)
 
   app_runner()

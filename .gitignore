@@ -19,3 +19,8 @@ __pycache__
 # local data
 /_data/*
 !/_data/*.md
+
+
+# local logs
+/_logs/*
+!/_logs/*.md

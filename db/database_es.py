@@ -2,16 +2,17 @@ from datetime import datetime
 from elasticsearch import Elasticsearch
 
 
-from core.config import (
-  DB_ELASTICSEARCH,
-  DB_MONGODB,
+from core.config import *
 
-  ELASTICSEARCH_HOSTS,
-  ELASTICSEARCH_PORT,
-  ELASTICSEARCH_USER,
-  ELASTICSEARCH_PASSWORD,
-  ELASTICSEARCH_SCHEME
-)
+# from core.config import (
+#   DB_ELASTICSEARCH,
+
+#   ELASTICSEARCH_HOSTS,
+#   ELASTICSEARCH_PORT,
+#   ELASTICSEARCH_USER,
+#   ELASTICSEARCH_PASSWORD,
+#   ELASTICSEARCH_SCHEME
+# )
 
 
 
