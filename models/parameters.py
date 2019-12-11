@@ -118,12 +118,7 @@ shuffle_seed = Query(
   description="`int`: Shuffle seed to shuffle results",
 )
 
-for_map = Query(
-  False, 
-  alias="for_map",
-  title="For map",
-  description="`bool`: format results for map",
-)
+
 
 
 class DataFormats(str, Enum) :
@@ -135,6 +130,20 @@ data_format = Query(
   alias="data_format",
   title="Data format",
   description="`str`: format results",
+)
+
+for_map = Query(
+  False, 
+  alias="for_map",
+  title="For map",
+  description="`bool`: format results for map",
+)
+
+normalize_data = Query(
+  False, 
+  alias="normalize_data",
+  title="Normalize data",
+  description="`bool`: fnormalize uploaded data",
 )
 
 field_to_return = Query(

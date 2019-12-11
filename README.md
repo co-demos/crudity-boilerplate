@@ -1,5 +1,7 @@
 
-# CRUDITY
+# CRUDity
+
+### (currently in development)
 
 ------
 ### what is Crudity for ? 
@@ -62,7 +64,13 @@ cf : https://elasticsearch-py.readthedocs.io/en/master/
 
 ----
 
-### inspirations
+### Inspirations
 
 - Solidata
 - Forest Admin
+
+--------
+
+### logs
+
+- v.0.1 / 2019-12-10 : first draft
