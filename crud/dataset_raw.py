@@ -5,6 +5,9 @@ from models.config import DSR_DOC_TYPE
 
 from . import utils
 
+from db.database_es import es 
+from db.database_mongodb import *
+
 
 log_.debug(">>> crud/dataset_raw.py")
 

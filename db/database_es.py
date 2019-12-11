@@ -7,16 +7,6 @@ from elasticsearch import Elasticsearch
 
 from core.config import *
 
-# from core.config import (
-#   DB_ELASTICSEARCH,
-#   ELASTICSEARCH_HOSTS,
-#   ELASTICSEARCH_PORT,
-#   ELASTICSEARCH_USER,
-#   ELASTICSEARCH_PASSWORD,
-#   ELASTICSEARCH_SCHEME
-# )
-
-
 log_.debug("DB_ELASTICSEARCH_MODE : %s", DB_ELASTICSEARCH_MODE)
 log_.debug("ELASTICSEARCH_HOSTS_LOCAL : %s", ELASTICSEARCH_HOSTS_LOCAL)
 log_.debug("ELASTICSEARCH_PORT_LOCAL : %s", ELASTICSEARCH_PORT_LOCAL)
@@ -46,4 +36,13 @@ else :
   es = None
 
 
+if not es.ping():
+  raise ValueError("Connection failed")
+else :
+  # print ( pformat( es.__dict__) )
+  log_.debug("ES connection OK...")
 
+
+
+# res = es.get(index="test-index", doc_type='tweet', id=1)
+# print(res['_source'])

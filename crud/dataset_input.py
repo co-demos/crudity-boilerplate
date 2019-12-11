@@ -8,7 +8,9 @@ from . import utils
 
 log_.debug(">>> crud/dataset_input.py")
 
-from db import database_es
+from db.database_es import es 
+from db.database_mongodb import *
+
 
 def get_doc_uuid(uuid: str):
   return f"{DSI_DOC_TYPE}::{uuid}"
