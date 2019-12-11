@@ -11,6 +11,10 @@ from models.response import ResponseBase, ResponseDataBase
 from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate
 from models.parameters import *
 
+import crud
+
+log_.debug(">>> api/api_v1/endpoints/dataset_inputs.py")
+
 
 from pprint import pprint, pformat, PrettyPrinter
 pp = PrettyPrinter(indent=4)

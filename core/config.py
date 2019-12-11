@@ -5,7 +5,7 @@ from pathlib import Path  # python3 only
 
 from utils.env import getenv_boolean
 
-print(">>> core/config.py ...")
+print("--- core/config.py ...")
 
 
 
@@ -32,12 +32,14 @@ BACKEND_CORS_ORIGINS = os.getenv(
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 8  # 60 minutes * 24 hours * 8 days = 8 days
 
-DB_ELASTICSEARCH = os.getenv("DB_ELASTICSEARCH")
-DB_MONGODB = os.getenv("DB_MONGODB")
+
+### DB MODES
+DB_ELASTICSEARCH_MODE = os.getenv("DB_ELASTICSEARCH_MODE", 'local')
+DB_MONGODB_MODE = os.getenv("DB_MONGODB_MODE", 'local')
 
 
 ### ELASTIC SEARCH CONFIG ENV
-if DB_ELASTICSEARCH and DB_ELASTICSEARCH != 'disabled' : 
+if DB_ELASTICSEARCH_MODE and DB_ELASTICSEARCH_MODE != 'disabled' : 
 
   ### local params
   ELASTICSEARCH_HOSTS_LOCAL = []
@@ -67,7 +69,7 @@ if DB_ELASTICSEARCH and DB_ELASTICSEARCH != 'disabled' :
 
 
 ### MONGODB CONFIG ENV
-if DB_MONGODB and DB_MONGODB != 'disabled' : 
+if DB_MONGODB_MODE and DB_MONGODB_MODE != 'disabled' : 
 
   MONGO_ROOT_LOCAL=os.getenv("MONGO_ROOT_LOCAL")
   MONGO_PORT_LOCAL=os.getenv("MONGO_PORT_LOCAL")

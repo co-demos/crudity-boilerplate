@@ -28,11 +28,15 @@ LOGS_FILE_CRITICALS=os.getenv("LOGS_FILE_CRITICALS", "critical_logs.log")
 
 LOGS_TO_FILE_LEVELS=os.getenv("LOGS_TO_FILE_LEVELS", 'E,C')
 LOGS_TO_FILE_LEVELS = LOGS_TO_FILE_LEVELS.split(",")
-print ("LOGS_TO_FILE_LEVELS" , LOGS_TO_FILE_LEVELS)
+print ("--- LOGS_TO_FILE_LEVELS : " , LOGS_TO_FILE_LEVELS)
 
 ## create a formatter for future logger
 formatter = ColoredFormatter(
-  "%(log_color)s%(levelname)1.1s ::: %(name)s %(asctime)s ::: %(module)s:%(lineno)d -in- %(funcName)s ::: %(reset)s %(white)s%(message)s",
+  "%(log_color)s%(levelname)1.1s\
+    %(name)s\
+    %(asctime)s\
+    %(module)s:%(lineno)d -in- %(funcName)s\
+    %(reset)s %(white)s%(message)s",
   datefmt='%y-%m-%d %H:%M:%S',
   reset=True,
   log_colors={

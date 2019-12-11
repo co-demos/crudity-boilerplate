@@ -1,9 +1,15 @@
 
 print()
-print("/\ _ "*40)
-print("     "*18, "RESTARTING")
-print("\/   "*40)
+restart_str = "RESTARTING"
+start_str_len = len(restart_str)
+restart_symbol_1 = "/\_"
+restart_symbol_2 = "\/‾"
+start_symbol_len = len(restart_symbol_1)
+start_multiplyer = 40  
 
+print(restart_symbol_1*start_multiplyer)
+print(" "*(start_symbol_len)*( round(start_multiplyer/2) - (round(start_str_len/start_symbol_len))), restart_str)
+print(restart_symbol_2*start_multiplyer)
 
 import os
 import click 
@@ -27,13 +33,15 @@ env_path_global = Path('.') / 'env-backend.env'
 load_dotenv(env_path_global, verbose=True)
 
 # for ES
-db_es_enabled = getenv_boolean("DB_ELASTICSEARCH_ENABLED")
+# db_es_enabled = getenv_boolean("DB_ELASTICSEARCH_MODE")
+db_es_enabled = os.getenv("DB_ELASTICSEARCH_MODE", 'disabled') != 'disabled'
 if db_es_enabled : 
   env_path_elasticsearch = Path('.') / 'env-elasticsearch.env'
   load_dotenv(env_path_elasticsearch, verbose=True)
 
 # for mongoDB
-db_mongo_enabled = getenv_boolean("DB_MONGODB_ENABLED")
+# db_mongo_enabled = getenv_boolean("DB_MONGODB_MODE")
+db_mongo_enabled = os.getenv("DB_MONGODB_MODE", 'disabled') != 'disabled'
 if db_mongo_enabled : 
   env_path_mongodb = Path('.') / 'env-mongodb.env'
   load_dotenv(env_path_mongodb, verbose=True)
