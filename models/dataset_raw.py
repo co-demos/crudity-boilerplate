@@ -11,8 +11,13 @@ from models.config import DSR_DOC_TYPE
 
 AnyContent = TypeVar('AnyContent')
 
+
 # Shared properties
-class DsrBase(BaseModel) : 
+class DsrData(BaseModel) : 
+
+  data: AnyContent
+
+class DsrBase(DsrData) : 
 
   type: str = DSR_DOC_TYPE
   dsi_uuid: str = None
@@ -23,18 +28,16 @@ class DsrBase(BaseModel) :
   last_update: datetime = None
   logs: List[ str ] = []
 
-  data: AnyContent
-
 
 # Properties to receive on item creation
 class DsrCreate(DsrBase):
 
   dsi_uuid: str 
-  data: AnyContent
 
 
 # Properties to receive on item update
 class DsrUpdate(DsrBase):
+
   data: AnyContent
 
 

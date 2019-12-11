@@ -26,6 +26,8 @@ class DsiBase(BaseModel) :
   source: str = None
   tags: List[ str ] = []
 
+  is_geodata: bool = False
+
   datamodel_fields  : List[DatamodelFieldBase] = []
   datamodel_template: DatamodelTemplatedBase = None
 
@@ -46,8 +48,12 @@ class DsiCreate(BaseModel):
   title: str
   description: str = None
 
+  is_geodata: bool = False
+
   auth_preview: OpenDataLevelEnum = OpenDataLevelEnum.opendata
   auth_modif:   OpenDataLevelEnum = OpenDataLevelEnum.private
+
+
 
 # Properties to receive on item update
 class DsiUpdate(DsiBase):
@@ -62,7 +68,6 @@ class Dsi(DsiBase):
   owner : str
 
 
-# Properties properties stored in DB
+# Properties stored in DB
 class DsiInDB(DsiBase):
   dsi_uuid: UUID
-  title: str

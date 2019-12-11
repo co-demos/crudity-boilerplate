@@ -1,36 +1,91 @@
 from typing import List, Dict, Optional
-from pydantic import ValidationError
+from datetime import date, datetime, time, timedelta
+import uuid
 
+from pydantic import ValidationError
 from fastapi import APIRouter, Depends, HTTPException
 
-
-from models.dataset_raw import Dsr, DsrCreate, DsrUpdate
+from models.response import ResponseBase, ResponseDataBase
+from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData
 from models.parameters import *
 
 
 router = APIRouter()
 
-# @router.get("/list")
-# async def root():
-#   return {"message": "Hello World"}
 
-@router.get("/dsi/{dsi_oid}")
-async def read_dsi_items(dsi_oid):
-  return {"dsi_id": dsi_oid}
+@router.get("/dsi/{dsi_uuid}")
+async def read_dsi_items(
+  dsi_uuid: uuid.UUID,
+  dsr_uuid: list = dsr_uuid,
+  commons: dict = Depends(common_parameters)
+  ):
+  """ get paginated DSRs from a DSI """
+
+  time_start = datetime.now()
+  query = { 
+    'dsr_uuid': dsr_uuid,
+    **commons
+  }
 
 
-@router.get("/dsi/{dsi_oid}/dsr/{dsr_oid}")
-async def read_item(dsi_oid, item_id):
-  return {"dsr_oid": dsr_oid}
+  response = {"dsi_id": dsi_uuid}
 
-@router.post("/dsi/{dsi_oid}/dsr/{dsr_oid}")
-async def create_item(dsi_oid, dsr_oid):
-  return {"dsr_oid": dsr_oid}
+  return response
 
-@router.put("/dsi/{dsi_oid}/dsr/{dsr_oid}")
-async def update_item(dsi_oid, dsr_oid):
-  return {"dsr_oid": dsr_oid}
 
-@router.delete("/dsi/{dsi_oid}/dsr/{dsr_oid}")
-async def delete_item(dsi_oid, dsr_oid):
-  return {"dsr_oid": dsr_oid}
+
+
+@router.get("/dsi/{dsi_uuid}/dsr/{dsr_uuid}")
+async def read_dsr_item(
+  dsi_uuid: uuid.UUID,
+  dsr_uuid: uuid.UUID,
+  ):
+  """ get one DSR from a DSI """
+
+
+  response =  {"dsr_uuid": dsr_uuid}
+  return response
+
+
+@router.post("/dsi/{dsi_uuid}/dsr")
+async def create_dsr_item(
+  *,
+  dsi_uuid: uuid.UUID,
+  item_data: DsrData
+  ):
+  """ post one DSR into a DSI """
+
+
+
+  response =  {
+    "dsr_uuid": dsr_uuid,
+    "item_data": item_data
+  }
+  return response
+
+
+@router.put("/dsi/{dsi_uuid}/dsr/{dsr_uuid}")
+async def update_dsr_item(
+  dsi_uuid: uuid.UUID,
+  dsr_uuid: uuid.UUID,
+  ):
+  """ update one DSR from a DSI """
+
+
+
+  response =  {"dsr_uuid": dsr_uuid}
+  return response
+
+
+@router.delete("/dsi/{dsi_uuid}/dsr/{dsr_uuid}")
+async def delete_dsr_item(
+  dsi_uuid: uuid.UUID,
+  dsr_uuid: uuid.UUID,
+  ):
+  """ delete one DSR from a DSI """
+
+
+
+
+  response =  {"dsr_uuid": dsr_uuid}  
+  return response
