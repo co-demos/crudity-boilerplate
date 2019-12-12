@@ -35,28 +35,26 @@ router = APIRouter()
 @router.get("/list")
 async def list_dsis(
   dsi_uuid: list = dsi_uuid,
-  commons: dict = Depends(dsi_common_parameters)
+  commons: dict = Depends(common_parameters)
   ):
-  """ get a paginated list of DSIs """
+  """GET / get a paginated list of DSIs """
 
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "new request" )
-
+  log_.debug( "new request / list_dsis " )
+  log_.debug( "commons : \n%s", pformat(commons) )
   time_start = datetime.now()
+
   query = {
     "dsi_uuid": dsi_uuid,
     **commons,
   }
-  log_.debug("query : \n %s", pformat(query))
-
 
   ### TO DO / retrieve results given the query 
-  # results = 
-
-
-
+  res = crud.dataset_input.search_dsis(
+    query
+  )
 
   ### marshal / apply model to data
   data_list =  [ Dsi(**test_dsi) ]
@@ -70,7 +68,7 @@ async def list_dsis(
     'response_delta' : time_end - time_start,  
   }
 
-  if only_data : 
+  if only_data == True : 
     response = ResponseDataBase(
       data =  data_list,
     )
@@ -84,32 +82,44 @@ async def list_dsis(
   return response
 
 
-@router.get("/{dsi_uuid}")
+@router.get("/get_one/{dsi_uuid}")
 async def read_dsi( 
   dsi_uuid: uuid.UUID,
+  commons: dict = Depends(one_dsi_parameters)
   ):
-  """ get a specific DSI (without its DSRs) """
+  """GET / get a specific DSI (without its DSRs) """
 
+  ### DEBUGGING
+  print()
+  print("-+- "*40)
+  log_.debug( "new request / read_dsi " )
+  log_.debug( "commons : \n%s", pformat(commons) )
   time_start = datetime.now()
 
   query = {
     "dsi_uuid": dsi_uuid,
+    **commons,
   }
 
+
   ### TO DO / retrieve results from db and query
-  test_dsi_ = {
+  res = crud.dataset_input.get_dsi(
+    dsi_uuid,
+    commons,
+  )
+  res = {
     'title' : 'test_dsi',
     'dsi_uuid' : dsi_uuid ,
     'owner' : 'system'
   }
 
   ### marshal / apply model to data
-  data =  Dsi(**test_dsi_)
+  data =  Dsi(**res)
 
 
-  if only_data : 
+  if only_data == True : 
     response = ResponseDataBase(
-      data =  data,
+      data = data,
     )
   else : 
     time_end = datetime.now()
@@ -125,18 +135,28 @@ async def read_dsi(
       stats = stats,
     )
 
-
   return response
 
 
 
-@router.post("/")
+@router.post("/create")
 async def create_dsi(
   dsi_in: DsiCreate,
+  resp_p: dict = Depends(resp_parameters),
   ):
-
   """ post a new DSI """
-  # pp.pprint(dsi_in)
+
+  ### DEBUGGING
+  print()
+  print("-+- "*40)
+  log_.debug( "POST / new request / create_dsi " )
+  log_.debug( "dsi_in : \n%s", pformat(dsi_in) )
+  log_.debug( "resp_p : \n%s", pformat(resp_p) )
+  time_start = datetime.now()
+
+  query = {
+    **resp_p,
+  }
 
   dsi_client = DsiBase( **dsi_in.dict() )
   dsi_client_dict = dsi_client.dict()
@@ -145,9 +165,24 @@ async def create_dsi(
   dsi_client_dict['dsi_uuid'] = uuid.uuid4()
   dsi_db = Dsi(**dsi_client_dict)
 
-  response = ResponseDataBase(
-    data = dsi_db
-  )
+
+  if only_data == True : 
+    response = ResponseDataBase(
+      data = dsi_db,
+    )
+  else : 
+    time_end = datetime.now()
+    stats = {
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
+    response = ResponseBase(
+      query = query,
+      data =  dsi_db,
+      stats = stats,
+    )
+
   return response
 
 
@@ -159,20 +194,60 @@ async def create_dsi(
 
 
 
-@router.put("/{dsi_uuid}")
+@router.put("/update/{dsi_uuid}")
 async def update_dsi(
   dsi_uuid: uuid.UUID,
+  body: dict,
+  resp_p: dict = Depends(resp_parameters),
   ):
   """ update a specific DSI """
 
-  return {"dsi_uuid": dsi_uuid}
+  ### DEBUGGING
+  print()
+  print("-+- "*40)
+  log_.debug( "PUT / new request / create_dsi " )
+  log_.debug( "body : \n%s", pformat(body) )
+  time_start = datetime.now()
+
+  query = {
+    "dsi_uuid": dsi_uuid,
+    **resp_p,
+  }
+
+
+  if only_data == True : 
+    response = ResponseDataBase(
+      data = body,
+    )
+  else : 
+    time_end = datetime.now()
+    stats = {
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
+    response = ResponseBase(
+      query = query,
+      data =  body,
+      stats = stats,
+    )
+
+  return response
 
 
 
-@router.delete("/{dsi_uuid}")
+@router.delete("/remove/{dsi_uuid}")
 async def delete_dsi(
   dsi_uuid: uuid.UUID,
   ):
   """ delete a specific DSI """
+
+  ### DEBUGGING
+  print()
+  print("-+- "*40)
+  log_.debug( "DELETE / new request / delete_dsi " )
+  log_.debug( "dsi_uuid : %s", dsi_uuid )
+  time_start = datetime.now()
+
 
   return {"dsi_uuid": dsi_uuid}

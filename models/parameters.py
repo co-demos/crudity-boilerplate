@@ -191,6 +191,13 @@ async def query_parameters(
     "filter" : filter,
   }
 
+async def version_parameters(
+  version: VersionsEnum = version,
+  ):
+ return {
+    "version" : version,
+  }
+
 async def pagination_parameters(
   page: int = page_number,
   per_page: PerPageEnum = per_page,
@@ -234,6 +241,7 @@ async def resp_parameters(
 
 async def common_parameters(
   query_p: dict = Depends(query_parameters),
+  version_p: dict = Depends(version_parameters),
   pagination_p: dict = Depends(pagination_parameters),
   fields_p: dict = Depends(fields_parameters),
   format_p: dict = Depends(format_parameters),
@@ -241,6 +249,7 @@ async def common_parameters(
   ):
   return {
     **query_p,
+    **version_p,
     **pagination_p,
     **fields_p,
     **format_p,
@@ -250,24 +259,50 @@ async def common_parameters(
 
 async def common_parameters_light(
   query_p: dict = Depends(query_parameters),
+  version_p: dict = Depends(version_parameters),
   pagination_p: dict = Depends(pagination_parameters),
   format_p: dict = Depends(format_parameters),
   resp_p: dict = Depends(resp_parameters),
   ):
   return {
     **query_p,
+    **version_p,
     **pagination_p,
     **format_p,
     **resp_p,
   }
 
-async def dsi_common_parameters(
+async def common_parameters(
   query_p: dict = Depends(query_parameters),
+  version_p: dict = Depends(version_parameters),
   pagination_p: dict = Depends(pagination_parameters),
+  fields_p: dict = Depends(fields_parameters),
   resp_p: dict = Depends(resp_parameters),
   ):
   return {
     **query_p,
+    **version_p,
     **pagination_p,
+    **fields_p,
+    **resp_p,
+  }
+
+async def one_doc_parameters(
+  version_p: dict = Depends(version_parameters),
+  format_p: dict = Depends(format_parameters),
+  resp_p: dict = Depends(resp_parameters),
+  ):
+  return {
+    **version_p,
+    **format_p,
+    **resp_p,
+  }
+
+async def one_dsi_parameters(
+  version_p: dict = Depends(version_parameters),
+  resp_p: dict = Depends(resp_parameters),
+  ):
+  return {
+    **version_p,
     **resp_p,
   }

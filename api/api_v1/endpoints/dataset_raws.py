@@ -13,7 +13,7 @@ from models.parameters import *
 router = APIRouter()
 
 
-@router.get("/dsi/{dsi_uuid}")
+@router.get("/dataset/{dsi_uuid}")
 async def read_dsi_items(
   dsi_uuid: uuid.UUID,
   dsr_uuid: list = dsr_uuid,
@@ -35,7 +35,7 @@ async def read_dsi_items(
 
 
 
-@router.get("/dsi/{dsi_uuid}/dsr/{dsr_uuid}")
+@router.get("/dataset/{dsi_uuid}/dsr/get_one/{dsr_uuid}")
 async def read_dsr_item(
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
@@ -47,7 +47,7 @@ async def read_dsr_item(
   return response
 
 
-@router.post("/dsi/{dsi_uuid}/dsr")
+@router.post("/dataset/{dsi_uuid}/dsr/create")
 async def create_dsr_item(
   *,
   dsi_uuid: uuid.UUID,
@@ -64,7 +64,7 @@ async def create_dsr_item(
   return response
 
 
-@router.put("/dsi/{dsi_uuid}/dsr/{dsr_uuid}")
+@router.put("/dataset/{dsi_uuid}/dsr/update/{dsr_uuid}")
 async def update_dsr_item(
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
@@ -77,7 +77,7 @@ async def update_dsr_item(
   return response
 
 
-@router.delete("/dsi/{dsi_uuid}/dsr/{dsr_uuid}")
+@router.delete("/dataset/{dsi_uuid}/dsr/remove/{dsr_uuid}")
 async def delete_dsr_item(
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,

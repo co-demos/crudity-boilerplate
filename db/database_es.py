@@ -14,35 +14,77 @@ log_.debug("ELASTICSEARCH_USER_LOCAL : %s", ELASTICSEARCH_USER_LOCAL)
 log_.debug("ELASTICSEARCH_PASSWORD_LOCAL : %s", ELASTICSEARCH_PASSWORD_LOCAL)
 log_.debug("ELASTICSEARCH_SCHEME_LOCAL : %s", ELASTICSEARCH_SCHEME_LOCAL)
 
-if DB_ELASTICSEARCH_MODE and DB_ELASTICSEARCH_MODE != 'disabled' : 
-  
-  if DB_ELASTICSEARCH_MODE == 'local' : 
-    es = Elasticsearch(
-      ELASTICSEARCH_HOSTS_LOCAL,
-      http_auth=(ELASTICSEARCH_USER_LOCAL, ELASTICSEARCH_PASSWORD_LOCAL),
-      scheme=ELASTICSEARCH_SCHEME_LOCAL, # "https",
-      port=ELASTICSEARCH_PORT_LOCAL,
-    )
 
-  if DB_ELASTICSEARCH_MODE == 'distant' : 
-    es = Elasticsearch(
-      ELASTICSEARCH_HOSTS,
-      http_auth=(ELASTICSEARCH_USER, ELASTICSEARCH_PASSWORD),
-      scheme=ELASTICSEARCH_SCHEME, # "https",
-      port=ELASTICSEARCH_PORT,
-    )
+def create_es_client(): 
 
-else : 
-  es = None
+  if DB_ELASTICSEARCH_MODE and DB_ELASTICSEARCH_MODE != 'disabled' : 
+    
+    if DB_ELASTICSEARCH_MODE == 'local' : 
+      es = Elasticsearch(
+        ELASTICSEARCH_HOSTS_LOCAL,
+        http_auth=(ELASTICSEARCH_USER_LOCAL, ELASTICSEARCH_PASSWORD_LOCAL),
+        scheme=ELASTICSEARCH_SCHEME_LOCAL, # "https",
+        port=ELASTICSEARCH_PORT_LOCAL,
+      )
+
+    if DB_ELASTICSEARCH_MODE == 'distant' : 
+      es = Elasticsearch(
+        ELASTICSEARCH_HOSTS,
+        http_auth=(ELASTICSEARCH_USER, ELASTICSEARCH_PASSWORD),
+        scheme=ELASTICSEARCH_SCHEME, # "https",
+        port=ELASTICSEARCH_PORT,
+      )
+
+  else : 
+    es = None
 
 
-if not es.ping():
-  raise ValueError("Connection failed")
-else :
-  # print ( pformat( es.__dict__) )
-  log_.debug("ES connection OK...")
+  if not es.ping():
+    log_.error("ES connection failed...")
+    raise ValueError("ES connection failed")
+
+  else :
+    # print ( pformat( es.__dict__) )
+    log_.debug("ES connection OK...")
+    return es
 
 
 
 # res = es.get(index="test-index", doc_type='tweet', id=1)
 # print(res['_source'])
+
+
+
+def get_es_document(
+
+  ):
+  
+  return
+
+
+
+def search_es_documents(
+  
+  ):
+  return
+
+
+
+def create_es_document(
+  
+  ):
+  return
+
+
+
+def update_es_document(
+
+  ):
+  return 
+
+
+
+def remove_es_document(
+
+  ):
+  return 
