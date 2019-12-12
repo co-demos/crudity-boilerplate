@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from models.config import DSR_DOC_TYPE
+from models.datalog import DataLogBase
 
 
 
@@ -25,9 +26,10 @@ class DsrBase(DsrData) :
 
   team: List[ str ] = [] ### additional list of people authorized to modify
 
+  created_by: str = None
   created_at: datetime = None
-  last_update: datetime = None
-  logs: List[ str ] = []
+  updated_at: datetime = None
+  logs: List[ DataLogBase ] = []
 
 
 
@@ -46,19 +48,23 @@ class DsrUpdate(DsrBase):
 # Properties to return to client
 class Dsr(DsrBase):
 
-  dsr_uuid: UUID              ### mandatory
+  dsr_uuid: UUID
+
   data: AnyContent
 
 
-# Properties properties stored in DB
+# Properties properties stored in ES DB
 class DsrInDB(DsrBase):
 
   dsr_uuid: UUID
   dsi_uuid: UUID 
+
   data: AnyContent
 
 
+# Properties properties stored in MongoDB
 class DsrInMongoDB(DsrInDB):
 
   is_deleted: bool = False
-  version: int 
+  version: int
+  updated_by: str = None

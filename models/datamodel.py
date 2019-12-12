@@ -49,7 +49,7 @@ class DatamodelTemplatedBase(BaseModel):
   auth_modif:   OpenDataLevelEnum = OpenDataLevelEnum.private
 
   owner: str = 'anonymous'
-  team: List[ str ] = []
+  team: List[ str ] = []    ### TO DO : make model for user + edit_auth
 
   created_at: datetime = None
   last_update: datetime = None

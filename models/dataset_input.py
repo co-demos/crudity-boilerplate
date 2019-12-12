@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import BaseModel
 
 from models.config import DSI_DOC_TYPE, DMF_DOC_TYPE
+from models.datalog import DataLogBase
 from models.datamodel import DatamodelFieldBase, DatamodelTemplatedBase
 from models.opendatalevels import OpenDataLevelEnum, LicenceEnum
 
@@ -14,6 +15,15 @@ from models.opendatalevels import OpenDataLevelEnum, LicenceEnum
 # DSI fields
 # class Dsi_user(BaseModel):
   # pass
+
+
+AnyContent = TypeVar('AnyContent')
+
+class ForeignKey(BaseModel):
+  
+  key_field_source: str = None
+  key_field_target: str = None
+  dsi_uuid_target: UUID = None
 
 
 # Shared properties
@@ -37,9 +47,12 @@ class DsiBase(BaseModel) :
   owner: str = 'anonymous'
   team: List[ str ] = []
 
+  created_by: str = None
   created_at: datetime = None
-  last_update: datetime = None
-  logs: List[ str ] = []
+  updated_at: datetime = None
+  logs: List[ DataLogBase ] = []           ### TO DO : make models for logs
+
+  foreign_keys: List[ ForeignKey ] = [] 
 
 
 # Properties to receive on item creation
@@ -57,13 +70,15 @@ class DsiCreate(BaseModel):
 
 # Properties to receive on item update
 class DsiUpdate(DsiBase):
-  pass
+
+  data: AnyContent
 
 
 # Properties to return to client
 class Dsi(DsiBase):
 
-  dsi_uuid: UUID              ### mandatory
+  dsi_uuid: UUID
+
   title: str
   owner : str
 
@@ -75,6 +90,7 @@ class DsiInDB(DsiBase):
 
 
 class DsiInMongoDB(DsiInDB):
-  
+
   version: int
   is_deleted: bool = False
+  updated_by: str = None
