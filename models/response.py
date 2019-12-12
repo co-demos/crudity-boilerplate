@@ -12,12 +12,15 @@ class ResponseDataBase(BaseModel) :
 
   data: AnyContent = None
 
-class ResponseStats(BaseModel) :
-
-  total_items: int = None
+class ResponseStatsNoTotal(BaseModel) :
+  
   queried_at: datetime = None
   response_at: datetime = None
   response_delta: timedelta = None
+
+class ResponseStats(ResponseStatsNoTotal) :
+
+  total_items: int = None
 
 
 class ResponseBase(ResponseDataBase) : 
@@ -26,3 +29,11 @@ class ResponseBase(ResponseDataBase) :
 
   query: AnyContent
   stats: ResponseStats
+
+
+class ResponseBaseNoTotal(ResponseDataBase) : 
+
+  status: str = 200
+
+  query: AnyContent
+  stats: ResponseStatsNoTotal

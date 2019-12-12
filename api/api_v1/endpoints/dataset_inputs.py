@@ -7,7 +7,7 @@ import uuid
 from pydantic import ValidationError
 from fastapi import APIRouter, Depends, HTTPException
 
-from models.response import ResponseBase, ResponseDataBase
+from models.response import ResponseBase, ResponseDataBase, ResponseBaseNoTotal
 from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate
 from models.parameters import *
 
@@ -47,6 +47,7 @@ async def list_dsis(
   time_start = datetime.now()
 
   query = {
+    "method" : "GET",
     "dsi_uuid": dsi_uuid,
     **commons,
   }
@@ -97,6 +98,7 @@ async def read_dsi(
   time_start = datetime.now()
 
   query = {
+    "method" : "GET",
     "dsi_uuid": dsi_uuid,
     **commons,
   }
@@ -155,6 +157,7 @@ async def create_dsi(
   time_start = datetime.now()
 
   query = {
+    "method" : "POST",
     **resp_p,
   }
 
@@ -177,7 +180,7 @@ async def create_dsi(
       'response_at' : str(time_end), 
       'response_delta' : time_end - time_start,  
     }
-    response = ResponseBase(
+    response = ResponseBaseNoTotal(
       query = query,
       data =  dsi_db,
       stats = stats,
@@ -210,6 +213,7 @@ async def update_dsi(
   time_start = datetime.now()
 
   query = {
+    "method" : "PUT",
     "dsi_uuid": dsi_uuid,
     **resp_p,
   }
@@ -226,7 +230,7 @@ async def update_dsi(
       'response_at' : str(time_end), 
       'response_delta' : time_end - time_start,  
     }
-    response = ResponseBase(
+    response = ResponseBaseNoTotal(
       query = query,
       data =  body,
       stats = stats,
@@ -239,6 +243,7 @@ async def update_dsi(
 @router.delete("/remove/{dsi_uuid}")
 async def delete_dsi(
   dsi_uuid: uuid.UUID,
+  resp_p: dict = Depends(resp_parameters),
   ):
   """ delete a specific DSI """
 
@@ -249,5 +254,31 @@ async def delete_dsi(
   log_.debug( "dsi_uuid : %s", dsi_uuid )
   time_start = datetime.now()
 
+  query = {
+    "method" : "DELETE",
+    "dsi_uuid": dsi_uuid,
+    **resp_p,
+  }
 
-  return {"dsi_uuid": dsi_uuid}
+  resp = {
+    "dsi_deleted" : dsi_uuid
+  }
+
+  if only_data == True : 
+    response = ResponseDataBase(
+      data = resp,
+    )
+  else : 
+    time_end = datetime.now()
+    stats = {
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
+    response = ResponseBase(
+      query = query,
+      data =  resp,
+      stats = stats,
+    )
+
+  return response

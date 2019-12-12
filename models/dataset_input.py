@@ -33,6 +33,7 @@ class DsiBase(BaseModel) :
   title: str = None
   description: str = None
   licence: Optional[str] = None
+  
   source: str = None
   tags: List[ str ] = []
 
@@ -60,6 +61,7 @@ class DsiCreate(BaseModel):
 
   title: str
   description: str = None
+  licence: Optional[str] = None
 
   is_geodata: bool = False
 
