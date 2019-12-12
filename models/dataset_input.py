@@ -70,4 +70,11 @@ class Dsi(DsiBase):
 
 # Properties stored in DB
 class DsiInDB(DsiBase):
+
   dsi_uuid: UUID
+
+
+class DsiInMongoDB(DsiInDB):
+  
+  version: int
+  is_deleted: bool = False

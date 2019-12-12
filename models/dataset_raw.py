@@ -17,10 +17,11 @@ class DsrData(BaseModel) :
 
   data: AnyContent
 
+
 class DsrBase(DsrData) : 
 
   type: str = DSR_DOC_TYPE
-  dsi_uuid: str = None
+  dsi_uuid: UUID = None
 
   team: List[ str ] = [] ### additional list of people authorized to modify
 
@@ -29,10 +30,11 @@ class DsrBase(DsrData) :
   logs: List[ str ] = []
 
 
+
 # Properties to receive on item creation
 class DsrCreate(DsrBase):
 
-  dsi_uuid: str 
+  dsi_uuid: UUID 
 
 
 # Properties to receive on item update
@@ -43,12 +45,20 @@ class DsrUpdate(DsrBase):
 
 # Properties to return to client
 class Dsr(DsrBase):
-  dsr_uuid: str              ### mandatory
+
+  dsr_uuid: UUID              ### mandatory
   data: AnyContent
 
 
 # Properties properties stored in DB
 class DsrInDB(DsrBase):
-  dsr_uuid: str
-  dsi_uuid: str 
+
+  dsr_uuid: UUID
+  dsi_uuid: UUID 
   data: AnyContent
+
+
+class DsrInMongoDB(DsrInDB):
+
+  is_deleted: bool = False
+  version: int 

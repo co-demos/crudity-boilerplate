@@ -119,6 +119,19 @@ shuffle_seed = Query(
 )
 
 
+class VersionsEnum(str, Enum) :
+  last = 'last'
+  previous = 'previous'
+  first = 'first'
+  last10 = 'last10'
+  all = 'all'
+
+version = Query(
+  'last', 
+  alias="version",
+  title="Data version",
+  description="`str`: version of the data requested",
+)
 
 
 class DataFormats(str, Enum) :
@@ -169,10 +182,12 @@ fields_to_return = Query(
 
 async def query_parameters(
   q: list = query_str, 
+  version: VersionsEnum = version,
   filter: list = search_filter, 
   ):
  return {
     "q" : q,
+    "version" : version,
     "filter" : filter,
   }
 
