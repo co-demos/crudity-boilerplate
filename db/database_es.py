@@ -15,7 +15,15 @@ log_.debug("ELASTICSEARCH_PASSWORD_LOCAL : %s", ELASTICSEARCH_PASSWORD_LOCAL)
 log_.debug("ELASTICSEARCH_SCHEME_LOCAL : %s", ELASTICSEARCH_SCHEME_LOCAL)
 
 
-def create_es_client(): 
+""" 
+Tutorials Elastic Search :
+cf : https://medium.com/the-andela-way/getting-started-with-elasticsearch-python-part-two-1c0c9d1117ea
+"""
+
+def create_es_client( 
+  debug=False 
+  ): 
+  """Function to create an ES client."""
 
   if DB_ELASTICSEARCH_MODE and DB_ELASTICSEARCH_MODE != 'disabled' : 
     
@@ -39,52 +47,183 @@ def create_es_client():
     es = None
 
 
-  if not es.ping():
+  if not es or not es.ping():
     log_.error("ES connection failed...")
     raise ValueError("ES connection failed")
 
   else :
     # print ( pformat( es.__dict__) )
-    log_.debug("ES connection OK...")
+    if debug :
+      log_.debug("ES connection OK...")
     return es
 
 
 
-# res = es.get(index="test-index", doc_type='tweet', id=1)
-# print(res['_source'])
+### INDEX LEVEL
 
-
-
-def get_es_document(
-
+def create_index(
+  es=create_es_client(),
+  index_name=None
   ):
+  """Functionality to create index."""
+
+  res = es.indices.create(
+    index=index_name
+  )
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res  
+
+
+def delete_index(
+  es=create_es_client(),
+  index_name=None
+  ):
+  """Delete an index by specifying the index name"""
   
-  return
+  res = es.indices.delete(
+    index=index_name
+  )
+  
+  log_.debug( "res : \n%s", pformat(res))
+  return res  
+
+
+
+### UTILS
+
+def build_es_query( 
+  query={}
+  ):
+  """Function to build a ES search query."""
+
+  log_.debug( "query : \n%s", pformat(query))
+
+  ### TO DO ...
+  search_body = {
+    'query':{
+      'match':{
+        "about": "play cricket"
+      }
+    }
+  }
+
+  return search_body
+
+
+
+### DOCS LEVEL REQUESTS
+
+def view_es_document(
+  es=create_es_client(),
+  index_name=None,
+  doc_type=None,
+  doc_uuid=None
+  ):
+  """Function to view a ES document."""
+
+  res = es.get(
+    index=index_name, 
+    doc_type=doc_type, 
+    id=doc_uuid
+    )
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res
 
 
 
 def search_es_documents(
-  
+  es=create_es_client(),
+  index_name=None,
+  doc_type=None,
+  doc_uuid=None,
+  query={}
   ):
-  return
+
+  """Function to make a ES searrch query."""
+
+  ### build search query
+  search_body = build_es_query( query )
+
+  res = es.search(
+    index='megacorp',
+    doc_type='employee',
+    body=search_body
+  )
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res
 
 
 
-def create_es_document(
-  
+def add_es_document(
+  es=create_es_client(),
+  index_name=None,
+  doc_type=None,
+  doc_uuid=None,
+  doc_body=None
   ):
-  return
+  """
+  Funtion to add an ES document by providing index_name,
+  document type, document contents as doc and document id.
+  """
+  
+  res = es.index(
+    index=index_name,
+    doc_type=doc_type,
+    id=doc_uuid,
+    body=doc_body
+  )
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res
 
 
 
 def update_es_document(
-
+  es=create_es_client(),
+  index_name=None,
+  doc_type=None,
+  doc_uuid=None,
+  doc_body=None,
+  new=None
   ):
-  return 
+  """Function to edit a document either updating existing fields or adding a new field."""
+
+  if doc_body : 
+    res = es.index(
+      index=index_name,
+      doc_type=doc_type,
+      id=doc_uuid,
+      body=doc_body
+    )
+  else : 
+    res = es.update(
+      index=index_name,
+      doc_type=doc_type,
+      id=doc_uuid,
+      body={ "doc" : new }
+    )
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res
 
 
 
 def remove_es_document(
-
+  es=create_es_client(),
+  index_name=None,
+  doc_type=None,
+  doc_uuid=None
   ):
-  return 
+  """Function to delete a specific document."""
+
+  res = es.delete(
+    index=index_name,
+    doc_type=doc_type,
+    id=doc_uuid
+  )
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res
