@@ -12,7 +12,10 @@ print("--- core/config.py ...")
 ### APP SERVER CONFIG ENV
 PROJECT_NAME = os.getenv("PROJECT_NAME")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION")
-API_V1_STR = f"/api/{PROJECT_VERSION}"
+PROJECT_REPO = os.getenv("PROJECT_REPO")
+
+# API_V1_STR = f"/api/{PROJECT_VERSION}"
+API_V1_STR = f"/api/v1"
 
 APP_MODE = os.getenv("APP_MODE", "default")
 AUTH_MODE = os.getenv("AUTH_MODE", "default")

@@ -56,7 +56,12 @@ log_.debug( "... starting to log stuff ..." )
 ### LOAD ROUTER
 from api.api_v1.api import api_router
 
-app = FastAPI(title=config.PROJECT_NAME, openapi_url="/api/v1/openapi.json")
+app = FastAPI(
+  title=config.PROJECT_NAME, 
+  description=f"A <a href='{config.PROJECT_REPO}' target='_blank'>CRUDity</a> instance to expose your open data",
+  version=config.PROJECT_VERSION,
+  openapi_url="/api/v1/openapi.json"
+  )
 
 
 
@@ -77,7 +82,10 @@ if config.BACKEND_CORS_ORIGINS:
     allow_headers=["*"],
   ),
 
-app.include_router(api_router, prefix=config.API_V1_STR)
+app.include_router(
+  api_router, 
+  prefix=config.API_V1_STR
+)
 
 
 

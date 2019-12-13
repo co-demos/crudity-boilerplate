@@ -53,15 +53,20 @@ async def read_dsi_items(
   log_.debug( "res_dsi : \n%s", pformat(res_dsi))
 
   ### 2 - get corresponding DSRs from dsi_uuid as index_name
-  res_dsrs, status_dsr = crud.dataset_raw.search_dsrs(
-    dsi_uuid = dsi_uuid,
-    query_params = query,
-  )
-  log_.debug( "res_dsrs : \n%s", pformat(res_dsrs))
-
+  if status_dsi['status_code'] == 200 :
+    res_dsrs, status_dsr = crud.dataset_raw.search_dsrs(
+      dsi_uuid = dsi_uuid,
+      query_params = query,
+    )
+    log_.debug( "res_dsrs : \n%s", pformat(res_dsrs))
+  else : 
+    res_dsrs = None
 
   time_end = datetime.now()
   response = {"dsi_id": dsi_uuid}
+
+
+
 
   resp_.status_code = status_dsi['status_code']
   return response
