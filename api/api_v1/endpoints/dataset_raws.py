@@ -28,7 +28,7 @@ async def read_dsi_items(
   resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: list = p_dsr_uuid,
-  commons: dict = Depends(common_parameters)
+  commons: dict = Depends(search_dsrs_parameters)
   ):
   """ get paginated DSRs from a DSI """
 
@@ -79,7 +79,7 @@ async def read_dsr_item(
   resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
-  resp_p: dict = Depends(resp_parameters),
+  resp_p: dict = Depends(one_dsr_parameters),
   ):
   """ get one DSR from a DSI """
  

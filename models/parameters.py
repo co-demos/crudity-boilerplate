@@ -38,6 +38,7 @@ p_dsr_uuid = Query(
   description="`str`: UUID to retrieve a DSR",
 )
 
+### AUTH
 p_auth_token = Query(
   None, 
   alias="auth_token",
@@ -45,12 +46,7 @@ p_auth_token = Query(
   description="`str`: Auth token (usually access token)",
 )
 
-p_only_data = Query(
-  False, 
-  alias="only_data",
-  title="Only data",
-  description="`bool`: Response only contains results data",
-)
+
 
 p_search_filter = Query (
   None, 
@@ -152,12 +148,7 @@ p_for_map = Query(
   description="`bool`: format results for map",
 )
 
-p_normalize_data = Query(
-  False, 
-  alias="normalize_data",
-  title="Normalize data",
-  description="`bool`: fnormalize uploaded data",
-)
+
 
 p_field_to_return = Query(
   None, 
@@ -182,7 +173,26 @@ p_full_remove = Query(
 
 
 
+p_only_data = Query(
+  False, 
+  alias="only_data",
+  title="Only data",
+  description="`bool`: Response only contains results data",
+)
 
+p_normalize_data = Query(
+  False, 
+  alias="normalize_data",
+  title="Normalize data",
+  description="`bool`: normalize uploaded data",
+)
+
+p_get_foreign = Query(
+  False, 
+  alias="get_linked_data",
+  title="Get linked data",
+  description="`bool`: append linked data from foreign keys",
+)
 
 
 
@@ -232,11 +242,20 @@ async def fields_parameters(
 
 async def format_parameters(
   data_format : DataFormats = p_data_format,
+  normalize : bool = p_normalize_data,
   for_map: bool = p_for_map, 
   ):
   return {
     "data_format" : data_format,
+    "normalize" : normalize,
     "for_map" : for_map,
+  }
+
+async def consolidate_parameters(
+  get_foreign : bool = p_get_foreign,
+  ):
+  return {
+    "get_foreign" : get_foreign,
   }
 
 async def resp_parameters(
@@ -252,6 +271,10 @@ async def delete_parameters(
   return {
     "full_remove" : full_remove,
   }
+
+
+
+
 
 async def common_parameters(
   query_p: dict = Depends(query_parameters),
@@ -318,5 +341,39 @@ async def one_dsi_parameters(
   ):
   return {
     **version_p,
+    **resp_p,
+  }
+
+async def search_dsrs_parameters(
+  query_p: dict = Depends(query_parameters),
+  version_p: dict = Depends(version_parameters),
+  pagination_p: dict = Depends(pagination_parameters),
+  fields_p: dict = Depends(fields_parameters),
+  format_p: dict = Depends(format_parameters),
+  consolidate_p: dict = Depends(consolidate_parameters),
+  resp_p: dict = Depends(resp_parameters),
+  ):
+  return {
+    **query_p,
+    **version_p,
+    **pagination_p,
+    **fields_p,
+    **format_p,
+    **consolidate_p,
+    **resp_p,
+  }
+
+async def one_dsr_parameters(
+  version_p: dict = Depends(version_parameters),
+  fields_p: dict = Depends(fields_parameters),
+  format_p: dict = Depends(format_parameters),
+  consolidate_p: dict = Depends(consolidate_parameters),
+  resp_p: dict = Depends(resp_parameters),
+  ):
+  return {
+    **version_p,
+    **fields_p,
+    **format_p,
+    **consolidate_p,
     **resp_p,
   }
