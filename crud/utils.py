@@ -22,7 +22,7 @@ if MONGODB_ENABLED :
 
 ### INDEX LEVEL
 
-def check_index_check(
+def check_index(
   index_name: str = None,
   doc_type: str = None,
   doc_uuid: str = None,
@@ -32,25 +32,27 @@ def check_index_check(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  ### TO DO
+  is_index = False
+  status = { 'status_code' : 200 }
+
+
   if ES_ENABLED :
     ### check if index exists in ES
-    ### if doesn't exist, create it
-    pass
-    
+    is_es_index, status_es = check_es_index (
+      index_name = index_name,
+    )
+    is_index, status = is_es_index, status_es
+  
+
   ### TO DO
   if MONGODB_ENABLED :
     ### check if index exists in MONGODB
-    ### if doesn't exist, create it
     pass
 
 
-  status = { 'status_code' : 200 }
-  res = {}
 
-
-  log_.debug( "res : \n%s", pformat(res))
-  return res, status
+  log_.debug( "is_index : %s", is_index )
+  return is_index, status
 
 
 
@@ -60,18 +62,22 @@ def create_index_check(
   doc_uuid: str = None,
   index_params: dict = None,
   ):
-  """ create an indeex if doesn't already exist"""
+  """ create an index if doesn't already exist"""
 
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
   ### check if index exists in ES
-  is_index = check_index_check (
+  is_index, status_index = check_index (
     index_name = index_name,
     doc_type = doc_type,
     doc_uuid = doc_uuid,
   )
 
+  status = { 'status_code' : 200 }
+  res = {}
+
+  
   ### TO DO
   if ES_ENABLED :
     ### if doesn't exist, create it
@@ -84,12 +90,52 @@ def create_index_check(
     pass
 
 
-  status = { 'status_code' : 200 }
-  res = {}
 
 
   log_.debug( "res : \n%s", pformat(res))
   return res, status
+
+
+
+def update_index_check(
+  index_name: str = None,
+  doc_type: str = None,
+  doc_uuid: str = None,
+  index_params: dict = None,
+  ):
+  """ update an index if doesn't already exist"""
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  ### check if index exists in ES
+  is_index = check_index (
+    index_name = index_name,
+    doc_type = doc_type,
+    doc_uuid = doc_uuid,
+  )
+
+  status = { 'status_code' : 200 }
+  res = {}
+
+  
+  ### TO DO
+  if ES_ENABLED :
+    ### if doesn't exist, create it
+    pass
+    
+  ### TO DO
+  if MONGODB_ENABLED :
+    ### check if index exists in MONGODB
+    ### if doesn't exist, create it
+    pass
+
+
+
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res, status
+
 
 
 

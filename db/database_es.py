@@ -53,7 +53,6 @@ def create_es_client(
   else : 
     es = None
 
-
   if not es or not es.ping():
     log_.error("ES connection failed...")
     print()
@@ -70,9 +69,36 @@ def create_es_client(
 
 ### INDEX LEVEL
 
+def check_es_index(
+  es=create_es_client(),
+  index_name=None,
+  ):
+  """Functionality to check if index exists."""
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+
+  try :
+    res = es.indices.exists(index=index_name)
+  except ElasticsearchException as err :
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
+
+  log_.debug( "res : \n%s", pformat(res))
+  print()
+  return res, status
+
+
 def create_es_index(
   es=create_es_client(),
-  index_name=None
+  index_name=None,
+  is_update=False
   ):
   """Functionality to create index."""
 
@@ -82,9 +108,16 @@ def create_es_index(
   status = { 'status_code' : 200 }
 
   try : 
-    res = es.indices.create(
-      index=index_name
-    )
+    if is_update == False :
+      # cf : https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.Elasticsearch.create
+      res = es.indices.create(
+        index=index_name
+      )
+    else : 
+      # cf : https://elasticsearch-py.readthedocs.io/en/master/api.html#elasticsearch.client.IndicesClient.upgrade
+      res = es.indices.upgrade(
+        index=index_name
+      )
   except ElasticsearchException as err :
     res = None
     status = {

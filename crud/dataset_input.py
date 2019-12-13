@@ -61,7 +61,7 @@ def create_dsi(
   log_.debug("body : \n%s", pformat(body) )
 
   ### create index if not existing
-  index = create_index_check(
+  index, status_index = create_index_check(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
