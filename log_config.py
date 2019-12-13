@@ -32,10 +32,12 @@ print ("--- LOGS_TO_FILE_LEVELS : " , LOGS_TO_FILE_LEVELS)
 
 ## create a formatter for future logger
 formatter = ColoredFormatter(
+    # -%(filename)s\
   "%(log_color)s%(levelname)1.1s\
     %(name)s\
     %(asctime)s\
-    %(module)s:%(lineno)d -in- %(funcName)s\
+    %(pathname)s\
+    -%(module)s:%(lineno)d -in- %(funcName)s\
     %(reset)s %(white)s%(message)s",
   datefmt='%y-%m-%d %H:%M:%S',
   reset=True,

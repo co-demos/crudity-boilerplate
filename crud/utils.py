@@ -1,4 +1,5 @@
 from log_config import log_, pformat
+import inspect 
 
 import uuid
 from core import config
@@ -21,11 +22,15 @@ if MONGODB_ENABLED :
 
 ### INDEX LEVEL
 
-def create_index_check(
+def check_index_check(
   index_name: str = None,
   doc_type: str = None,
-  index_params: dict = None,
+  doc_uuid: str = None,
   ):
+  """ check if index already exists.""" 
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   ### TO DO
   if ES_ENABLED :
@@ -40,11 +45,51 @@ def create_index_check(
     pass
 
 
+  status = { 'status_code' : 200 }
   res = {}
 
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  return res, status
+
+
+
+def create_index_check(
+  index_name: str = None,
+  doc_type: str = None,
+  doc_uuid: str = None,
+  index_params: dict = None,
+  ):
+  """ create an indeex if doesn't already exist"""
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  ### check if index exists in ES
+  is_index = check_index_check (
+    index_name = index_name,
+    doc_type = doc_type,
+    doc_uuid = doc_uuid,
+  )
+
+  ### TO DO
+  if ES_ENABLED :
+    ### if doesn't exist, create it
+    pass
+    
+  ### TO DO
+  if MONGODB_ENABLED :
+    ### check if index exists in MONGODB
+    ### if doesn't exist, create it
+    pass
+
+
+  status = { 'status_code' : 200 }
+  res = {}
+
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res, status
 
 
 
@@ -65,30 +110,36 @@ def view_document(
   ):
   """ get a document from ES / MongoDB """
 
-  log_.debug( "query_params : \n%s", pformat(query_params))
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  # status = { 'status_code' : 200 }
+  # res = {}
 
   if ES_ENABLED :
-    res = view_es_document(
+    res_es, status_es = view_es_document(
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid
     )
-    
+    log_.debug( "res_es : \n%s", pformat(res_es))
+    log_.debug( "status_es : \n%s", pformat(status_es))
+    res, status = res_es, status_es
+
+
   if MONGODB_ENABLED :
     ### only view doc from MongoDB if `version!='last'` in query
-
-    res = view_mongodb_document(
+    res_mongodb, status_mongodb = view_mongodb_document(
       database=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
     )
 
-  res = {}
-
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -99,18 +150,25 @@ def search_documents(
   ):
   """ search a document from ES / MongoDB """
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
   res = {}
 
   if ES_ENABLED :
-    res = search_es_documents(
+    res_es, status_es = search_es_documents(
       index_name=index_name,
       doc_type=doc_type,
       query=query_params
     )
+    log_.debug( "res_es : \n%s", pformat(res_es))
+    log_.debug( "status_es : \n%s", pformat(status_es))
+    res, status = res_es, status_es
     
   if MONGODB_ENABLED :
     ### only search docs from MongoDB if `version!='last'` in query
-    res = search_mongodb_documents(
+    res_mongodb, status_mongodb = search_mongodb_documents(
       database=doc_type,
       index_name=index_name,
       doc_type=doc_type,
@@ -119,7 +177,8 @@ def search_documents(
 
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -132,18 +191,32 @@ def create_document(
   ):
   """ create a document in ES / MongoDB """
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   if ES_ENABLED :
-    pass
-    
+    res_es = add_es_document(
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid,
+      doc_body=body,
+    )
+
   if MONGODB_ENABLED :
-    pass
+    res_mongodb = add_mongodb_document(
+      database=doc_type,
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid,
+      doc_body=body,
+    )
 
-
+  status = { 'status_code' : 200 }
   res = {}
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -157,16 +230,21 @@ def create_version_document(
   ):
   """ create a version document in MongoDB """
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
   if ES_ENABLED :
     pass
     
   if MONGODB_ENABLED :
     pass
 
+  status = { 'status_code' : 200 }
   res = {}
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -179,6 +257,9 @@ def update_document(
   ):
   """ update a document in ES / MongoDB """
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
   if ES_ENABLED :
     pass
     
@@ -186,10 +267,12 @@ def update_document(
     pass
 
 
+  status = { 'status_code' : 200 }
   res = {}
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -201,18 +284,26 @@ def remove_document(
   ):
   """ remove a document from ES / MongoDB """
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   if ES_ENABLED :
-    pass
-    
+    res_es = remove_es_document(
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid,
+    )
+
   if MONGODB_ENABLED :
     pass
 
 
+  status = { 'status_code' : 200 }
   res = {}
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 def remove_many_document(
@@ -222,6 +313,8 @@ def remove_many_document(
   ):
   """ remove a document from ES / MongoDB """
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   if ES_ENABLED :
     pass
@@ -230,7 +323,9 @@ def remove_many_document(
     pass
 
 
+  status = { 'status_code' : 200 }
   res = {}
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status

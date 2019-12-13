@@ -7,9 +7,17 @@ from pydantic import BaseModel
 
 AnyContent = TypeVar('AnyContent')
 
+class ResponseStatus(BaseModel) : 
+
+  status_code: str = 200
+  error: str = None
+  info: dict = None
+
+
 # Shared properties
 class ResponseDataBase(BaseModel) : 
 
+  status: ResponseStatus = None
   data: AnyContent = None
 
 class ResponseStatsNoTotal(BaseModel) :
@@ -25,15 +33,11 @@ class ResponseStats(ResponseStatsNoTotal) :
 
 class ResponseBase(ResponseDataBase) : 
 
-  status: str = 200
-
   query: AnyContent
   stats: ResponseStats
 
 
 class ResponseBaseNoTotal(ResponseDataBase) : 
-
-  status: str = 200
 
   query: AnyContent
   stats: ResponseStatsNoTotal

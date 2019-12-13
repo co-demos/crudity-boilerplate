@@ -1,4 +1,5 @@
 from log_config import log_, pformat
+import inspect
 
 from core import config
 from models.config import DSI_DOC_TYPE, DSR_DOC_TYPE
@@ -18,14 +19,17 @@ def view_dsi(
   ):
   """ get a dsi from ES / MongoDB """
 
-  res = view_document(
+  res, status = view_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
     query_params = query_params,
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -34,13 +38,16 @@ def search_dsis(
   ):
   """ search dsi(s) from ES / MongoDB """
 
-  res = search_documents(
+  res, status = search_documents(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     query_params = query_params,
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -51,17 +58,19 @@ def create_dsi(
   ):
   """ create a dsi in ES / MongoDB """
 
-  ### check if DSI exists first 
-
+  log_.debug("body : \n%s", pformat(body) )
 
   ### create index if not existing
   index = create_index_check(
-
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    index_params = query_params,
   )
 
 
   ### create metadata doc
-  res = create_document(
+  res, status = create_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
@@ -72,7 +81,11 @@ def create_dsi(
   ### loop if necessary to create dmt | dmf 
 
 
-  return res
+
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -86,7 +99,7 @@ def update_dsi(
   ### check if DSI exists first 
 
   ### update DSR document
-  res = update_document(
+  res, status = update_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
@@ -94,7 +107,10 @@ def update_dsi(
     body = body
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -105,7 +121,7 @@ def remove_dsi(
   """ remove a dsi from ES / MongoDB """
 
   ### remove DSI doc
-  res = remove_document(
+  res, status = remove_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
@@ -113,10 +129,13 @@ def remove_dsi(
   )
   
   ### remove corresponding DSRs docs 
-  res_dsr = remove_many_document(
+  res_dsr, status_dsr = remove_many_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     params = query_params,
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status

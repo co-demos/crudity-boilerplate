@@ -6,7 +6,7 @@ from fastapi import Query, Depends
 
 ### COMMON SEARCH PARAMETERS
 
-query_str = Query(
+p_query_str = Query(
   None, ### default value
   alias="search_for",
   title="Query string",
@@ -17,42 +17,42 @@ query_str = Query(
   # deprecated=True,
 )
 
-item_uuid = Query(
+p_item_uuid = Query(
   None, 
   alias="item_uuid",
   title="Item UUID",
   description="`str`: Item UUID to retrieve",
 )
 
-dsi_uuid = Query(
+p_dsi_uuid = Query(
   None, 
   alias="dsi_uuid",
   title="DSI UUID",
   description="`str`: UUID to retrieve a DSI",
 )
 
-dsr_uuid = Query(
+p_dsr_uuid = Query(
   None, 
   alias="dsr_uuid",
   title="DSR UUID",
   description="`str`: UUID to retrieve a DSR",
 )
 
-auth_token = Query(
+p_auth_token = Query(
   None, 
   alias="auth_token",
   title="Authorization token",
   description="`str`: Auth token (usually access token)",
 )
 
-only_data = Query(
+p_only_data = Query(
   False, 
   alias="only_data",
   title="Only data",
   description="`bool`: Response only contains results data",
 )
 
-search_filter = Query (
+p_search_filter = Query (
   None, 
   alias="filter",
   title="Search filter",
@@ -60,7 +60,7 @@ search_filter = Query (
 )
 
 ### PAGINATION
-page_number = Query(
+p_page_number = Query(
   1, 
   alias="page_n",
   title="Page number",
@@ -88,13 +88,13 @@ class PerPageEnum(IntEnum) :
   pp7500 = 7500
   max = 10000
 
-per_page = Query(
+p_per_page = Query(
   10, 
   alias="per_page",
   title="Results per page",
   description="`int`: Number of results per page",
 )
-sort_by = Query(
+p_sort_by = Query(
   None, 
   alias="sort_by",
   title="Sort by field",
@@ -105,13 +105,13 @@ class OrderEnum(str, Enum) :
   asc = 'asc'
   desc = 'desc'
 
-sort_order = Query(
+p_sort_order = Query(
   'asc', 
   alias="sort_order",
   title="Sort order field",
   description="`str`: Sort order for results",
 )
-shuffle_seed = Query(
+p_shuffle_seed = Query(
   None, 
   alias="shuffle_seed",
   title="Shuffle seed",
@@ -126,7 +126,7 @@ class VersionsEnum(str, Enum) :
   last10 = 'last10'
   all = 'all'
 
-version = Query(
+p_version = Query(
   'last', 
   alias="version",
   title="Data version",
@@ -138,42 +138,42 @@ class DataFormats(str, Enum) :
   json = 'json'
   geojson = 'geojson'
 
-data_format = Query(
+p_data_format = Query(
   'json', 
   alias="data_format",
   title="Data format",
   description="`str`: format results",
 )
 
-for_map = Query(
+p_for_map = Query(
   False, 
   alias="for_map",
   title="For map",
   description="`bool`: format results for map",
 )
 
-normalize_data = Query(
+p_normalize_data = Query(
   False, 
   alias="normalize_data",
   title="Normalize data",
   description="`bool`: fnormalize uploaded data",
 )
 
-field_to_return = Query(
+p_field_to_return = Query(
   None, 
   alias="field_to_return",
   title="Field to return",
   description="`str`: Field to return",
 )
 
-fields_to_return = Query(
+p_fields_to_return = Query(
   None, 
   alias="fields_to_return",
   title="Fields to return",
   description="`str`: Fields to return. Separate the fields by a comma after the parameter : `&fields_to_return=<field_A>,<field_B>`",
 )
 
-full_remove = Query(
+p_full_remove = Query(
   False, 
   alias="full_remove",
   title="full_remove",
@@ -189,9 +189,9 @@ full_remove = Query(
 ### dependencies injection
 
 async def query_parameters(
-  q: list = query_str, 
-  version: VersionsEnum = version,
-  filter: list = search_filter, 
+  q: list = p_query_str, 
+  version: VersionsEnum = p_version,
+  filter: list = p_search_filter, 
   ):
  return {
     "q" : q,
@@ -200,18 +200,18 @@ async def query_parameters(
   }
 
 async def version_parameters(
-  version: VersionsEnum = version,
+  version: VersionsEnum = p_version,
   ):
  return {
     "version" : version,
   }
 
 async def pagination_parameters(
-  page: int = page_number,
-  per_page: PerPageEnum = per_page,
-  sort_by: str = sort_by,  
-  sort_order: OrderEnum = sort_order,   
-  shuffle_seed: int = shuffle_seed,  
+  page: int = p_page_number,
+  per_page: PerPageEnum = p_per_page,
+  sort_by: str = p_sort_by,  
+  sort_order: OrderEnum = p_sort_order,   
+  shuffle_seed: int = p_shuffle_seed,  
   ):
   return {
     "page" : page,
@@ -222,8 +222,8 @@ async def pagination_parameters(
   }
 
 async def fields_parameters(
-  field_to_return: list = field_to_return, 
-  fields_to_return: str = fields_to_return,
+  field_to_return: list = p_field_to_return, 
+  fields_to_return: str = p_fields_to_return,
   ):
   return {
     "field_to_return" : field_to_return,
@@ -231,8 +231,8 @@ async def fields_parameters(
   }
 
 async def format_parameters(
-  data_format : DataFormats = data_format,
-  for_map: bool = for_map, 
+  data_format : DataFormats = p_data_format,
+  for_map: bool = p_for_map, 
   ):
   return {
     "data_format" : data_format,
@@ -240,14 +240,14 @@ async def format_parameters(
   }
 
 async def resp_parameters(
-  only_data: bool = only_data,
+  only_data: bool = p_only_data,
   ):
   return {
     "only_data" : only_data,
   }
 
 async def delete_parameters(
-  full_remove: bool = full_remove,
+  full_remove: bool = p_full_remove,
   ):
   return {
     "full_remove" : full_remove,

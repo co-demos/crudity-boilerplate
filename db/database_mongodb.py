@@ -1,9 +1,11 @@
 from log_config import log_, pformat
+import inspect 
 
 print()
 log_.debug(">>> db/database_mongodb.py")
 
 from datetime import datetime
+from bson.objectid import ObjectId
 from pymongo import MongoClient
 
 from core.config import *
@@ -40,11 +42,17 @@ def create_mongodb_index(
   ):
   """Functionality to create index."""
 
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
   ### TO DO 
   res = {}
 
   log_.debug( "res : \n%s", pformat(res))
-  return res  
+  print()
+  return res, status
 
 
 def delete_mongodb_index(
@@ -53,11 +61,17 @@ def delete_mongodb_index(
   ):
   """Delete an index by specifying the index name"""
   
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
   ### TO DO 
   res = {}
   
   log_.debug( "res : \n%s", pformat(res))
-  return res  
+  print()
+  return res, status
 
 
 
@@ -72,7 +86,8 @@ def build_mongodb_query(
   ):
   """Function to build a MONGODB search query."""
 
-  log_.debug( "query : \n%s", pformat(query))
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   ### TO DO ...
   search_query = {
@@ -93,7 +108,12 @@ def view_mongodb_document(
   doc_uuid=None,
   ):
   """Function to view a MongoDB document."""
-  
+
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
   db = m_client[ database ]
 
   ### TO DO 
@@ -102,7 +122,8 @@ def view_mongodb_document(
   )
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -116,6 +137,11 @@ def search_mongodb_documents(
   ):
   """Function to make a MongoDB search query."""
 
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
   db = m_client[ database ]
 
   ### TO DO 
@@ -127,7 +153,8 @@ def search_mongodb_documents(
   res = db.find( doc_query )
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -145,6 +172,11 @@ def add_mongodb_document(
   document type, document contents as doc and document id.
   """
 
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
   db = m_client[ database ]
 
   ### TO DO 
@@ -153,7 +185,8 @@ def add_mongodb_document(
   )
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -167,6 +200,12 @@ def update_mongodb_document(
   doc_body=None,
   new=None
   ):
+  """Function to edit a document either updating existing fields or adding a new field."""
+
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   db = m_client[ database ]
 
@@ -188,7 +227,8 @@ def update_mongodb_document(
 
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -200,6 +240,12 @@ def remove_mongodb_document(
   doc_type=None,
   doc_uuid=None
   ):
+  """Function to delete a specific document."""
+
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   db = m_client[ database ]
 
@@ -213,7 +259,8 @@ def remove_mongodb_document(
   res = db.delete_one( doc_query )
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -224,6 +271,12 @@ def remove_mongodb_many_documents(
   index_name=None,
   doc_type=None,
   ):
+  """Function to delete a list of documents."""
+
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
 
   db = m_client[ database ]
 
@@ -236,4 +289,5 @@ def remove_mongodb_many_documents(
   res = db.delete_many( doc_query )
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status

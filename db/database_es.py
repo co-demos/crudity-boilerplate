@@ -1,10 +1,12 @@
 from log_config import log_, pformat
+import inspect 
 
 print()
 log_.debug(">>> db/database_es.py")
 
 from datetime import datetime
-from elasticsearch import Elasticsearch
+from elasticsearch import Elasticsearch, ElasticsearchException
+from elasticsearch_dsl import Search
 
 from core.config import *
 
@@ -54,12 +56,14 @@ def create_es_client(
 
   if not es or not es.ping():
     log_.error("ES connection failed...")
+    print()
     raise ValueError("ES connection failed")
 
   else :
     # print ( pformat( es.__dict__) )
     if debug :
       log_.debug("ES connection OK...")
+      print()
     return es
 
 
@@ -72,12 +76,26 @@ def create_es_index(
   ):
   """Functionality to create index."""
 
-  res = es.indices.create(
-    index=index_name
-  )
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+
+  try : 
+    res = es.indices.create(
+      index=index_name
+    )
+  except ElasticsearchException as err :
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
 
   log_.debug( "res : \n%s", pformat(res))
-  return res  
+  print()
+  return res, status
 
 
 def delete_es_index(
@@ -86,12 +104,26 @@ def delete_es_index(
   ):
   """Delete an index by specifying the index name"""
   
-  res = es.indices.delete(
-    index=index_name
-  )
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+
+  try :
+    res = es.indices.delete(
+      index=index_name
+    )
+  except ElasticsearchException as err :
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
   
   log_.debug( "res : \n%s", pformat(res))
-  return res  
+  print()
+  return res, status
 
 
 
@@ -102,18 +134,124 @@ def build_es_query(
   ):
   """Function to build a ES search query."""
 
-  log_.debug( "query : \n%s", pformat(query))
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  ### query parts
+  matchs = {}
+  filters = {}
 
   ### TO DO ...
   search_body = {
-    'query':{
-      'match':{
-        "about": "play cricket"
-      }
+
+    'query': {
+
+      # 'match_all': {
+      # },
+      # 'match': {
+        # "author": {
+        #   "query": "Victor Hugo",
+        #   "operator": "and" 
+        # },
+      # },
+      # "match_phrase": {
+        # "author": "Victor Hugo"
+      # },
+      # "match_phrase_prefix": { 
+        # "author": "Victor Hu"
+      # },
+      # "multi_match" : {
+        # "query" : "Victor Hugo",
+        # "fields" : [ "author", "description" ]
+      # },
+      # 'query_string': {
+        # "fields": ["content","title^2","author.*"],
+        # "query": "Victor AND Hugo OR 1862"
+      # },
+      # "simple_query_string": {
+        # "fields": ["content","title^2","author.*"],
+        # "query": "Victor AND Hugo OR 1862" 
+      # },
+
+
+      # "exists": {
+        # "field": "subtitles"
+      # },
+      # "type": {
+        # "value": "books"
+      # },
+      # "term": {
+        # "lang": "fr",
+        # "_type": "book"
+      # },
+      # "prefix": {
+        # "content": "rom" 
+      # },
+      # "wildcard": {
+        # "title": "du?l*"
+      # },
+      # "ids" : {
+        # "type" : "book",
+        # "values" : ["4", "12", "38"] 
+      # },
+
+
+      # "range" : { 
+        # "price" : {
+        #   "gte" : 50,
+        #   "lt" : 200 
+        # },
+        # "created": {
+        #   "gte" : "2015-12-15"
+        # },
+        # "created": {
+        #   "gte" : "now-1d/d", 
+        #   "lt" : "now/d" 
+        #   "relation" : "within" # 'within', 'contains' or 'intersects'(default)
+        # },
+      # },
+
+
+      # "fuzzy": {
+        # "author": {
+        #   "value": "vitcor", "fuzziness": 2, "prefix_length": 1
+        # }
+      # },
+
+
+      # "bool": {
+        # "must": [
+        #   {"match": {"title": "spring in action" }}, { "term": { "tag": "spring" }}
+        # ],
+        # "must_not": { 
+          # "range": {"year": { "lte": 2010 } },
+          # "exists": { "field": "user" }
+        # },
+        # "should": [
+        #   {"term": { "tag": "java" }},
+        #   {"term": { "categories": "development" }},
+        # ],
+        # "filter": {
+          # "range": { "price": {"gt": 25, "lt": 50} 
+        # }
+      # },
+
+    },
+
+    'aggs' : {
+
+    },
+
+    'sort' : {
+      # { "title.keyword" : "desc" },
+      # { "price" : {"order" : "asc", "missing" : "_last"} }, 
+      # { "category" : {"unmapped_type" : "string"} }, "_score"]
     }
+
   }
 
-  return search_body
+  # return search_body
+  return {}
 
 
 
@@ -127,14 +265,28 @@ def view_es_document(
   ):
   """Function to view a ES document."""
 
-  res = es.get(
-    index=index_name, 
-    doc_type=doc_type, 
-    id=doc_uuid
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+
+  try : 
+    res = es.get(
+      index=index_name, 
+      doc_type=doc_type, 
+      id=doc_uuid
     )
+  except ElasticsearchException as err : 
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -147,17 +299,37 @@ def search_es_documents(
 
   """Function to make a ES searrch query."""
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+
   ### build search query
   search_body = build_es_query( query )
+  log_.debug( "search_body : \n%s", pformat(search_body))
 
-  res = es.search(
-    index='megacorp',
-    doc_type='employee',
-    body=search_body
-  )
+  try : 
+    res = es.search(
+      index=index_name,
+      # doc_type=doc_type,
+      body=search_body
+    )
+  except ElasticsearchException as err : 
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
+
+  # s = Search(using=es, index=index_name) \
+  #     .filter( "term", category="search") \
+  #     .query( "match", title="python")   \
+  #     .exclude( "match", description="beta")
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -173,15 +345,29 @@ def add_es_document(
   document type, document contents as doc and document id.
   """
   
-  res = es.index(
-    index=index_name,
-    doc_type=doc_type,
-    id=doc_uuid,
-    body=doc_body
-  )
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+
+  try : 
+    res = es.index(
+      index=index_name,
+      doc_type=doc_type,
+      id=doc_uuid,
+      body=doc_body
+    )
+  except ElasticsearchException as err : 
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -195,23 +381,46 @@ def update_es_document(
   ):
   """Function to edit a document either updating existing fields or adding a new field."""
 
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+
   if doc_body : 
-    res = es.index(
-      index=index_name,
-      doc_type=doc_type,
-      id=doc_uuid,
-      body=doc_body
-    )
+    try :
+      res = es.index(
+        index=index_name,
+        doc_type=doc_type,
+        id=doc_uuid,
+        body=doc_body
+      )
+    except ElasticsearchException as err : 
+      res = None
+      status = {
+        'status_code' : err.status_code,
+        'error' : err.error,
+        'info' : err.info,
+      }
+
   else : 
-    res = es.update(
-      index=index_name,
-      doc_type=doc_type,
-      id=doc_uuid,
-      body={ "doc" : new }
-    )
+    try : 
+      res = es.update(
+        index=index_name,
+        doc_type=doc_type,
+        id=doc_uuid,
+        body={ "doc" : new }
+      )
+    except ElasticsearchException as err : 
+      res = None
+      status = {
+        'status_code' : err.status_code,
+        'error' : err.error,
+        'info' : err.info,
+      }
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status
 
 
 
@@ -223,11 +432,25 @@ def remove_es_document(
   ):
   """Function to delete a specific document."""
 
-  res = es.delete(
-    index=index_name,
-    doc_type=doc_type,
-    id=doc_uuid
-  )
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  try : 
+    res = es.delete(
+      index=index_name,
+      doc_type=doc_type,
+      id=doc_uuid
+    )
+  except ElasticsearchException as err : 
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
 
   log_.debug( "res : \n%s", pformat(res))
-  return res
+  print()
+  return res, status

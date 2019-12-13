@@ -1,4 +1,5 @@
 from log_config import log_, pformat
+import inspect 
 
 from typing import List, Dict, Optional
 from datetime import date, datetime, time, timedelta
@@ -6,6 +7,8 @@ import uuid
 
 from pydantic import ValidationError
 from fastapi import APIRouter, Depends, HTTPException
+from starlette.responses import Response
+from starlette.status import *
 
 from models.response import ResponseBase, ResponseDataBase, ResponseBaseNoTotal
 from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate
@@ -35,15 +38,16 @@ router = APIRouter()
 # @router.get("/list", response_model=List[Dsi])
 @router.get("/list")
 async def list_dsis(
-  dsi_uuid: list = dsi_uuid,
-  commons: dict = Depends(common_parameters)
+  resp_: Response,
+  dsi_uuid: list = p_dsi_uuid,
+  commons: dict = Depends(common_parameters),
   ):
   """GET / get a paginated list of DSIs """
 
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "new request / list_dsis " )
+  log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
   query = {
@@ -54,13 +58,17 @@ async def list_dsis(
   log_.debug( "query : %s", query )
 
   ### TO DO / retrieve results given the query 
-  res = crud.dataset_input.search_dsis(
+  res, status = crud.dataset_input.search_dsis(
     query_params = query
   )
   log_.debug( "res : \n%s", pformat(res))
 
   ### marshal / apply model to data
-  data_list =  [ Dsi(**test_dsi) ]
+  if res :
+    # data_list =  [ Dsi(**test_dsi) ]
+    data_list =  [ Dsi(**res) ]
+  else : 
+    data_list = []
 
 
   time_end = datetime.now()
@@ -71,32 +79,40 @@ async def list_dsis(
     'response_delta' : time_end - time_start,  
   }
 
-  if only_data == True : 
+  if commons['only_data'] == True : 
+    log_.debug( "commons['only_data'] == True : %s", commons['only_data'] )
     response = ResponseDataBase(
+      status = status,
       data =  data_list,
     )
   else :
+    log_.debug( "commons['only_data'] != True : %s", commons['only_data'] )
     response = ResponseBase(
-      query = query,
+      status = status,
       data =  data_list,
+      query = query,
       stats = stats,
     )
 
+  log_.debug( "response : \n%s", pformat( response.dict() ))
+
+  resp_.status_code = status['status_code']
   return response
 
 
 
 @router.get("/get_one/{dsi_uuid}")
 async def read_dsi( 
+  resp_: Response,
   dsi_uuid: uuid.UUID,
-  commons: dict = Depends(one_dsi_parameters)
+  commons: dict = Depends(one_dsi_parameters),
   ):
   """GET / get a specific DSI (without its DSRs) """
 
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "new request / read_dsi " )
+  log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
   query = {
@@ -108,23 +124,27 @@ async def read_dsi(
 
 
   ### retrieve results from db and query
-  res = crud.dataset_input.view_dsi(
+  res, status = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = commons,
   )
   log_.debug( "res : \n%s", pformat(res))
-  res = {
-    'title' : 'test_dsi',
-    'dsi_uuid' : dsi_uuid ,
-    'owner' : 'system'
-  }
+  # res = {
+  #   'title' : 'test_dsi',
+  #   'dsi_uuid' : dsi_uuid ,
+  #   'owner' : 'system'
+  # }
 
   ### marshal / apply model to data
-  data =  Dsi(**res)
+  if res : 
+    data =  Dsi(**res)
+  else : 
+    data = None
 
 
-  if only_data == True : 
+  if commons['only_data'] == True : 
     response = ResponseDataBase(
+      status = status,
       data = data,
     )
   else : 
@@ -136,11 +156,13 @@ async def read_dsi(
       'response_delta' : time_end - time_start,  
     }
     response = ResponseBase(
+      status = status,
       query = query,
       data =  data,
       stats = stats,
     )
 
+  resp_.status_code = status['status_code']
   return response
 
 
@@ -148,6 +170,7 @@ async def read_dsi(
 @router.post("/create")
 async def create_dsi(
   *,
+  resp_: Response,
   dsi_in: DsiCreate,
   resp_p: dict = Depends(resp_parameters),
   ):
@@ -156,9 +179,9 @@ async def create_dsi(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "POST / new request / create_dsi " )
-  log_.debug( "dsi_in : \n%s", pformat(dsi_in) )
-  log_.debug( "resp_p : \n%s", pformat(resp_p) )
+  log_.debug( "POST / %s", inspect.stack()[0][3] )
+  log_.debug( "dsi_in : \n%s", pformat( dsi_in.dict() ) )
+  log_.debug( "resp_p : \n%s", pformat( resp_p ) )
   time_start = datetime.now()
 
   query = {
@@ -166,7 +189,7 @@ async def create_dsi(
     **resp_p,
   }
 
-
+  ### build / marshall a dsi from models
   dsi_client = DsiBase( **dsi_in.dict() )
   dsi_client_dict = dsi_client.dict()
 
@@ -174,17 +197,19 @@ async def create_dsi(
   dsi_uuid = crud.utils.generate_new_id()
   dsi_client_dict['dsi_uuid'] = dsi_uuid
   dsi_db = Dsi(**dsi_client_dict)
+  log_.debug( "dsi_db : \n%s", pformat( dsi_db.dict() ) )
 
   ### add in DBs
-  res = crud.dataset_input.create_dsi(
+  res, status = crud.dataset_input.create_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
-    body = dsi_db
+    body = dsi_db.dict()
   )
   log_.debug( "res : \n%s", pformat(res))
 
-  if only_data == True : 
+  if resp_p['only_data'] == True : 
     response = ResponseDataBase(
+      status = status,
       data = dsi_db,
     )
   else : 
@@ -195,11 +220,13 @@ async def create_dsi(
       'response_delta' : time_end - time_start,  
     }
     response = ResponseBaseNoTotal(
+      status = status,
       query = query,
       data =  dsi_db,
       stats = stats,
     )
 
+  resp_.status_code = status['status_code']
   return response
 
 
@@ -207,6 +234,7 @@ async def create_dsi(
 @router.put("/update/{dsi_uuid}")
 async def update_dsi(
   *,
+  resp_: Response,
   dsi_uuid: uuid.UUID,
   body: dict,
   resp_p: dict = Depends(resp_parameters),
@@ -216,7 +244,7 @@ async def update_dsi(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "PUT / new request / update_dsi " )
+  log_.debug( "PUT / %s", inspect.stack()[0][3] )
   log_.debug( "body : \n%s", pformat(body) )
   time_start = datetime.now()
 
@@ -228,7 +256,7 @@ async def update_dsi(
   log_.debug( "query : %s", query )
 
   ### update in DBs
-  res = crud.dataset_input.update_dsi(
+  res, status = crud.dataset_input.update_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
     body = body
@@ -236,8 +264,9 @@ async def update_dsi(
   log_.debug( "res : \n%s", pformat(res))
 
 
-  if only_data == True : 
+  if resp_p['only_data'] == True : 
     response = ResponseDataBase(
+      status = status,
       data = body,
     )
   else : 
@@ -248,17 +277,20 @@ async def update_dsi(
       'response_delta' : time_end - time_start,  
     }
     response = ResponseBaseNoTotal(
+      status = status,
       query = query,
       data =  body,
       stats = stats,
     )
 
+  resp_.status_code = status['status_code']
   return response
 
 
 
 @router.delete("/remove/{dsi_uuid}")
 async def delete_dsi(
+  resp_: Response,
   dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
@@ -268,7 +300,7 @@ async def delete_dsi(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "DELETE / new request / delete_dsi " )
+  log_.debug( "DELETE / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
   query = {
@@ -281,7 +313,7 @@ async def delete_dsi(
 
 
   ### 1 - delete corresponding DSI 
-  res = crud.dataset_input.remove_dsi(
+  res, status = crud.dataset_input.remove_dsi(
     dsi_uuid = dsi_uuid,
   )
   log_.debug( "res : \n%s", pformat(res))
@@ -291,8 +323,9 @@ async def delete_dsi(
     "dsi_deleted" : dsi_uuid
   }
 
-  if only_data == True : 
+  if resp_p['only_data'] == True : 
     response = ResponseDataBase(
+      status = status,
       data = res,
     )
   else : 
@@ -303,9 +336,11 @@ async def delete_dsi(
       'response_delta' : time_end - time_start,  
     }
     response = ResponseBase(
+      status = status,
       query = query,
       data =  res,
       stats = stats,
     )
 
+  resp_.status_code = status['status_code']
   return response

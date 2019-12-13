@@ -1,4 +1,5 @@
 from log_config import log_, pformat
+import inspect 
 
 from core import config
 from models.config import DSR_DOC_TYPE
@@ -17,14 +18,17 @@ def view_dsr(
   ):
   """ get a dsr from ES / MongoDB """
 
-  res = view_document(
+  res, status = view_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
     query_params = query_params,
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -34,13 +38,16 @@ def search_dsrs(
   ):
   """ search dsr(s) from ES / MongoDB """
 
-  res = search_documents(
+  res, status = search_documents(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     query_params = query_params,
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -55,7 +62,7 @@ def create_dsr(
   ### check if DSI exists first 
 
   ### add document
-  res = create_document(
+  res, status = create_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
@@ -63,7 +70,10 @@ def create_dsr(
     body = body
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -78,14 +88,17 @@ def update_dsr(
   ### check if DSR exists first 
 
   ### update DSR document
-  res = update_document(
+  res, status = update_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
     params = query_params,
   )
 
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status
 
 
 
@@ -96,11 +109,14 @@ def remove_dsr(
   ):
   """ remove a dsr from ES / MongoDB """
 
-  res = remove_document(
+  res, status = remove_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
     params = query_params,
   )
   
-  return res
+  # log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "status : \n%s", pformat(status))
+
+  return res, status

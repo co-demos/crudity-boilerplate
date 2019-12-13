@@ -1,4 +1,5 @@
 from log_config import log_, pformat
+import inspect
 
 from typing import List, Dict, Optional
 from datetime import date, datetime, time, timedelta
@@ -6,6 +7,8 @@ import uuid
 
 from pydantic import ValidationError
 from fastapi import APIRouter, Depends, HTTPException
+from starlette.responses import Response
+from starlette.status import *
 
 from models.response import ResponseBase, ResponseDataBase
 from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData
@@ -22,8 +25,9 @@ router = APIRouter()
 
 @router.get("/dataset/{dsi_uuid}")
 async def read_dsi_items(
+  resp_: Response,
   dsi_uuid: uuid.UUID,
-  dsr_uuid: list = dsr_uuid,
+  dsr_uuid: list = p_dsr_uuid,
   commons: dict = Depends(common_parameters)
   ):
   """ get paginated DSRs from a DSI """
@@ -31,7 +35,7 @@ async def read_dsi_items(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "GET / new request / read_dsi_items " )
+  log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
   query = { 
@@ -42,23 +46,24 @@ async def read_dsi_items(
   log_.debug( "query : %s", query )
 
   ### 1 - get corresponding DSI from dsi_uuid
-  res_dsi = crud.dataset_input.view_dsi(
+  res_dsi, status_dsi = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
   )
   log_.debug( "res_dsi : \n%s", pformat(res_dsi))
 
   ### 2 - get corresponding DSRs from dsi_uuid as index_name
-  res_dsrs = crud.dataset_raw.search_dsrs(
+  res_dsrs, status_dsr = crud.dataset_raw.search_dsrs(
     dsi_uuid = dsi_uuid,
     query_params = query,
   )
   log_.debug( "res_dsrs : \n%s", pformat(res_dsrs))
 
 
-
   time_end = datetime.now()
   response = {"dsi_id": dsi_uuid}
+
+  resp_.status_code = status_dsi['status_code']
   return response
 
 
@@ -66,6 +71,7 @@ async def read_dsi_items(
 
 @router.get("/dataset/{dsi_uuid}/dsr/get_one/{dsr_uuid}")
 async def read_dsr_item(
+  resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
@@ -75,7 +81,7 @@ async def read_dsr_item(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "GET / new request / read_dsr_item " )
+  log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
   query = {
@@ -87,14 +93,14 @@ async def read_dsr_item(
   log_.debug( "query : %s", query )
 
   ### 1 - get corresponding DSI from dsi_uuid
-  res_dsi = crud.dataset_input.view_dsi(
+  res_dsi, status_dsi = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
   )
   log_.debug( "res_dsi : \n%s", pformat(res_dsi))
 
   ### 2 - get corresponding DSR from dsi_uuid as index_name and dsr_uuid
-  res_dsr = crud.dataset_raw.view_dsr(
+  res_dsr, status_dsr = crud.dataset_raw.view_dsr(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
@@ -105,6 +111,8 @@ async def read_dsr_item(
 
   time_end = datetime.now()
   response =  {"dsr_uuid": dsr_uuid}
+
+  resp_.status_code = status_dsi['status_code']
   return response
 
 
@@ -112,6 +120,7 @@ async def read_dsr_item(
 @router.post("/dataset/{dsi_uuid}/dsr/create")
 async def create_dsr_item(
   *,
+  resp_: Response,
   dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   item_data: DsrData,
@@ -121,7 +130,7 @@ async def create_dsr_item(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "POST / new request / create_dsr_item " )
+  log_.debug( "POST / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
   query = {
@@ -137,7 +146,7 @@ async def create_dsr_item(
   dsr_uuid = crud.utils.generate_new_id()
   
   ### add in DBs
-  res = crud.dataset_raw.create_dsr(
+  res, status = crud.dataset_raw.create_dsr(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
@@ -151,12 +160,15 @@ async def create_dsr_item(
     "dsr_uuid": dsr_uuid,
     "item_data": item_data
   }
+
+  resp_.status_code = status['status_code']
   return response
 
 
 @router.put("/dataset/{dsi_uuid}/dsr/update/{dsr_uuid}")
 async def update_dsr_item(
   *,
+  resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
@@ -167,7 +179,7 @@ async def update_dsr_item(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "PUT / new request / update_dsr_item " )
+  log_.debug( "PUT / %s", inspect.stack()[0][3] )
   log_.debug( "item_data : \n%s", pformat(item_data) )
   time_start = datetime.now()
 
@@ -182,7 +194,7 @@ async def update_dsr_item(
   ### 1 - update corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
   ### update in DBs
-  res = crud.dataset_raw.update_dsr(
+  res, status = crud.dataset_raw.update_dsr(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
@@ -193,11 +205,14 @@ async def update_dsr_item(
 
   time_end = datetime.now()
   response =  {"dsr_uuid": dsr_uuid}
+
+  resp_.status_code = status['status_code']
   return response
 
 
 @router.delete("/dataset/{dsi_uuid}/dsr/remove/{dsr_uuid}")
 async def delete_dsr_item(
+  resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
@@ -208,7 +223,7 @@ async def delete_dsr_item(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "DELETE / new request / delete_dsr " )
+  log_.debug( "DELETE / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
   query = {
@@ -222,7 +237,7 @@ async def delete_dsr_item(
 
 
   ### 1 - delete corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
-  res = crud.dataset_input.remove_dsi(
+  res, status = crud.dataset_input.remove_dsi(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
   )
@@ -230,5 +245,7 @@ async def delete_dsr_item(
 
 
   time_end = datetime.now()
-  response =  {"dsr_uuid": dsr_uuid}  
+  response =  {"dsr_uuid": dsr_uuid}
+
+  resp_.status_code = status['status_code']
   return response
