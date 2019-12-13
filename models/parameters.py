@@ -173,6 +173,14 @@ fields_to_return = Query(
   description="`str`: Fields to return. Separate the fields by a comma after the parameter : `&fields_to_return=<field_A>,<field_B>`",
 )
 
+full_remove = Query(
+  False, 
+  alias="full_remove",
+  title="full_remove",
+  description="`bool`: Completly remove data if `True`, no coming back",
+)
+
+
 
 
 
@@ -238,6 +246,12 @@ async def resp_parameters(
     "only_data" : only_data,
   }
 
+async def delete_parameters(
+  full_remove: bool = full_remove,
+  ):
+  return {
+    "full_remove" : full_remove,
+  }
 
 async def common_parameters(
   query_p: dict = Depends(query_parameters),

@@ -19,6 +19,9 @@ So to :
 - query a list of DSR of a DSI
 - use pagination arguments when querying data
 - data / schema agnostic
+- data indexing in Elastic Search
+- data versionning in MongoDB
+
 
 ### stack
 

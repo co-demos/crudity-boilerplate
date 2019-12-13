@@ -1,5 +1,6 @@
 from log_config import log_, pformat
 
+print()
 log_.debug(">>> db/database_es.py")
 
 from datetime import datetime
@@ -16,9 +17,13 @@ log_.debug("ELASTICSEARCH_SCHEME_LOCAL : %s", ELASTICSEARCH_SCHEME_LOCAL)
 
 
 """ 
-Tutorials Elastic Search :
+TUTORIALS Elastic Search :
+
 cf : https://medium.com/the-andela-way/getting-started-with-elasticsearch-python-part-two-1c0c9d1117ea
+
 """
+
+### ELASTIC SEARCH CLIENT
 
 def create_es_client( 
   debug=False 
@@ -61,7 +66,7 @@ def create_es_client(
 
 ### INDEX LEVEL
 
-def create_index(
+def create_es_index(
   es=create_es_client(),
   index_name=None
   ):
@@ -75,7 +80,7 @@ def create_index(
   return res  
 
 
-def delete_index(
+def delete_es_index(
   es=create_es_client(),
   index_name=None
   ):
@@ -137,7 +142,6 @@ def search_es_documents(
   es=create_es_client(),
   index_name=None,
   doc_type=None,
-  doc_uuid=None,
   query={}
   ):
 

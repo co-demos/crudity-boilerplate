@@ -1,11 +1,12 @@
 from log_config import log_, pformat
 
+print()
 log_.debug(">>> db/database_mongodb.py")
 
-from core.config import *
-
+from datetime import datetime
 from pymongo import MongoClient
 
+from core.config import *
 
 log_.debug("DB_MONGODB_MODE : %s", DB_MONGODB_MODE)
 
@@ -18,6 +19,7 @@ cf : https://api.mongodb.com/python/current/tutorial.html#documents
 """
 
 ### MONGODB CLIENT
+
 def create_mongodb_client(
   debug=False,
   ):
@@ -28,6 +30,37 @@ def create_mongodb_client(
   )
   
   return client
+
+
+### INDEX LEVEL
+
+def create_mongodb_index(
+  m_client=create_mongodb_client(),
+  index_name=None
+  ):
+  """Functionality to create index."""
+
+  ### TO DO 
+  res = {}
+
+  log_.debug( "res : \n%s", pformat(res))
+  return res  
+
+
+def delete_mongodb_index(
+  m_client=create_mongodb_client(),
+  index_name=None
+  ):
+  """Delete an index by specifying the index name"""
+  
+  ### TO DO 
+  res = {}
+  
+  log_.debug( "res : \n%s", pformat(res))
+  return res  
+
+
+
 
 
 
@@ -79,7 +112,6 @@ def search_mongodb_documents(
   database=None,
   index_name=None,
   doc_type=None,
-  doc_uuid=None,
   query={}
   ):
   """Function to make a MongoDB search query."""
@@ -89,7 +121,7 @@ def search_mongodb_documents(
   ### TO DO 
 
   # build query
-  doc_query = build_mongodb_query( query, doc_uuid )
+  doc_query = build_mongodb_query( query )
 
   ### find document
   res = db.find( doc_query )

@@ -1,25 +1,28 @@
 from log_config import log_, pformat
 
 from core import config
-from models.config import DSI_DOC_TYPE
+from models.config import DSI_DOC_TYPE, DSR_DOC_TYPE
 
 from .utils import *
 
+print()
 log_.debug(">>> crud/dataset_input.py")
 
 
 
 
-def get_dsi(
-  doc_uuid: str,
-  query_params,
+
+def view_dsi(
+  dsi_uuid: str = None,
+  query_params: dict = None,
   ):
   """ get a dsi from ES / MongoDB """
 
-  res = get_document(
-    DSI_DOC_TYPE,
-    doc_uuid,
-    query_params,
+  res = view_document(
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    query_params = query_params,
   )
 
   return res
@@ -27,13 +30,14 @@ def get_dsi(
 
 
 def search_dsis(
-  query_params,
+  query_params: dict = None,
   ):
-  """ get a dsi from ES / MongoDB """
+  """ search dsi(s) from ES / MongoDB """
 
   res = search_documents(
-    DSI_DOC_TYPE,
-    query_params,
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    query_params = query_params,
   )
 
   return res
@@ -41,35 +45,53 @@ def search_dsis(
 
 
 def create_dsi(
-  doc_uuid: str,
-  params,
-  body,
+  dsi_uuid: str = None,
+  query_params: dict = None,
+  body = None,
   ):
-  """ get a dsi from ES / MongoDB """
+  """ create a dsi in ES / MongoDB """
 
-  res = create_document(
-    DSI_DOC_TYPE,
-    doc_uuid,
-    params,
-    body
+  ### check if DSI exists first 
+
+
+  ### create index if not existing
+  index = create_index_check(
+
   )
+
+
+  ### create metadata doc
+  res = create_document(
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    params = query_params,
+    body = body
+  )
+
+  ### loop if necessary to create dmt | dmf 
+
 
   return res
 
 
 
 def update_dsi(
-  doc_uuid: str,
-  params,
-  body,
+  dsi_uuid: str = None,
+  query_params: dict = None,
+  body = None,
   ):
-  """ get a dsi from ES / MongoDB """
+  """ update a dsi from ES / MongoDB """
 
+  ### check if DSI exists first 
+
+  ### update DSR document
   res = update_document(
-    DSI_DOC_TYPE,
-    doc_uuid,
-    params,
-    body
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    params = query_params,
+    body = body
   )
 
   return res
@@ -77,13 +99,24 @@ def update_dsi(
 
 
 def remove_dsi(
-  doc_uuid: str,
+  dsi_uuid: str = None,
+  query_params: dict = None,
   ):
-  """ get a dsi from ES / MongoDB """
+  """ remove a dsi from ES / MongoDB """
 
+  ### remove DSI doc
   res = remove_document(
-    DSI_DOC_TYPE,
-    doc_uuid,
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    params = query_params,
   )
   
+  ### remove corresponding DSRs docs 
+  res_dsr = remove_many_document(
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    params = query_params,
+  )
+
   return res

@@ -121,8 +121,8 @@ def app_runner(mode, docker, mongodb, esdb, auth, host, port, https) :
 
   # os.environ["DOCKER_MODE"]   = docker
 
-  os.environ["DB_ELASTICSEARCH"] = mongodb # get_boolean(mongodb)
-  os.environ["DB_MONGODB"]       = esdb # get_boolean(esdb)
+  os.environ["DB_ELASTICSEARCH"] = esdb # get_boolean(mongodb)
+  os.environ["DB_MONGODB"]       = mongodb  # get_boolean(esdb)
 
   pp.pprint(config.__dict__)
 

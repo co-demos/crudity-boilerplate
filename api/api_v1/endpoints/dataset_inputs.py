@@ -13,6 +13,7 @@ from models.parameters import *
 
 import crud
 
+print()
 log_.debug(">>> api/api_v1/endpoints/dataset_inputs.py")
 
 
@@ -43,7 +44,6 @@ async def list_dsis(
   print()
   print("-+- "*40)
   log_.debug( "new request / list_dsis " )
-  log_.debug( "commons : \n%s", pformat(commons) )
   time_start = datetime.now()
 
   query = {
@@ -51,11 +51,13 @@ async def list_dsis(
     "dsi_uuid": dsi_uuid,
     **commons,
   }
+  log_.debug( "query : %s", query )
 
   ### TO DO / retrieve results given the query 
   res = crud.dataset_input.search_dsis(
-    query
+    query_params = query
   )
+  log_.debug( "res : \n%s", pformat(res))
 
   ### marshal / apply model to data
   data_list =  [ Dsi(**test_dsi) ]
@@ -83,6 +85,7 @@ async def list_dsis(
   return response
 
 
+
 @router.get("/get_one/{dsi_uuid}")
 async def read_dsi( 
   dsi_uuid: uuid.UUID,
@@ -94,7 +97,6 @@ async def read_dsi(
   print()
   print("-+- "*40)
   log_.debug( "new request / read_dsi " )
-  log_.debug( "commons : \n%s", pformat(commons) )
   time_start = datetime.now()
 
   query = {
@@ -102,13 +104,15 @@ async def read_dsi(
     "dsi_uuid": dsi_uuid,
     **commons,
   }
+  log_.debug( "query : %s", query )
 
 
-  ### TO DO / retrieve results from db and query
-  res = crud.dataset_input.get_dsi(
-    dsi_uuid,
-    commons,
+  ### retrieve results from db and query
+  res = crud.dataset_input.view_dsi(
+    dsi_uuid = dsi_uuid,
+    query_params = commons,
   )
+  log_.debug( "res : \n%s", pformat(res))
   res = {
     'title' : 'test_dsi',
     'dsi_uuid' : dsi_uuid ,
@@ -143,6 +147,7 @@ async def read_dsi(
 
 @router.post("/create")
 async def create_dsi(
+  *,
   dsi_in: DsiCreate,
   resp_p: dict = Depends(resp_parameters),
   ):
@@ -161,13 +166,22 @@ async def create_dsi(
     **resp_p,
   }
 
+
   dsi_client = DsiBase( **dsi_in.dict() )
   dsi_client_dict = dsi_client.dict()
 
   ### generate a random UUID / cf : https://docs.python.org/3/library/uuid.html
-  dsi_client_dict['dsi_uuid'] = uuid.uuid4()
+  dsi_uuid = crud.utils.generate_new_id()
+  dsi_client_dict['dsi_uuid'] = dsi_uuid
   dsi_db = Dsi(**dsi_client_dict)
 
+  ### add in DBs
+  res = crud.dataset_input.create_dsi(
+    dsi_uuid = dsi_uuid,
+    query_params = query,
+    body = dsi_db
+  )
+  log_.debug( "res : \n%s", pformat(res))
 
   if only_data == True : 
     response = ResponseDataBase(
@@ -190,15 +204,9 @@ async def create_dsi(
 
 
 
-
-
-
-
-
-
-
 @router.put("/update/{dsi_uuid}")
 async def update_dsi(
+  *,
   dsi_uuid: uuid.UUID,
   body: dict,
   resp_p: dict = Depends(resp_parameters),
@@ -208,7 +216,7 @@ async def update_dsi(
   ### DEBUGGING
   print()
   print("-+- "*40)
-  log_.debug( "PUT / new request / create_dsi " )
+  log_.debug( "PUT / new request / update_dsi " )
   log_.debug( "body : \n%s", pformat(body) )
   time_start = datetime.now()
 
@@ -217,6 +225,15 @@ async def update_dsi(
     "dsi_uuid": dsi_uuid,
     **resp_p,
   }
+  log_.debug( "query : %s", query )
+
+  ### update in DBs
+  res = crud.dataset_input.update_dsi(
+    dsi_uuid = dsi_uuid,
+    query_params = query,
+    body = body
+  )
+  log_.debug( "res : \n%s", pformat(res))
 
 
   if only_data == True : 
@@ -244,6 +261,7 @@ async def update_dsi(
 async def delete_dsi(
   dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
+  remove_p: dict = Depends(delete_parameters),
   ):
   """ delete a specific DSI """
 
@@ -251,22 +269,31 @@ async def delete_dsi(
   print()
   print("-+- "*40)
   log_.debug( "DELETE / new request / delete_dsi " )
-  log_.debug( "dsi_uuid : %s", dsi_uuid )
   time_start = datetime.now()
 
   query = {
     "method" : "DELETE",
     "dsi_uuid": dsi_uuid,
     **resp_p,
+    **remove_p,
   }
+  log_.debug( "query : %s", query )
 
-  resp = {
+
+  ### 1 - delete corresponding DSI 
+  res = crud.dataset_input.remove_dsi(
+    dsi_uuid = dsi_uuid,
+  )
+  log_.debug( "res : \n%s", pformat(res))
+
+
+  res = {
     "dsi_deleted" : dsi_uuid
   }
 
   if only_data == True : 
     response = ResponseDataBase(
-      data = resp,
+      data = res,
     )
   else : 
     time_end = datetime.now()
@@ -277,7 +304,7 @@ async def delete_dsi(
     }
     response = ResponseBase(
       query = query,
-      data =  resp,
+      data =  res,
       stats = stats,
     )
 

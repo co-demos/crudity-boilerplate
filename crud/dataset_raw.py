@@ -5,20 +5,23 @@ from models.config import DSR_DOC_TYPE
 
 from .utils import *
 
+print()
 log_.debug(">>> crud/dataset_raw.py")
 
 
 
-def get_dsr(
-  doc_uuid: str,
-  query_params,
+def view_dsr(
+  dsi_uuid: str = None,
+  dsr_uuid: str = None,
+  query_params: dict = None,
   ):
   """ get a dsr from ES / MongoDB """
 
-  res = get_document(
-    DSR_DOC_TYPE,
-    doc_uuid,
-    query_params,
+  res = view_document(
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    doc_uuid = dsr_uuid,
+    query_params = query_params,
   )
 
   return res
@@ -26,13 +29,15 @@ def get_dsr(
 
 
 def search_dsrs(
-  query_params,
+  dsi_uuid: str = None,
+  query_params: dict = None,
   ):
-  """ get a dsr from ES / MongoDB """
+  """ search dsr(s) from ES / MongoDB """
 
   res = search_documents(
-    DSR_DOC_TYPE,
-    query_params,
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    query_params = query_params,
   )
 
   return res
@@ -40,16 +45,22 @@ def search_dsrs(
 
 
 def create_dsr(
-  doc_uuid: str,
-  query_params,
-  body,
+  dsi_uuid: str = None,
+  dsr_uuid: str = None,
+  query_params: dict = None,
+  body = None,
   ):
-  """ get a dsr from ES / MongoDB """
+  """ create a dsr in ES / MongoDB """
 
+  ### check if DSI exists first 
+
+  ### add document
   res = create_document(
-    DSR_DOC_TYPE,
-    doc_uuid,
-    query_params,
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    doc_uuid = dsr_uuid,
+    params = query_params,
+    body = body
   )
 
   return res
@@ -57,16 +68,21 @@ def create_dsr(
 
 
 def update_dsr(
-  doc_uuid: str,
-  query_params,
-  body,
+  dsi_uuid: str = None,
+  dsr_uuid: str = None,
+  query_params: dict = None,
+  body = None,
   ):
-  """ get a dsr from ES / MongoDB """
+  """ update a dsr from ES / MongoDB """
 
+  ### check if DSR exists first 
+
+  ### update DSR document
   res = update_document(
-    DSR_DOC_TYPE,
-    doc_uuid,
-    query_params,
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    doc_uuid = dsr_uuid,
+    params = query_params,
   )
 
   return res
@@ -74,13 +90,17 @@ def update_dsr(
 
 
 def remove_dsr(
-  doc_uuid: str,
+  dsi_uuid: str = None,
+  dsr_uuid: str = None,
+  query_params: dict = None,
   ):
-  """ get a dsr from ES / MongoDB """
+  """ remove a dsr from ES / MongoDB """
 
   res = remove_document(
-    DSR_DOC_TYPE,
-    doc_uuid,
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    doc_uuid = dsr_uuid,
+    params = query_params,
   )
   
   return res
