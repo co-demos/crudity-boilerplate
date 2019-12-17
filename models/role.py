@@ -7,8 +7,10 @@ from core.config import ROLE_SUPERUSER
 
 
 class RoleEnum(Enum):
-    superuser = ROLE_SUPERUSER
+  superuser = ROLE_SUPERUSER # superuser
+  user = "user" # superuser
+  anonymous = "anon" # superuser
 
 
 class Roles(BaseModel):
-    roles: List[RoleEnum]
+  roles: List[RoleEnum]

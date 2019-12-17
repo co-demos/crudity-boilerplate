@@ -7,6 +7,8 @@ import uuid
 
 from pydantic import ValidationError
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security.api_key import APIKey
+
 from starlette.responses import Response
 from starlette.status import *
 
@@ -15,6 +17,8 @@ from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData
 from models.parameters import *
 
 import crud
+from api.utils.security import get_api_key
+
 
 print()
 log_.debug(">>> api/api_v1/endpoints/dataset_inputs.py")
@@ -28,7 +32,8 @@ async def read_dsi_items(
   resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: list = p_dsr_uuid,
-  commons: dict = Depends(search_dsrs_parameters)
+  commons: dict = Depends(search_dsrs_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ get paginated DSRs from a DSI """
 
@@ -80,6 +85,7 @@ async def read_dsr_item(
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(one_dsr_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ get one DSR from a DSI """
  
@@ -129,6 +135,7 @@ async def create_dsr_item(
   dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   item_data: DsrData,
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ post one DSR into a DSI """
 
@@ -178,6 +185,7 @@ async def update_dsr_item(
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   item_data: DsrData,
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ update one DSR from a DSI """
 
@@ -222,6 +230,7 @@ async def delete_dsr_item(
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ delete one DSR from a DSI """
 

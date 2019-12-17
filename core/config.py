@@ -14,6 +14,8 @@ PROJECT_NAME = os.getenv("PROJECT_NAME")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION")
 PROJECT_REPO = os.getenv("PROJECT_REPO")
 
+ROLE_SUPERUSER = "superuser"
+
 # API_V1_STR = f"/api/{PROJECT_VERSION}"
 API_V1_STR = f"/api/v1"
 
@@ -23,6 +25,10 @@ AUTH_MODE = os.getenv("AUTH_MODE", "default")
 SECRET_KEY = os.getenvb(b"SECRET_KEY")
 if not SECRET_KEY:
   SECRET_KEY = os.urandom(32)
+
+API_KEY = os.getenv("API_KEY", "1234567asdfgh")
+API_KEY_NAME = os.getenv("API_KEY_NAME", "access_token")
+COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "crudity.me")
 
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 8  # 60 minutes * 24 hours * 8 days = 8 days
 

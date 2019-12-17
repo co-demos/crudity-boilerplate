@@ -7,6 +7,8 @@ import uuid
 
 from pydantic import ValidationError
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security.api_key import APIKey
+
 from starlette.responses import Response
 from starlette.status import *
 
@@ -15,6 +17,8 @@ from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate
 from models.parameters import *
 
 import crud
+from api.utils.security import get_api_key
+
 
 print()
 log_.debug(">>> api/api_v1/endpoints/dataset_inputs.py")
@@ -41,6 +45,7 @@ async def list_dsis(
   resp_: Response,
   dsi_uuid: list = p_dsi_uuid,
   commons: dict = Depends(common_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """GET / get a paginated list of DSIs """
 
@@ -106,6 +111,7 @@ async def read_dsi(
   resp_: Response,
   dsi_uuid: uuid.UUID,
   commons: dict = Depends(one_dsi_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """GET / get a specific DSI (without its DSRs) """
 
@@ -173,6 +179,7 @@ async def create_dsi(
   resp_: Response,
   dsi_in: DsiCreate,
   resp_p: dict = Depends(resp_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ post a new DSI """
 
@@ -238,6 +245,7 @@ async def update_dsi(
   dsi_uuid: uuid.UUID,
   body: dict,
   resp_p: dict = Depends(resp_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ update a specific DSI """
 
@@ -294,6 +302,7 @@ async def delete_dsi(
   dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
+  api_key: APIKey = Depends(get_api_key),
   ):
   """ delete a specific DSI """
 

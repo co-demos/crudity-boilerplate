@@ -7,6 +7,11 @@ from models.role import RoleEnum
 
 
 # Shared properties in Couchbase and Sync Gateway
+class UserLogin(BaseModel):
+  email: str
+  password: str
+
+
 class UserBase(BaseModel):
   email: Optional[str] = None
   admin_roles: Optional[List[Union[str, RoleEnum]]] = None
