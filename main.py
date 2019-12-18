@@ -32,6 +32,9 @@ pp = PrettyPrinter(indent=4)
 env_path_global = Path('.') / 'env-backend.env'
 load_dotenv(env_path_global, verbose=True)
 
+env_path_auth = Path('.') / 'env-auth.env'
+load_dotenv(env_path_auth, verbose=True)
+
 # for ES
 # db_es_enabled = getenv_boolean("DB_ELASTICSEARCH_MODE")
 db_es_enabled = os.getenv("DB_ELASTICSEARCH_MODE", 'disabled') != 'disabled'

@@ -14,8 +14,8 @@ class UserLogin(BaseModel):
 
 class UserBase(BaseModel):
   email: Optional[str] = None
-  admin_roles: Optional[List[Union[str, RoleEnum]]] = None
-  admin_channels: Optional[List[Union[str, RoleEnum]]] = None
+  admin_roles: Optional[ List[Union[str, RoleEnum]] ] = None
+  admin_channels: Optional[ List[Union[str, RoleEnum]] ] = None
   disabled: Optional[bool] = None
 
 

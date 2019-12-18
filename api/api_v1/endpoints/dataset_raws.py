@@ -17,7 +17,7 @@ from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData
 from models.parameters import *
 
 import crud
-from api.utils.security import get_api_key
+from api.utils.security import get_api_key, get_api_key_optional
 
 
 print()
@@ -33,7 +33,7 @@ async def read_dsi_items(
   dsi_uuid: uuid.UUID,
   dsr_uuid: list = p_dsr_uuid,
   commons: dict = Depends(search_dsrs_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  api_key: APIKey = Depends(get_api_key_optional),
   ):
   """ get paginated DSRs from a DSI """
 
@@ -85,7 +85,7 @@ async def read_dsr_item(
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(one_dsr_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  api_key: APIKey = Depends(get_api_key_optional),
   ):
   """ get one DSR from a DSI """
  

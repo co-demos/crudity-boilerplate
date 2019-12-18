@@ -46,6 +46,12 @@ p_auth_token = Query(
   description="`str`: Auth token (usually access token)",
 )
 
+p_access_token = Query(
+  None, 
+  alias="access_token",
+  title="Access token",
+  description="`str`: Access token",
+)
 
 
 p_search_filter = Query (
@@ -203,16 +209,26 @@ async def query_parameters(
   version: VersionsEnum = p_version,
   filter: list = p_search_filter, 
   ):
- return {
+  return {
     "q" : q,
     "version" : version,
     "filter" : filter,
   }
 
+
+async def tokens_parameters(
+  access_token: str = p_access_token, 
+  auth_token: str = p_auth_token, 
+  ):
+  return {
+    "access_token" : access_token,
+    "auth_token" : auth_token,
+  }
+
 async def version_parameters(
   version: VersionsEnum = p_version,
   ):
- return {
+  return {
     "version" : version,
   }
 

@@ -17,7 +17,7 @@ from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate
 from models.parameters import *
 
 import crud
-from api.utils.security import get_api_key
+from api.utils.security import get_api_key, get_api_key_optional
 
 
 print()
@@ -45,7 +45,7 @@ async def list_dsis(
   resp_: Response,
   dsi_uuid: list = p_dsi_uuid,
   commons: dict = Depends(common_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  api_key: APIKey = Depends(get_api_key_optional),
   ):
   """GET / get a paginated list of DSIs """
 
@@ -111,7 +111,7 @@ async def read_dsi(
   resp_: Response,
   dsi_uuid: uuid.UUID,
   commons: dict = Depends(one_dsi_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  api_key: APIKey = Depends(get_api_key_optional),
   ):
   """GET / get a specific DSI (without its DSRs) """
 
