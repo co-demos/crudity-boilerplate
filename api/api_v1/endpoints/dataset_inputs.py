@@ -55,12 +55,14 @@ async def list_dsis(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "GET",
     "dsi_uuid": dsi_uuid,
     **commons,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
   ### TO DO / retrieve results given the query 
   res, status = crud.dataset_input.search_dsis(
@@ -121,12 +123,14 @@ async def read_dsi(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "GET",
     "dsi_uuid": dsi_uuid,
     **commons,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
 
   ### retrieve results from db and query
@@ -190,6 +194,8 @@ async def create_dsi(
   log_.debug( "dsi_in : \n%s", pformat( dsi_in.dict() ) )
   log_.debug( "resp_p : \n%s", pformat( resp_p ) )
   time_start = datetime.now()
+
+  log_.debug( "api_key : %s", api_key )
 
   query = {
     "method" : "POST",
@@ -256,12 +262,14 @@ async def update_dsi(
   log_.debug( "body : \n%s", pformat(body) )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "PUT",
     "dsi_uuid": dsi_uuid,
     **resp_p,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
   ### update in DBs
   res, status = crud.dataset_input.update_dsi(
@@ -312,13 +320,15 @@ async def delete_dsi(
   log_.debug( "DELETE / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "DELETE",
     "dsi_uuid": dsi_uuid,
     **resp_p,
     **remove_p,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
 
   ### 1 - delete corresponding DSI 

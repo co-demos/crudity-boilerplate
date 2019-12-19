@@ -15,9 +15,12 @@ from starlette.responses import RedirectResponse, JSONResponse
 from config.auth_distant_protocols import functions_protocols
 from core import config
 
+
 ### cf : https://medium.com/data-rebels/fastapi-authentication-revisited-enabling-api-key-authentication-122dc5975680
 
 log_.debug(">>> api/api_v1/endpoints/utils/security.py")
+
+AUTH_MODE = config.AUTH_MODE
 
 
 API_KEY = config.API_KEY
@@ -36,20 +39,50 @@ async def get_api_key(
   api_key_cookie: str = Security(api_key_cookie),
   ):
 
+  """ 
+  get API access toen
+  """ 
   log_.debug("api_key_query : %s", api_key_query )
   log_.debug("api_key_header : %s", api_key_header )
   log_.debug("api_key_cookie : %s", api_key_cookie )
 
-  if api_key_query : # == API_KEY:
-    return api_key_query
-  elif api_key_header : # == API_KEY:
-    return api_key_header
-  elif api_key_cookie : # == API_KEY:
-    return api_key_cookie
+  api_key = None 
+  # anonymous_claims = {
+  #   "_id" : None,
+  #   "auth" : {
+  #     "role" : None,
+  #   },
+  #   "renew_pwd" : False,
+  #   "reset_pwd" : False,
+  #   "confirm_email" : False,
+  # }
+
+  if api_key_query : 
+    api_key = api_key_query
+
+  elif api_key_header and api_key == None : 
+    api_key = api_key_header
+
+  elif api_key_cookie and api_key == None : 
+    api_key = api_key_cookie
+
+
+  if api_key : 
+    if AUTH_MODE != 'no_auth':
+      resp_auth = distantAuthCall( 
+        func_name="token_claims",
+        token=api_key
+      )
+      log_.debug("resp_auth : \n%s", pformat(resp_auth) )
+    return api_key
+
   else:
-    raise HTTPException(
-      status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
-    )
+    if AUTH_MODE == 'no_auth':
+      return True
+    else : 
+      raise HTTPException(
+        status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
+      )
 
 
 async def get_api_key_optional(
@@ -58,47 +91,102 @@ async def get_api_key_optional(
   api_key_cookie: str = Security(api_key_cookie),
   ):
 
+  api_key = None 
+  # anonymous_claims = {
+  #   "_id" : None,
+  #   "auth" : {
+  #     "role" : None,
+  #   },
+  #   "renew_pwd" : False,
+  #   "reset_pwd" : False,
+  #   "confirm_email" : False,
+  # }
+
   if api_key_query : 
-    return api_key_query
-  elif api_key_header : 
-    return api_key_header
-  elif api_key_cookie : 
-    return api_key_cookie
-  else:
-    return None
+    api_key = api_key_query
+
+  elif api_key_header and api_key == None : 
+    api_key = api_key_header
+
+  elif api_key_cookie and api_key == None : 
+    api_key = api_key_cookie
+
+  if api_key : 
+    if AUTH_MODE != 'no_auth':
+      resp_auth = distantAuthCall( 
+        func_name="token_claims",
+        token=api_key
+      )
+      log_.debug("resp_auth : \n%s", pformat(resp_auth) )
+    return api_key
+
+  else : 
+    return False
 
 
+# class getApiKey : 
 
-# def getTokenFromRequest(api_request) : 
-#   """ 
-#   retrieve token sent with request 
-#   """ 
+#   def __init__( self, 
+#     api_key_query: str = Security(api_key_query),
+#     api_key_header: str = Security(api_key_header),
+#     api_key_cookie: str = Security(api_key_cookie)    
+#   ):
+#     self.api_key_query = api_key_query
+#     self.api_key_header = api_key_header
+#     self.api_key_cookie = api_key_cookie
 
-#   log_.debug("getTokenFromRequest ..." )
-#   log_.debug("getTokenFromRequest / api_request : \n%s", pformat(api_request) )
+#   def __call__(self, optional: bool = False):
 
-#   # token_header_location = config.JWT_HEADER_NAME
-#   token_header_location = config.API_KEY_NAME
-#   log_.debug("getTokenFromRequest / token_header_location : %s", token_header_location )
-#   try : 
-#     token_from_headers = api_request['headers'].get(token_header_location, None)
-#     log_.debug("getTokenFromRequest / token_from_headers : %s", token_from_headers )
-#   except : 
-#     token_from_headers = None 
+#     if self.api_key_query : 
+#       return self.api_key_query
 
-#   # token_query_string = config.JWT_QUERY_STRING_NAME
-#   token_query_string = config.API_KEY_NAME
-#   log_.debug("getTokenFromRequest / token_query_string : %s", token_query_string )
-#   try : 
-#     token_from_query = api_request['query_string'].get(token_query_string, None)
-#     log_.debug("getTokenFromRequest / token_from_query : %s", token_from_query )
-#   except : 
-#     token_from_query = None 
+#     elif self.api_key_header : 
+#       return self.api_key_header
 
-#   if token_from_headers or token_from_query : 
-#     return token_from_headers if token_from_headers else token_from_query
-#   else : 
-#     return None
+#     elif self.api_key_cookie : 
+#       return self.api_key_cookie
+    
+#     if optional:
+#       return None
+#     else : 
+#       raise HTTPException(
+#         status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
+#       )
+
+# getApiKey_mandatory = getApiKey()
+# getApiKey_optional = getApiKey(True)
+# log_.debug("api_key_query : %s", api_key_query )
+
+
+""" 
+In [1]: class A:
+   ...:     def __init__(self):
+   ...:         print "init"
+   ...:         
+   ...:     def __call__(self):
+   ...:         print "call"
+   ...:         
+   ...:         
+
+In [2]: a = A()
+init
+
+In [3]: a()
+call
+""" 
+
+# class FixedContentQueryChecker:
+#   def __init__(self, fixed_content: str):
+#     self.fixed_content = fixed_content
+
+#   def __call__(self, q: str = ""):
+#     if q:
+#       return self.fixed_content in q
+#     return False
+
+# checker = FixedContentQueryChecker("bar")
+
+
 
 
 def getDistantAuthUrl():
@@ -155,28 +243,28 @@ def distantAuthCall (
   """
 
   print (". "*50)
-  log_.debug("distantAuthCall/ payload : \n%s", pformat(payload) )
-  log_.debug("distantAuthCall/ log_type : %s", func_name )
+  log_.debug("distantAuthCall / payload : \n%s", pformat(payload) )
+  log_.debug("distantAuthCall / log_type : %s", func_name )
 
   ### retrieve distant auth url root
   auth_url_root = getDistantAuthUrl()
-  log_.debug("distantAuthCall/ auth_url_root : %s", auth_url_root )
+  log_.debug("distantAuthCall / auth_url_root : %s", auth_url_root )
 
   ### retrieve distant auth endpoint config
   endpoint_config = getDistantEndpointconfig(func_name)
-  log_.debug("distantAuthCall/ endpoint_config : \n%s", pformat(endpoint_config) )
+  log_.debug("distantAuthCall / endpoint_config : \n%s", pformat(endpoint_config) )
   
-  url = endpoint_config["url"]
-  method = endpoint_config["method"]
-  url_args = endpoint_config["url_args"]
-  post_args = endpoint_config["post_args"]
+  url        = endpoint_config["url"]
+  method     = endpoint_config["method"]
+  url_args   = endpoint_config["url_args"]
+  post_args  = endpoint_config["post_args"]
   url_append = endpoint_config["url_append"]
-  resp_path = endpoint_config["resp_path"]
+  resp_path  = endpoint_config["resp_path"]
 
 
   ### build url base for specific auth
   base_url = auth_url_root + url 
-  log_.debug("distantAuthCall/ base_url : %s", base_url )
+  log_.debug("distantAuthCall / base_url : %s", base_url )
 
 
 
@@ -206,13 +294,8 @@ def distantAuthCall (
     headers = config.AUTH_URL_HEADERS_PAYLOAD
 
   ### add token to requests in headers or query_string
-  # token = None
-  # if api_request :
-    # token = getTokenFromRequest(api_request)
   log_.debug("token : %s", token )
-
   token_query_string = ""
-
   if token :
     token_locations = config.AUTH_URL_TOKEN_LOCATION
     
@@ -284,7 +367,7 @@ def distantAuthCall (
 
 
   log_.debug("distantAuthCall / response.status_code : %s", response.status_code )
-  log_.debug("distantAuthCall / response : \n%s", response.__dict__ )
+  # log_.debug("distantAuthCall / response : \n%s", response.__dict__ )
   if response.status_code == 200 :
     response_json = response.json()
   else : 

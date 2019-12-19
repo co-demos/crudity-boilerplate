@@ -95,7 +95,7 @@ app.include_router(
 ### APP RUNNER
 @click.command()
 @click.option('--mode',     default="default",     nargs=1,  help="The <mode> you need to run the app : default | testing | preprod | production" )
-@click.option('--auth',     default="default",     nargs=1,  help="The <auth> mode you need to run the app : default | default_docker | server | server_docker | distant_preprod | distant_prod" )
+@click.option('--auth',     default="default",     nargs=1,  help="The <auth> mode you need to run the app : no_auth | dev | default | default_docker | server | server_docker | distant_preprod | distant_prod" )
 @click.option('--host',     default="localhost",   nargs=1,  help="The <host> name you want the app to run on : <IP_NUMBER> " )
 @click.option('--port',     default="8000",        nargs=1,  help="The <port> number you want the app to run on : <PORT_NUMBER>")
 @click.option('--docker',   default="docker_off",  nargs=1,  help="Are you running the app with <docker> : docker_off | docker_on" )

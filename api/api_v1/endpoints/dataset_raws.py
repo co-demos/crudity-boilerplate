@@ -43,12 +43,14 @@ async def read_dsi_items(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = { 
     "method" : "GET",
     'dsr_uuid': dsr_uuid,
     **commons
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
   ### 1 - get corresponding DSI from dsi_uuid
   res_dsi, status_dsi = crud.dataset_input.view_dsi(
@@ -95,13 +97,15 @@ async def read_dsr_item(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "GET",
     'dsi_uuid': dsi_uuid,
     'dsr_uuid': dsr_uuid,
     **resp_p,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
   ### 1 - get corresponding DSI from dsi_uuid
   res_dsi, status_dsi = crud.dataset_input.view_dsi(
@@ -145,12 +149,14 @@ async def create_dsr_item(
   log_.debug( "POST / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "POST",
     'dsi_uuid': dsi_uuid,
     **resp_p,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
   ### 1 - post corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
@@ -196,13 +202,15 @@ async def update_dsr_item(
   log_.debug( "item_data : \n%s", pformat(item_data) )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "PUT",
     'dsi_uuid': dsi_uuid,
     'dsr_uuid': dsr_uuid,
     **resp_p,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
   ### 1 - update corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
@@ -240,6 +248,8 @@ async def delete_dsr_item(
   log_.debug( "DELETE / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
+  log_.debug( "api_key : %s", api_key )
+
   query = {
     "method" : "DELETE",
     "dsi_uuid": dsi_uuid,
@@ -247,7 +257,7 @@ async def delete_dsr_item(
     **resp_p,
     **remove_p,
   }
-  log_.debug( "query : %s", query )
+  log_.debug( "query : \n%s", pformat(query) )
 
 
   ### 1 - delete corresponding DSR from dsi_uuid as index_name and dsr_uuid as id

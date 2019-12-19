@@ -20,10 +20,15 @@ from models.parameters import p_auth_token, p_access_token
 
 
 from fastapi.security.api_key import APIKeyQuery, APIKeyCookie, APIKeyHeader, APIKey
-from api.utils.security import get_api_key, API_KEY_NAME, COOKIE_DOMAIN, distantAuthCall
+from api.utils.security import get_api_key, \
+  API_KEY_NAME, COOKIE_DOMAIN, distantAuthCall
+  # getApiKey, getApiKey_mandatory, getApiKey_optional
 
 
 import crud
+from core import config
+AUTH_MODE = config.AUTH_MODE
+
 
 print()
 log_.debug(">>> api/api_v1/endpoints/login.py")
@@ -38,10 +43,14 @@ router = APIRouter()
 
 
 @router.get("/anonymous_login")
-async def get_anonymous_login(
+async def anonymous_login(
   resp_: Response,
   request : Request,
   ):
+
+  """ 
+  Gets an anonymous access_token
+  """ 
 
   ### DEBUGGING
   print()
@@ -62,15 +71,18 @@ async def get_anonymous_login(
 
 
 @router.post("/login")
-async def post_login(
+async def post_login_infos(
   *, 
   resp_: Response,
   request : Request,
-  access_token: str = p_access_token,
+  # access_token: str = p_access_token,
   user_login: UserLogin = Body(..., embed=True), 
   api_key: APIKey = Depends(get_api_key),
   ):
 
+  """ 
+  Needs an anonymous access_token
+  """ 
   ### DEBUGGING
   print()
   print("-+- "*40)
@@ -96,9 +108,15 @@ async def post_login(
 # async def get_logout(
 #   resp_: Response,
 #   request : Request,
-#   api_key: APIKey = Depends(get_api_key)
+#   api_key: APIKey = Depends(getApiKey_mandatory)
 #   ):
 
-#   response = "How cool is this?"
+#   ### DEBUGGING
+#   print()
+#   print("-+- "*40)
+#   log_.debug( "POST / %s", inspect.stack()[0][3] )
+#   time_start = datetime.now()
 
-#   return response
+#   log_.debug( "api_key : \n%s", pformat(api_key.__dict__ ) )
+
+#   return api_key

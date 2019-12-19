@@ -11,6 +11,14 @@ class UserLogin(BaseModel):
   email: str
   password: str
 
+  class Config:
+    schema_extra = {
+      'example': {
+        "email": "ostrom@emailna.co",
+        "password": "a-very-common-password",
+      },
+    }
+
 
 class UserBase(BaseModel):
   email: Optional[str] = None

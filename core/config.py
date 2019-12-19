@@ -57,6 +57,10 @@ def formatEnvVar(var_name, format_type='boolean', separator=',', dict_separator=
     return env_var
 
 
+
+### + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + + ###
+
+
 ### APP SERVER CONFIG ENV
 PROJECT_NAME = os.getenv("PROJECT_NAME")
 PROJECT_VERSION = os.getenv("PROJECT_VERSION")
@@ -68,7 +72,6 @@ ROLE_SUPERUSER = "superuser"
 API_V1_STR = f"/api/v1"
 
 APP_MODE = os.getenv("APP_MODE", "default")
-AUTH_MODE = os.getenv("AUTH_MODE", "default")
 
 SECRET_KEY = os.getenvb(b"SECRET_KEY")
 if not SECRET_KEY:
@@ -160,7 +163,7 @@ if DB_MONGODB_MODE and DB_MONGODB_MODE != 'disabled' :
 
 
 """ AUTH MODE """
-AUTH_MODE = os.getenv("AUTH_MODE")
+AUTH_MODE = os.getenv("AUTH_MODE", "default")
 
 if AUTH_MODE != 'internal' :
 
