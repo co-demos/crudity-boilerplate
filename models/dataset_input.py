@@ -68,6 +68,18 @@ class DsiCreate(BaseModel):
   auth_preview: OpenDataLevelEnum = OpenDataLevelEnum.opendata
   auth_modif:   OpenDataLevelEnum = OpenDataLevelEnum.private
 
+  class Config:
+
+    schema_extra = {
+      'example' : {
+        "title": "my new dataset input",
+        "description": "my dataset input description",
+        "licence": "MIT",
+        "is_geodata": False,
+        "auth_preview": "opendata",
+        "auth_modif": "private"
+      }
+    }
 
 
 # Properties to receive on item update
