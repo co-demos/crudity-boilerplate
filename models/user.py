@@ -27,7 +27,7 @@ class UserBase(BaseModel):
   disabled: Optional[bool] = None
 
 
-# Shared properties in Couchbase
+# Shared properties in DB
 class UserBaseInDB(UserBase):
   username: Optional[str] = None
   full_name: Optional[str] = None
@@ -36,6 +36,7 @@ class UserBaseInDB(UserBase):
 # Properties to receive via API on creation
 class UserCreate(UserBaseInDB):
   username: str
+  email: str
   password: str
   admin_roles: List[Union[str, RoleEnum]] = []
   admin_channels: List[Union[str, RoleEnum]] = []
@@ -54,12 +55,12 @@ class User(UserBaseInDB):
 
 # Additional properties stored in DB
 class UserInDB(UserBaseInDB):
-    type: str = USERPROFILE_DOC_TYPE
-    hashed_password: str
-    username: str
+  type: str = USERPROFILE_DOC_TYPE
+  hashed_password: str
+  username: str
 
 
 # Additional properties in Sync Gateway
 class UserSyncIn(UserBase):
-    name: str
-    password: Optional[str] = None
+  name: str
+  password: Optional[str] = None
