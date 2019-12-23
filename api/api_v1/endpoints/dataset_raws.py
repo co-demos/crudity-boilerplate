@@ -17,7 +17,7 @@ from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData
 from models.parameters import *
 
 import crud
-from api.utils.security import get_api_key, get_api_key_optional
+from api.utils.security import get_api_key, get_api_key_optional, get_user_infos, need_user_infos
 
 
 print()
@@ -27,13 +27,15 @@ log_.debug(">>> api/api_v1/endpoints/dataset_inputs.py")
 router = APIRouter()
 
 
+
 @router.get("/dataset/{dsi_uuid}")
 async def read_dsi_items(
   resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: list = p_dsr_uuid,
   commons: dict = Depends(search_dsrs_parameters),
-  api_key: APIKey = Depends(get_api_key_optional),
+  # api_key: APIKey = Depends(get_api_key_optional),
+  user: dict = Depends(get_user_infos),
   ):
   """ get paginated DSRs from a DSI """
 
@@ -43,7 +45,8 @@ async def read_dsi_items(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = { 
     "method" : "GET",
@@ -80,14 +83,14 @@ async def read_dsi_items(
 
 
 
-
 @router.get("/dataset/{dsi_uuid}/dsr/get_one/{dsr_uuid}")
 async def read_dsr_item(
   resp_: Response,
   dsi_uuid: uuid.UUID,
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(one_dsr_parameters),
-  api_key: APIKey = Depends(get_api_key_optional),
+  # api_key: APIKey = Depends(get_api_key_optional),
+  user: dict = Depends(get_user_infos),
   ):
   """ get one DSR from a DSI """
  
@@ -97,7 +100,8 @@ async def read_dsr_item(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "GET",
@@ -108,6 +112,10 @@ async def read_dsr_item(
   log_.debug( "query : \n%s", pformat(query) )
 
   ### 1 - get corresponding DSI from dsi_uuid
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
   res_dsi, status_dsi = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
@@ -115,22 +123,48 @@ async def read_dsr_item(
   log_.debug( "res_dsi : \n%s", pformat(res_dsi))
 
   ### 2 - get corresponding DSR from dsi_uuid as index_name and dsr_uuid
-  res_dsr, status_dsr = crud.dataset_raw.view_dsr(
+  res, status = crud.dataset_raw.view_dsr(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
   )
-  log_.debug( "res_dsr : \n%s", pformat(res_dsr))
+  log_.debug( "res : \n%s", pformat(res))
 
+
+  ### marshal / apply model to data
+  if res : 
+    # data =  Dsi(**res)
+    data = Dsr( **res['_source'] )
+    doc_version['version_n'] = res['_version']
+    doc_version['version_s'] = resp_p['version']
+  else : 
+    data = None
 
 
   time_end = datetime.now()
-  response =  {"dsr_uuid": dsr_uuid}
+  # response =  {"dsr_uuid": dsr_uuid}
+  stats = {
+    'total_items' : len([data]),
+    'queried_at' : str(time_start),  
+    'response_at' : str(time_end), 
+    'response_delta' : time_end - time_start,  
+  }
+  response = ResponseBase(
+    status = status,
+    query = query,
+    data =  data,
+    stats = stats,
+    doc_version = doc_version
+  )
 
   resp_.status_code = status_dsi['status_code']
   return response
 
 
+
+### - - - - - - - - - - - - - - - - - - - - - ### 
+### NEED AUTH
+### - - - - - - - - - - - - - - - - - - - - - ### 
 
 @router.post("/dataset/{dsi_uuid}/dsr/create")
 async def create_dsr_item(
@@ -139,7 +173,8 @@ async def create_dsr_item(
   dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   item_data: DsrData,
-  api_key: APIKey = Depends(get_api_key),
+  # api_key: APIKey = Depends(get_api_key),
+  user: dict = Depends(need_user_infos),
   ):
   """ post one DSR into a DSI """
 
@@ -149,7 +184,8 @@ async def create_dsr_item(
   log_.debug( "POST / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "POST",
@@ -172,6 +208,7 @@ async def create_dsr_item(
   )
 
 
+  ### response formatting
 
   time_end = datetime.now()
   response =  {
@@ -183,6 +220,7 @@ async def create_dsr_item(
   return response
 
 
+
 @router.put("/dataset/{dsi_uuid}/dsr/update/{dsr_uuid}")
 async def update_dsr_item(
   *,
@@ -191,7 +229,8 @@ async def update_dsr_item(
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   item_data: DsrData,
-  api_key: APIKey = Depends(get_api_key),
+  # api_key: APIKey = Depends(get_api_key),
+  user: dict = Depends(need_user_infos),
   ):
   """ update one DSR from a DSI """
 
@@ -202,7 +241,8 @@ async def update_dsr_item(
   log_.debug( "item_data : \n%s", pformat(item_data) )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "PUT",
@@ -231,6 +271,7 @@ async def update_dsr_item(
   return response
 
 
+
 @router.delete("/dataset/{dsi_uuid}/dsr/remove/{dsr_uuid}")
 async def delete_dsr_item(
   resp_: Response,
@@ -238,7 +279,8 @@ async def delete_dsr_item(
   dsr_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  # api_key: APIKey = Depends(get_api_key),
+  user: dict = Depends(need_user_infos),
   ):
   """ delete one DSR from a DSI """
 
@@ -248,7 +290,8 @@ async def delete_dsr_item(
   log_.debug( "DELETE / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "DELETE",

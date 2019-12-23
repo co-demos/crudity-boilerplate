@@ -336,29 +336,34 @@ def search_es_documents(
   log_.debug( "locals() : \n%s", pformat(locals()))
 
   status = { 'status_code' : 200 }
+  res = None
 
   ### build search query
   search_body = build_es_query( query )
   log_.debug( "search_body : \n%s", pformat(search_body))
+  
 
   try : 
+    
+    # s = Search(using=es, index=index_name) \
+    #     .filter( "term", category="search") \
+    #     .query( "match", title="python")   \
+    #     .exclude( "match", description="beta")
+
     res = es.search(
       index=index_name,
       # doc_type=doc_type,
       body=search_body
     )
+    res = res['hits']['hits']
+
   except ElasticsearchException as err : 
-    res = None
     status = {
       'status_code' : err.status_code,
       'error' : err.error,
       'info' : err.info,
     }
 
-  # s = Search(using=es, index=index_name) \
-  #     .filter( "term", category="search") \
-  #     .query( "match", title="python")   \
-  #     .exclude( "match", description="beta")
 
   log_.debug( "res : \n%s", pformat(res))
   print()
@@ -382,8 +387,10 @@ def add_es_document(
   log_.debug( "locals() : \n%s", pformat(locals()))
 
   status = { 'status_code' : 200 }
+  res = None
 
   try : 
+    # pass
     res = es.index(
       index=index_name,
       doc_type=doc_type,
@@ -391,7 +398,6 @@ def add_es_document(
       body=doc_body
     )
   except ElasticsearchException as err : 
-    res = None
     status = {
       'status_code' : err.status_code,
       'error' : err.error,
@@ -475,6 +481,34 @@ def remove_es_document(
       index=index_name,
       doc_type=doc_type,
       id=doc_uuid
+    )
+  except ElasticsearchException as err : 
+    res = None
+    status = {
+      'status_code' : err.status_code,
+      'error' : err.error,
+      'info' : err.info,
+    }
+
+  log_.debug( "res : \n%s", pformat(res))
+  print()
+  return res, status
+
+
+def remove_es_index(
+  es=create_es_client(),
+  index_name=None,
+  ):
+  """Function to delete a specific ES index."""
+
+  status = { 'status_code' : 200 }
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  try : 
+    res = es.delete(
+      index=index_name,
     )
   except ElasticsearchException as err : 
     res = None

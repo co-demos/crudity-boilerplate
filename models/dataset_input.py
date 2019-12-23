@@ -92,6 +92,8 @@ class DsiUpdate(DsiBase):
 class Dsi(DsiBase):
 
   dsi_uuid: UUID
+  # dsi_uuid: str
+  # dsi_uuid: int
 
   title: str
   owner : str
@@ -108,3 +110,20 @@ class DsiInMongoDB(DsiInDB):
   version: int
   is_deleted: bool = False
   updated_by: str = None
+
+
+
+class DsiEs(BaseModel):
+  _index: str
+  # _type: str
+  # _id: str
+  # _score: float
+  _source: AnyContent
+
+
+class DsiList(BaseModel):
+  dsis : List[ Dsi ]
+
+class DsiESList(BaseModel):
+  # __root__ : List[ DsiEs ]
+  dsis : List[ DsiEs ]

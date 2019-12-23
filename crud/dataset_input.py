@@ -68,7 +68,6 @@ def create_dsi(
     index_params = query_params,
   )
 
-
   ### create metadata doc
   res, status = create_document(
     index_name = DSI_DOC_TYPE,
@@ -129,7 +128,7 @@ def remove_dsi(
   )
   
   ### remove corresponding DSRs docs 
-  res_dsr, status_dsr = remove_many_document(
+  res_dsr, status_dsr = remove_many_documents(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     params = query_params,

@@ -1,6 +1,9 @@
 from log_config import log_, pformat
 import inspect 
 
+from models.dataset_input import *
+from models.dataset_raw import *
+
 import uuid
 from core import config
 
@@ -141,8 +144,20 @@ def update_index_check(
 
 ### UTILS
 
-def generate_new_id():
-  return str( uuid.uuid4() )
+def generate_new_id( format = 'hex' ):
+
+  ### cf : https://www.geeksforgeeks.org/generating-random-ids-using-uuid-python/ 
+  
+  new_id = uuid.uuid4()
+
+  if format == 'hex' :
+    new_id = new_id.hex
+  elif format == 'int' : 
+    new_id = new_id.int
+  else :
+    new_id = str(new_id)
+
+  return new_id
 
 
 
@@ -202,7 +217,9 @@ def search_documents(
   status = { 'status_code' : 200 }
   res = {}
 
-  if ES_ENABLED :
+  q_version = query_params['version']
+
+  if ES_ENABLED and q_version == 'last':
     res_es, status_es = search_es_documents(
       index_name=index_name,
       doc_type=doc_type,
@@ -212,7 +229,7 @@ def search_documents(
     log_.debug( "status_es : \n%s", pformat(status_es))
     res, status = res_es, status_es
     
-  if MONGODB_ENABLED :
+  if MONGODB_ENABLED and q_version != 'last' :
     ### only search docs from MongoDB if `version!='last'` in query
     res_mongodb, status_mongodb = search_mongodb_documents(
       database=doc_type,
@@ -220,10 +237,12 @@ def search_documents(
       doc_type=doc_type,
       query=query_params
     )
+    log_.debug( "res_mongodb : \n%s", pformat(res_mongodb))
+    log_.debug( "status_mongodb : \n%s", pformat(status_mongodb))
+    res, status = res_mongodb, status_mongodb
 
-
-  log_.debug( "res : \n%s", pformat(res))
-  print()
+  # log_.debug( "res : \n%s", pformat(res))
+  # print()
   return res, status
 
 
@@ -237,31 +256,36 @@ def create_document(
   ):
   """ create a document in ES / MongoDB """
 
-  log_.debug( "function : %s", inspect.stack()[0][3] )
-  log_.debug( "locals() : \n%s", pformat(locals()))
+  # log_.debug( "function : %s", inspect.stack()[0][3] )
+  # log_.debug( "locals() : \n%s", pformat(locals()))
+
+  status = { 'status_code' : 200 }
+  res = {}
 
   if ES_ENABLED :
-    res_es = add_es_document(
+    res_es, status_es = add_es_document(
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
       doc_body=body,
     )
-
+    # log_.debug( "res_es : \n%s", pformat(res_es))
+    # log_.debug( "status_es : \n%s", pformat(status_es))
+    res, status = res_es, status_es
+    
   if MONGODB_ENABLED :
-    res_mongodb = add_mongodb_document(
+    res_mongodb, status_mongodb = add_mongodb_document(
       database=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
       doc_body=body,
     )
+    log_.debug( "res_mongodb : \n%s", pformat(res_mongodb))
+    log_.debug( "status_mongodb : \n%s", pformat(status_mongodb))
 
-  status = { 'status_code' : 200 }
-  res = {}
-
-  log_.debug( "res : \n%s", pformat(res))
-  print()
+  # log_.debug( "res : \n%s", pformat(res))
+  # print()
   return res, status
 
 
@@ -352,7 +376,8 @@ def remove_document(
   return res, status
 
 
-def remove_many_document(
+
+def remove_many_documents(
   index_name: str = None,
   doc_type: str = None,
   params: dict = None,

@@ -13,11 +13,12 @@ from starlette.responses import Response
 from starlette.status import *
 
 from models.response import ResponseBase, ResponseDataBase, ResponseBaseNoTotal
-from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate
+from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate, DsiEs, DsiESList
 from models.parameters import *
 
 import crud
-from api.utils.security import get_api_key, get_api_key_optional
+from core import config
+from api.utils.security import get_api_key, get_api_key_optional, get_user_infos, need_user_infos
 
 
 print()
@@ -38,6 +39,8 @@ test_dsi = {
 
 router = APIRouter()
 
+auth_active = config.AUTH_MODE != 'no_auth' 
+
 
 # @router.get("/list", response_model=List[Dsi])
 @router.get("/list")
@@ -45,7 +48,8 @@ async def list_dsis(
   resp_: Response,
   dsi_uuid: list = p_dsi_uuid,
   commons: dict = Depends(common_parameters),
-  api_key: APIKey = Depends(get_api_key_optional),
+  # api_key: APIKey = Depends(get_api_key_optional),
+  user: dict = Depends(get_user_infos),
   ):
   """GET / get a paginated list of DSIs """
 
@@ -55,7 +59,8 @@ async def list_dsis(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "GET",
@@ -73,7 +78,15 @@ async def list_dsis(
   ### marshal / apply model to data
   if res :
     # data_list =  [ Dsi(**test_dsi) ]
-    data_list =  [ Dsi(**res) ]
+    # data_list =  [ Dsi(**res) ]
+    # data_list = DsiESList( dsis=res )
+    # data_list = data_list.dsis
+
+    data_list =  res
+    log_.debug( "data_list : \n%s", pformat( data_list ))
+
+    # data_list = [ DsiEs(**item) for item in res ]
+    # log_.debug( "data_list : \n%s", pformat( data_list ))
   else : 
     data_list = []
 
@@ -111,9 +124,11 @@ async def list_dsis(
 @router.get("/get_one/{dsi_uuid}")
 async def read_dsi( 
   resp_: Response,
-  dsi_uuid: uuid.UUID,
+  dsi_uuid: str,
+  # dsi_uuid: uuid.UUID,
   commons: dict = Depends(one_dsi_parameters),
-  api_key: APIKey = Depends(get_api_key_optional),
+  # api_key: APIKey = Depends(get_api_key_optional),
+  user: dict = Depends(get_user_infos),
   ):
   """GET / get a specific DSI (without its DSRs) """
 
@@ -123,7 +138,8 @@ async def read_dsi(
   log_.debug( "GET / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "GET",
@@ -134,20 +150,22 @@ async def read_dsi(
 
 
   ### retrieve results from db and query
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
   res, status = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = commons,
   )
   log_.debug( "res : \n%s", pformat(res))
-  # res = {
-  #   'title' : 'test_dsi',
-  #   'dsi_uuid' : dsi_uuid ,
-  #   'owner' : 'system'
-  # }
 
   ### marshal / apply model to data
   if res : 
-    data =  Dsi(**res)
+    # data = Dsi(**res)
+    data = Dsi( **res['_source'] )
+    doc_version['version_n'] = res['_version']
+    doc_version['version_s'] = 'last'
   else : 
     data = None
 
@@ -156,6 +174,7 @@ async def read_dsi(
     response = ResponseDataBase(
       status = status,
       data = data,
+      doc_version = doc_version
     )
   else : 
     time_end = datetime.now()
@@ -170,6 +189,7 @@ async def read_dsi(
       query = query,
       data =  data,
       stats = stats,
+      doc_version = doc_version
     )
 
   resp_.status_code = status['status_code']
@@ -177,13 +197,18 @@ async def read_dsi(
 
 
 
+### - - - - - - - - - - - - - - - - - - - - - ### 
+### NEED AUTH
+### - - - - - - - - - - - - - - - - - - - - - ### 
+
 @router.post("/create")
 async def create_dsi(
   *,
   resp_: Response,
   dsi_in: DsiCreate,
   resp_p: dict = Depends(resp_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  # api_key: APIKey = Depends(get_api_key),
+  user: dict = Depends(need_user_infos),
   ):
   """ post a new DSI """
 
@@ -195,7 +220,8 @@ async def create_dsi(
   log_.debug( "resp_p : \n%s", pformat( resp_p ) )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "POST",
@@ -205,11 +231,21 @@ async def create_dsi(
   ### build / marshall a dsi from models
   dsi_client = DsiBase( **dsi_in.dict() )
   dsi_client_dict = dsi_client.dict()
+  log_.debug( "dsi_client_dict : \n%s", pformat( dsi_client_dict ) )
 
   ### generate a random UUID / cf : https://docs.python.org/3/library/uuid.html
   dsi_uuid = crud.utils.generate_new_id()
+  log_.debug( "dsi_uuid : %s", dsi_uuid )
   dsi_client_dict['dsi_uuid'] = dsi_uuid
-  dsi_db = Dsi(**dsi_client_dict)
+
+  ### add 
+  dsi_client_dict['created_at'] = datetime.now()
+  dsi_client_dict['created_by'] = user['infos']['email']
+  dsi_client_dict['owner'] = user['infos']['email']
+
+
+  ### format as DSI for DB
+  dsi_db = Dsi( **dsi_client_dict )
   log_.debug( "dsi_db : \n%s", pformat( dsi_db.dict() ) )
 
   ### add in DBs
@@ -219,7 +255,9 @@ async def create_dsi(
     body = dsi_db.dict()
   )
   log_.debug( "res : \n%s", pformat(res))
-
+  
+  
+  ### response formatting
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
@@ -239,6 +277,8 @@ async def create_dsi(
       stats = stats,
     )
 
+  log_.debug( "response : \n%s", pformat( response.dict() ))
+
   resp_.status_code = status['status_code']
   return response
 
@@ -251,7 +291,8 @@ async def update_dsi(
   dsi_uuid: uuid.UUID,
   body: dict,
   resp_p: dict = Depends(resp_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  # api_key: APIKey = Depends(get_api_key),
+  user: dict = Depends(need_user_infos),
   ):
   """ update a specific DSI """
 
@@ -262,7 +303,8 @@ async def update_dsi(
   log_.debug( "body : \n%s", pformat(body) )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "PUT",
@@ -310,7 +352,8 @@ async def delete_dsi(
   dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
-  api_key: APIKey = Depends(get_api_key),
+  # api_key: APIKey = Depends(get_api_key),
+  user: dict = Depends(need_user_infos),
   ):
   """ delete a specific DSI """
 
@@ -320,7 +363,8 @@ async def delete_dsi(
   log_.debug( "DELETE / %s", inspect.stack()[0][3] )
   time_start = datetime.now()
 
-  log_.debug( "api_key : %s", api_key )
+  # log_.debug( "api_key : %s", api_key )
+  log_.debug( "user : \n%s", pformat(user) )
 
   query = {
     "method" : "DELETE",

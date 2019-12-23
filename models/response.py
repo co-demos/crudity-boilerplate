@@ -7,6 +7,11 @@ from pydantic import BaseModel
 
 AnyContent = TypeVar('AnyContent')
 
+
+class DocVersion(BaseModel):
+  version_n : int = None
+  version_s : str = None
+
 class ResponseStatus(BaseModel) : 
 
   status_code: str = 200
@@ -19,6 +24,7 @@ class ResponseDataBase(BaseModel) :
 
   status: ResponseStatus = None
   data: AnyContent = None
+  doc_version: DocVersion = None
 
 class ResponseStatsNoTotal(BaseModel) :
   

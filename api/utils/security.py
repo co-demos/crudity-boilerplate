@@ -28,34 +28,26 @@ API_KEY = config.API_KEY
 API_KEY_NAME = config.API_KEY_NAME # "access_token"
 COOKIE_DOMAIN = config.COOKIE_DOMAIN # "crudity.me"
 
-api_key_query = APIKeyQuery(name=API_KEY_NAME, auto_error=False)
+api_key_query  = APIKeyQuery( name=API_KEY_NAME, auto_error=False)
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 api_key_cookie = APIKeyCookie(name=API_KEY_NAME, auto_error=False)
 
 
-async def get_api_key(
-  api_key_query: str = Security(api_key_query),
+# api_key = get_only_api_key( api_key_query, api_key_header, api_key_cookie)
+
+def get_only_api_key(
+  api_key_query : str = Security(api_key_query),
   api_key_header: str = Security(api_key_header),
   api_key_cookie: str = Security(api_key_cookie),
-  ):
-
+  ) :
   """ 
-  get API access toen
+  get API access token
   """ 
-  log_.debug("api_key_query : %s", api_key_query )
+  log_.debug("api_key_query  : %s", api_key_query )
   log_.debug("api_key_header : %s", api_key_header )
   log_.debug("api_key_cookie : %s", api_key_cookie )
 
   api_key = None 
-  # anonymous_claims = {
-  #   "_id" : None,
-  #   "auth" : {
-  #     "role" : None,
-  #   },
-  #   "renew_pwd" : False,
-  #   "reset_pwd" : False,
-  #   "confirm_email" : False,
-  # }
 
   if api_key_query : 
     api_key = api_key_query
@@ -66,6 +58,35 @@ async def get_api_key(
   elif api_key_cookie and api_key == None : 
     api_key = api_key_cookie
 
+  return api_key
+
+
+async def get_api_key(
+  api_key_query : str = Security(api_key_query),
+  api_key_header: str = Security(api_key_header),
+  api_key_cookie: str = Security(api_key_cookie),
+  ):
+
+  """ 
+  get API access token
+  """ 
+  ### DEBUGGING
+  print()
+  print("->- "*40)
+  log_.debug( ">>> get_api_key..." )
+
+  # api_key = None 
+  # # anonymous_claims = {
+  # #   "_id" : None,
+  # #   "auth" : {
+  # #     "role" : None,
+  # #   },
+  # #   "renew_pwd" : False,
+  # #   "reset_pwd" : False,
+  # #   "confirm_email" : False,
+  # # }
+
+  api_key = get_only_api_key( api_key_query, api_key_header, api_key_cookie)
 
   if api_key : 
     if AUTH_MODE != 'no_auth':
@@ -74,42 +95,57 @@ async def get_api_key(
         token=api_key
       )
       log_.debug("resp_auth : \n%s", pformat(resp_auth) )
+
+      
     return api_key
 
   else:
     if AUTH_MODE == 'no_auth':
-      return True
+      if api_key == API_KEY : 
+        return True
+      else :
+        raise HTTPException(
+          status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials..."
+        )
+      # return True
     else : 
       raise HTTPException(
-        status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials"
+        status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials... at all"
       )
 
 
 async def get_api_key_optional(
-  api_key_query: str = Security(api_key_query),
+  api_key_query : str = Security(api_key_query),
   api_key_header: str = Security(api_key_header),
   api_key_cookie: str = Security(api_key_cookie),
   ):
 
-  api_key = None 
-  # anonymous_claims = {
-  #   "_id" : None,
-  #   "auth" : {
-  #     "role" : None,
-  #   },
-  #   "renew_pwd" : False,
-  #   "reset_pwd" : False,
-  #   "confirm_email" : False,
-  # }
+  ### DEBUGGING
+  print()
+  print("->- "*40)
+  log_.debug( ">>> get_api_key_optional..." )
 
-  if api_key_query : 
-    api_key = api_key_query
+  # api_key = None 
+  # # anonymous_claims = {
+  # #   "_id" : None,
+  # #   "auth" : {
+  # #     "role" : None,
+  # #   },
+  # #   "renew_pwd" : False,
+  # #   "reset_pwd" : False,
+  # #   "confirm_email" : False,
+  # # }
 
-  elif api_key_header and api_key == None : 
-    api_key = api_key_header
+  # if api_key_query : 
+  #   api_key = api_key_query
 
-  elif api_key_cookie and api_key == None : 
-    api_key = api_key_cookie
+  # elif api_key_header and api_key == None : 
+  #   api_key = api_key_header
+
+  # elif api_key_cookie and api_key == None : 
+  #   api_key = api_key_cookie
+
+  api_key = get_only_api_key( api_key_query, api_key_header, api_key_cookie)
 
   if api_key : 
     if AUTH_MODE != 'no_auth':
@@ -122,6 +158,106 @@ async def get_api_key_optional(
 
   else : 
     return False
+
+
+def get_user_claims(
+  api_key_query : str = Security(api_key_query),
+  api_key_header: str = Security(api_key_header),
+  api_key_cookie: str = Security(api_key_cookie),
+  ):
+
+  """ 
+  get user from API key
+  """ 
+  ### DEBUGGING
+  print()
+  print("->- "*40)
+  log_.debug( ">>> get_user..." )
+
+  user = {
+    # 'claims': {
+    '_id': None,
+    'is_anonymous': True,
+    'auth': {
+      'conf_usr': False, 
+      'role': 'anonymous'
+    },
+    'infos': {
+      'email': 'anonymous'
+    },
+    'profile': {
+      'lang': 'en'
+    }
+  },
+  # }
+
+  api_key = get_only_api_key( api_key_query, api_key_header, api_key_cookie)
+
+  if api_key : 
+
+    if AUTH_MODE != 'no_auth':
+      resp_auth = distantAuthCall( 
+        func_name="token_claims",
+        token=api_key
+      )
+      log_.debug("resp_auth : \n%s", pformat(resp_auth) )
+
+      ### TO DO : remap response corresponding to config / env
+      return resp_auth['claims']
+
+    else : 
+      return user
+    
+  else:
+    return user
+
+
+
+async def get_user_infos(
+  api_key_query : str = Security(api_key_query),
+  api_key_header: str = Security(api_key_header),
+  api_key_cookie: str = Security(api_key_cookie),
+  ):
+
+  """ 
+  get user from API key
+  """ 
+  ### DEBUGGING
+  print()
+  print("->- "*40)
+  log_.debug( ">>> get_user_infos..." )
+
+  user = get_user_claims( api_key_query, api_key_header, api_key_cookie)
+
+  return user
+
+
+async def need_user_infos(
+  api_key_query : str = Security(api_key_query),
+  api_key_header: str = Security(api_key_header),
+  api_key_cookie: str = Security(api_key_cookie),
+  ):
+
+  """ 
+  get user from API key
+  """ 
+  ### DEBUGGING
+  print()
+  print("->- "*40)
+  log_.debug( ">>> need_user_infos..." )
+
+  user = get_user_claims( api_key_query, api_key_header, api_key_cookie)
+
+  authorized = config.AUTH_EDIT_ROLES
+
+  if user['auth'] and user['auth']['role'] in authorized : 
+    return user
+
+  else :
+    raise HTTPException(
+      status_code=HTTP_403_FORBIDDEN, detail="Could not validate credentials..."
+    )
+
 
 
 # class getApiKey : 

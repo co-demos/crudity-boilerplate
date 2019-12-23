@@ -77,7 +77,7 @@ SECRET_KEY = os.getenvb(b"SECRET_KEY")
 if not SECRET_KEY:
   SECRET_KEY = os.urandom(32)
 
-API_KEY = os.getenv("API_KEY", "1234567asdfgh")
+API_KEY = os.getenv("API_KEY", "12345678abcdefgh")
 # API_KEY_QUERY = os.getenv("API_KEY_QUERY", "access_token")
 API_KEY_NAME = os.getenv("API_KEY_NAME", "access_token")
 COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "crudity.me")
@@ -153,6 +153,7 @@ if DB_MONGODB_MODE and DB_MONGODB_MODE != 'disabled' :
 
   MONGO_BUILT_URI=None
 
+
 ### LOGS CONFIG
 # LOGS_FOLDER=os.getenv("LOGS_FOLDER", '_logs')
 # LOGS_FILE_INFOS=os.getenv("LOGS_FILE_INFOS", 'infos_logs.log')
@@ -163,9 +164,10 @@ if DB_MONGODB_MODE and DB_MONGODB_MODE != 'disabled' :
 
 
 """ AUTH MODE """
-AUTH_MODE = os.getenv("AUTH_MODE", "default")
+AUTH_MODE = os.getenv("AUTH_MODE", "dev")
+AUTH_EDIT_ROLES = formatEnvVar('AUTH_EDIT_ROLES', format_type='list')
 
-if AUTH_MODE != 'internal' :
+if AUTH_MODE != 'no_auth' :
 
   AUTH_URL_ROOT_LOCAL = os.getenv("AUTH_URL_ROOT_LOCAL")
   AUTH_URL_ROOT_DISTANT_PROD = os.getenv("AUTH_URL_ROOT_DISTANT_PROD")
