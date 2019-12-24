@@ -154,6 +154,8 @@ def generate_new_id( format = 'hex' ):
     new_id = new_id.hex
   elif format == 'int' : 
     new_id = new_id.int
+  elif format == 'normal' : 
+    new_id = str(new_id)
   else :
     new_id = str(new_id)
 
@@ -174,10 +176,12 @@ def view_document(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  # status = { 'status_code' : 200 }
-  # res = {}
+  status = { 'status_code' : 200 }
+  res = {}
 
-  if ES_ENABLED :
+  q_version = query_params['version']
+
+  if ES_ENABLED and q_version == 'last':
     res_es, status_es = view_es_document(
       index_name=index_name,
       doc_type=doc_type,
@@ -188,7 +192,7 @@ def view_document(
     res, status = res_es, status_es
 
 
-  if MONGODB_ENABLED :
+  if MONGODB_ENABLED and q_version != 'last' :
     ### only view doc from MongoDB if `version!='last'` in query
     res_mongodb, status_mongodb = view_mongodb_document(
       database=doc_type,
@@ -196,10 +200,12 @@ def view_document(
       doc_type=doc_type,
       doc_uuid=doc_uuid,
     )
+    log_.debug( "res_mongodb : \n%s", pformat(res_mongodb))
+    log_.debug( "status_mongodb : \n%s", pformat(status_mongodb))
+    res, status = res_mongodb, status_mongodb
 
-
-  log_.debug( "res : \n%s", pformat(res))
-  print()
+  # log_.debug( "res : \n%s", pformat(res))
+  # print()
   return res, status
 
 

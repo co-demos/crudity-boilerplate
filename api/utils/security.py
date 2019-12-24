@@ -176,19 +176,19 @@ def get_user_claims(
 
   user = {
     # 'claims': {
-    '_id': None,
-    'is_anonymous': True,
-    'auth': {
-      'conf_usr': False, 
-      'role': 'anonymous'
+      '_id': None,
+      'is_anonymous': True,
+      'auth': {
+        'conf_usr': False, 
+        'role': 'anonymous'
+      },
+      'infos': {
+        'email': 'anonymous'
+      },
+      'profile': {
+        'lang': 'en'
+      }
     },
-    'infos': {
-      'email': 'anonymous'
-    },
-    'profile': {
-      'lang': 'en'
-    }
-  },
   # }
 
   api_key = get_only_api_key( api_key_query, api_key_header, api_key_cookie)
@@ -205,6 +205,11 @@ def get_user_claims(
       ### TO DO : remap response corresponding to config / env
       return resp_auth['claims']
 
+    elif AUTH_MODE == 'no_auth' and api_key == API_KEY :
+      user['_id'] = 'system'
+      user['auth']['authenticated'] = True
+      return user
+    
     else : 
       return user
     

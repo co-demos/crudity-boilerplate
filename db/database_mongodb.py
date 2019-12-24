@@ -24,17 +24,44 @@ cf : https://api.mongodb.com/python/current/tutorial.html#documents
 
 def create_mongodb_client(
   debug=False,
+  mongodb_uri=MONGO_LOCAL_URI
   ):
   """Function to create an MongoDB client."""
 
   client = MongoClient(
-    'mongodb://localhost:27017/'
+    mongodb_uri
   )
   
   return client
 
 
-### INDEX LEVEL
+def create_mongodb_collections(
+  mongodb=create_mongodb_client(),
+  db_name=MONGO_DBNAME,
+  collections=[
+    MONGO_COLL_USERS,
+    MONGO_COLL_DATASETS_INPUTS,
+    MONGO_COLL_DATASETS_RAWS,
+    MONGO_COLL_DATAMODELS_FIELDS,
+    MONGO_COLL_DATAMODELS_TEMPLATES,
+  ]
+  ):
+  """ create mongodb collection in database """
+
+  mongodb_db = mongodb[ db_name ]
+  collections_dict = {}
+
+  for coll in collections :
+    m_coll = mongodb_db[ coll ]
+    collections_dict[ coll ] = m_coll
+
+  return collections_dict
+
+
+
+
+
+### INDEX / COLLECTION LEVEL
 
 def create_mongodb_index(
   m_client=create_mongodb_client(),

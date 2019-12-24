@@ -165,7 +165,7 @@ async def read_dsi(
     # data = Dsi(**res)
     data = Dsi( **res['_source'] )
     doc_version['version_n'] = res['_version']
-    doc_version['version_s'] = 'last'
+    doc_version['version_s'] = commons['version']
   else : 
     data = None
 
