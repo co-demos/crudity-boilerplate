@@ -116,7 +116,7 @@ def remove_dsr(
     params = query_params,
   )
   
-  # log_.debug( "res : \n%s", pformat(res))
-  # log_.debug( "status : \n%s", pformat(status))
+  log_.debug( "res : \n%s", pformat(res))
+  log_.debug( "status : \n%s", pformat(status))
 
   return res, status

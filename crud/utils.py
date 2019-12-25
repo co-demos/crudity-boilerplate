@@ -281,6 +281,7 @@ def create_document(
     
   if MONGODB_ENABLED :
     body["version"] = 1
+    body["_id"] = doc_uuid
     res_mongodb, status_mongodb = add_mongodb_document(
       collection=doc_type,
       index_name=index_name,
@@ -365,12 +366,18 @@ def remove_document(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
+  status = { 'status_code' : 200 }
+  res = {}
+
   if ES_ENABLED :
     res_es, status_es = remove_es_document(
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
     )
+    log_.debug( "res_es : \n%s", pformat(res_es))
+    log_.debug( "status_es : \n%s", pformat(status_es))
+    res, status = res_es, status_es
 
   if MONGODB_ENABLED :
     res_mongodb, status_mongodb = remove_mongodb_document(
@@ -379,9 +386,8 @@ def remove_document(
       doc_type=doc_type,
       doc_uuid=doc_uuid,
     )
-
-  status = { 'status_code' : 200 }
-  res = {}
+    log_.debug( "res_mongodb : \n%s", pformat(res_mongodb))
+    log_.debug( "status_mongodb : \n%s", pformat(status_mongodb))
 
   log_.debug( "res : \n%s", pformat(res))
   print()
