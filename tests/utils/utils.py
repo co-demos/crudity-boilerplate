@@ -1,6 +1,13 @@
 import requests
 
+import random
+import string 
+
 from core import config
+
+
+def random_lower_string():
+  return "".join(random.choices(string.ascii_lowercase, k=32))
 
 
 def get_server_api():

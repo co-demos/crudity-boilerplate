@@ -6,7 +6,7 @@ from datetime import date, datetime, time, timedelta
 import uuid
 
 from pydantic import ValidationError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.security.api_key import APIKey
 
 from starlette.responses import Response
@@ -32,7 +32,7 @@ router = APIRouter()
 async def read_dsi_items(
   resp_: Response,
 
-  dsi_uuid: str,
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSI item to retrieve DSRs from"),
   # dsi_uuid: p_dsi_uuid,
   # dsi_uuid: uuid.UUID,
 
@@ -52,6 +52,12 @@ async def read_dsi_items(
   # log_.debug( "api_key : %s", api_key )
   log_.debug( "user : \n%s", pformat(user) )
 
+  msg = ""
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
+
   query = { 
     "method" : "GET",
     'dsr_uuid': dsr_uuid,
@@ -64,6 +70,8 @@ async def read_dsi_items(
     dsi_uuid = dsi_uuid,
     query_params = query,
   )
+  doc_version['version_n'] = res_dsi['_version']
+  doc_version['version_s'] = commons['version']
   log_.debug( "res_dsi : \n%s", pformat(res_dsi))
 
   ### 2 - get corresponding DSRs from dsi_uuid as index_name
@@ -73,16 +81,50 @@ async def read_dsi_items(
       query_params = query,
     )
     log_.debug( "res_dsrs : \n%s", pformat(res_dsrs))
+    msg = 'DSI found but not DSRs yet...'
   else : 
     res_dsrs = None
 
-  time_end = datetime.now()
-  response = {"dsi_id": dsi_uuid}
+
+  if status_dsr == 200 : 
+    data_list = res_dsrs
+    msg = 'here comes the list of DSRs corresponding to this DSI'
+  else :
+    data_list = []
 
 
 
+  # response = {"dsi_id": dsi_uuid}
 
-  resp_.status_code = status_dsi['status_code']
+  if commons['only_data'] == True : 
+    log_.debug( "commons['only_data'] == True : %s", commons['only_data'] )
+    response = ResponseDataBase(
+      status = status_dsr,
+      data =  data_list,
+      doc_version = doc_version,
+      msg = msg
+    )
+  else :
+    log_.debug( "commons['only_data'] != True : %s", commons['only_data'] )
+    time_end = datetime.now()
+    stats = {
+      'total_items' : len(data_list),
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
+    response = ResponseBase(
+      status = status_dsr,
+      data =  data_list,
+      query = query,
+      stats = stats,
+      doc_version = doc_version,
+      msg = msg
+    )
+
+  log_.debug( "response : \n%s", pformat( response.dict() ))
+
+  resp_.status_code = status_dsr['status_code']
   return response
 
 
@@ -90,10 +132,14 @@ async def read_dsi_items(
 @router.get("/dataset/{dsi_uuid}/dsr/get_one/{dsr_uuid}")
 async def read_dsr_item(
   resp_: Response,
-  dsi_uuid: str,
-  dsr_uuid: str,
+
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSI item to use"),
+  dsr_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSR item to retrieve"),
+  # dsi_uuid: str,
+  # dsr_uuid: str,
   # dsi_uuid: uuid.UUID,
   # dsr_uuid: uuid.UUID,
+
   resp_p: dict = Depends(one_dsr_parameters),
   # api_key: APIKey = Depends(get_api_key_optional),
   user: dict = Depends(get_user_infos),
@@ -118,6 +164,7 @@ async def read_dsr_item(
   log_.debug( "query : \n%s", pformat(query) )
 
   ### 1 - get corresponding DSI from dsi_uuid
+  msg = ""
   doc_version = {
     'version_n' : None,
     'version_s' : None
@@ -160,7 +207,8 @@ async def read_dsr_item(
     query = query,
     data =  data,
     stats = stats,
-    doc_version = doc_version
+    doc_version = doc_version,
+    msg = msg
   )
 
   resp_.status_code = status_dsi['status_code']
@@ -176,10 +224,14 @@ async def read_dsr_item(
 async def create_dsr_item(
   *,
   resp_: Response,
-  dsi_uuid: str,
-  # dsi_uuid: uuid.UUID,
-  resp_p: dict = Depends(resp_parameters),
   item_data: DsrData,
+
+  resp_p: dict = Depends(resp_parameters),
+
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSI item to post on"),
+  # dsi_uuid: uuid.UUID,
+  # dsi_uuid: str,
+  
   # api_key: APIKey = Depends(get_api_key),
   user: dict = Depends(need_user_infos),
   ):
@@ -200,6 +252,10 @@ async def create_dsr_item(
     **resp_p,
   }
   log_.debug( "query : \n%s", pformat(query) )
+
+  log_.debug( "body : \n%s", pformat(query) )
+
+  msg = '' 
 
   ### 1 - post corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
@@ -233,8 +289,10 @@ async def update_dsr_item(
   *,
   resp_: Response,
 
-  dsi_uuid: str,
-  dsr_uuid: str,
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSI item to use"),
+  dsr_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSR item to update"),
+  # dsi_uuid: str,
+  # dsr_uuid: str,
   # dsi_uuid: uuid.UUID,
   # dsr_uuid: uuid.UUID,
 
@@ -263,6 +321,8 @@ async def update_dsr_item(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
+  msg = '' 
+
   ### 1 - update corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
   ### update in DBs
@@ -275,8 +335,33 @@ async def update_dsr_item(
   log_.debug( "res : \n%s", pformat(res))
 
 
-  time_end = datetime.now()
-  response =  {"dsr_uuid": dsr_uuid}
+
+  if status['status_code'] == 200 : 
+    msg = f"the DSR doc with dsr_uuid <{dsr_uuid}> has been updated"
+  else : 
+    msg = f"there has been an error while updating DSR doc with dsr_uuid <{dsr_uuid}>"
+
+  if resp_p['only_data'] == True : 
+    response = ResponseDataBase(
+      status = status,
+      data = res,
+    )
+  else : 
+    time_end = datetime.now()
+    stats = {
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
+    response = ResponseBase(
+      status = status,
+      query = query,
+      data =  res,
+      stats = stats,
+      msg = msg
+    )
+
+
 
   resp_.status_code = status['status_code']
   return response
@@ -286,9 +371,11 @@ async def update_dsr_item(
 @router.delete("/dataset/{dsi_uuid}/dsr/remove/{dsr_uuid}")
 async def delete_dsr_item(
   resp_: Response,
-  
-  dsi_uuid: str,
-  dsr_uuid: str,
+
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSI item to delete from"),
+  dsr_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSR item to delete"),
+  # dsi_uuid: str,
+  # dsr_uuid: str,
   # dsi_uuid: uuid.UUID,
   # dsr_uuid: uuid.UUID,
 
@@ -317,17 +404,41 @@ async def delete_dsr_item(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
+  msg = '' 
 
-  ### 1 - delete corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
-  res, status = crud.dataset_input.remove_dsi(
+  ### delete DSR doc with dsi_uuid as index_name and dsr_uuid as id
+  res, status = crud.dataset_raw.remove_dsr(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
+    query_params = query,
   )
   log_.debug( "res : \n%s", pformat(res))
 
 
-  time_end = datetime.now()
-  response =  {"dsr_uuid": dsr_uuid}
+  if status == 200 : 
+    msg = f"the DSR doc with dsi_uuid <{dsr_uuid}> has been deleted"
+  else : 
+    msg = f"there has been an error while deleting DSR doc with dsi_uuid <{dsr_uuid}>"
+
+  if resp_p['only_data'] == True : 
+    response = ResponseDataBase(
+      status = status,
+      data = res,
+    )
+  else : 
+    time_end = datetime.now()
+    stats = {
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
+    response = ResponseBase(
+      status = status,
+      query = query,
+      data =  res,
+      stats = stats,
+      msg = msg
+    )
 
   resp_.status_code = status['status_code']
   return response

@@ -195,7 +195,7 @@ def view_document(
   if MONGODB_ENABLED and q_version != 'last' :
     ### only view doc from MongoDB if `version!='last'` in query
     res_mongodb, status_mongodb = view_mongodb_document(
-      database=doc_type,
+      collection=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
@@ -238,7 +238,7 @@ def search_documents(
   if MONGODB_ENABLED and q_version != 'last' :
     ### only search docs from MongoDB if `version!='last'` in query
     res_mongodb, status_mongodb = search_mongodb_documents(
-      database=doc_type,
+      collection=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       query=query_params
@@ -275,13 +275,13 @@ def create_document(
       doc_uuid=doc_uuid,
       doc_body=body,
     )
-    # log_.debug( "res_es : \n%s", pformat(res_es))
-    # log_.debug( "status_es : \n%s", pformat(status_es))
+    log_.debug( "res_es : \n%s", pformat(res_es))
+    log_.debug( "status_es : \n%s", pformat(status_es))
     res, status = res_es, status_es
     
   if MONGODB_ENABLED :
     res_mongodb, status_mongodb = add_mongodb_document(
-      database=doc_type,
+      collection=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
@@ -364,15 +364,19 @@ def remove_document(
   log_.debug( "locals() : \n%s", pformat(locals()))
 
   if ES_ENABLED :
-    res_es = remove_es_document(
+    res_es, status_es = remove_es_document(
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
     )
 
   if MONGODB_ENABLED :
-    pass
-
+    res_mongodb, status_mongodb = remove_mongodb_document(
+      collection=doc_type,
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid,
+    )
 
   status = { 'status_code' : 200 }
   res = {}
@@ -394,11 +398,16 @@ def remove_many_documents(
   log_.debug( "locals() : \n%s", pformat(locals()))
 
   if ES_ENABLED :
-    pass
-    
-  if MONGODB_ENABLED :
-    pass
+    res_es, status_es = remove_es_index(
+      index_name=index_name,
+    )
 
+  if MONGODB_ENABLED :
+    res_mongodb, status_mongodb = remove_mongodb_many_documents(
+      collection=doc_type,
+      index_name=index_name,
+      doc_type=doc_type,
+    )
 
   status = { 'status_code' : 200 }
   res = {}

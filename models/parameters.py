@@ -1,7 +1,7 @@
 from enum import Enum, IntEnum
 from pydantic import BaseModel
 
-from fastapi import Query, Depends
+from fastapi import Query, Depends, Path
 
 
 ### COMMON SEARCH PARAMETERS

@@ -6,7 +6,7 @@ from datetime import date, datetime, time, timedelta
 import uuid
 
 from pydantic import ValidationError
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Path
 from fastapi.security.api_key import APIKey
 
 from starlette.responses import Response
@@ -29,13 +29,12 @@ from pprint import pprint, pformat, PrettyPrinter
 pp = PrettyPrinter(indent=4)
 
 
-### test item
-test_dsi = {
-  'title' : 'test_dsi',
-  'dsi_uuid' : 'd7b0cd1b-599a-4f3e-8820-9acc8e1d59e6',
-  'owner' : 'system'
-}
-
+# ### test item
+# test_dsi = {
+#   'title' : 'test_dsi',
+#   'dsi_uuid' : 'd7b0cd1b-599a-4f3e-8820-9acc8e1d59e6',
+#   'owner' : 'system'
+# }
 
 router = APIRouter()
 
@@ -44,7 +43,7 @@ auth_active = config.AUTH_MODE != 'no_auth'
 
 # @router.get("/list", response_model=List[Dsi])
 @router.get("/list")
-async def list_dsis(
+async def list_of_dsi_items(
   resp_: Response,
   dsi_uuid: list = p_dsi_uuid,
   commons: dict = Depends(common_parameters),
@@ -69,6 +68,12 @@ async def list_dsis(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
+  msg = ''
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
+
   ### TO DO / retrieve results given the query 
   res, status = crud.dataset_input.search_dsis(
     query_params = query
@@ -82,36 +87,44 @@ async def list_dsis(
     # data_list = DsiESList( dsis=res )
     # data_list = data_list.dsis
 
+    # doc_version['version_n'] = res['_version']
+    doc_version['version_s'] = commons['version']
+
     data_list =  res
     log_.debug( "data_list : \n%s", pformat( data_list ))
-
     # data_list = [ DsiEs(**item) for item in res ]
     # log_.debug( "data_list : \n%s", pformat( data_list ))
+    msg = 'here comes your list of available DSIs'
   else : 
     data_list = []
+    msg = 'no DSI yet in database'
 
 
-  time_end = datetime.now()
-  stats = {
-    'total_items' : len(data_list),
-    'queried_at' : str(time_start),  
-    'response_at' : str(time_end), 
-    'response_delta' : time_end - time_start,  
-  }
 
   if commons['only_data'] == True : 
     log_.debug( "commons['only_data'] == True : %s", commons['only_data'] )
     response = ResponseDataBase(
       status = status,
       data =  data_list,
+      doc_version = doc_version,
+      msg = msg
     )
   else :
     log_.debug( "commons['only_data'] != True : %s", commons['only_data'] )
+    time_end = datetime.now()
+    stats = {
+      'total_items' : len(data_list),
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
     response = ResponseBase(
       status = status,
       data =  data_list,
       query = query,
       stats = stats,
+      doc_version = doc_version,
+      msg = msg
     )
 
   log_.debug( "response : \n%s", pformat( response.dict() ))
@@ -122,10 +135,14 @@ async def list_dsis(
 
 
 @router.get("/get_one/{dsi_uuid}")
-async def read_dsi( 
+async def read_dsi_item( 
+
   resp_: Response,
-  dsi_uuid: str,
+
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the item DSI to retrieve"),
+  # dsi_uuid: str,
   # dsi_uuid: uuid.UUID,
+
   commons: dict = Depends(one_dsi_parameters),
   # api_key: APIKey = Depends(get_api_key_optional),
   user: dict = Depends(get_user_infos),
@@ -150,6 +167,7 @@ async def read_dsi(
 
 
   ### retrieve results from db and query
+  msg = ''
   doc_version = {
     'version_n' : None,
     'version_s' : None
@@ -160,21 +178,24 @@ async def read_dsi(
   )
   log_.debug( "res : \n%s", pformat(res))
 
+
   ### marshal / apply model to data
   if res : 
-    # data = Dsi(**res)
     data = Dsi( **res['_source'] )
     doc_version['version_n'] = res['_version']
     doc_version['version_s'] = commons['version']
+    msg = 'here comes your dsi'
   else : 
     data = None
+    msg = 'no such dsi in database'
 
 
   if commons['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
       data = data,
-      doc_version = doc_version
+      doc_version = doc_version,
+      msg = msg
     )
   else : 
     time_end = datetime.now()
@@ -189,7 +210,8 @@ async def read_dsi(
       query = query,
       data =  data,
       stats = stats,
-      doc_version = doc_version
+      doc_version = doc_version,
+      msg = msg
     )
 
   resp_.status_code = status['status_code']
@@ -202,7 +224,7 @@ async def read_dsi(
 ### - - - - - - - - - - - - - - - - - - - - - ### 
 
 @router.post("/create")
-async def create_dsi(
+async def create_dsi_item(
   *,
   resp_: Response,
   dsi_in: DsiCreate,
@@ -227,6 +249,8 @@ async def create_dsi(
     "method" : "POST",
     **resp_p,
   }
+
+  msg = '' 
 
   ### build / marshall a dsi from models
   dsi_client = DsiBase( **dsi_in.dict() )
@@ -256,12 +280,17 @@ async def create_dsi(
   )
   log_.debug( "res : \n%s", pformat(res))
   
-  
+  if status['status_code'] == 200 : 
+    msg = 'your DSI document has been created'
+  else : 
+    msg = "there has been an error while creating your DSI document"
+
   ### response formatting
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
       data = dsi_db,
+      msg = msg
     )
   else : 
     time_end = datetime.now()
@@ -275,6 +304,7 @@ async def create_dsi(
       query = query,
       data =  dsi_db,
       stats = stats,
+      msg = msg
     )
 
   log_.debug( "response : \n%s", pformat( response.dict() ))
@@ -285,11 +315,14 @@ async def create_dsi(
 
 
 @router.put("/update/{dsi_uuid}")
-async def update_dsi(
+async def update_dsi_item(
   *,
   resp_: Response,
-  dsi_uuid: str,
+
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSI item to update"),
+  # dsi_uuid: str,
   # dsi_uuid: uuid.UUID,
+
   body: dict,
   resp_p: dict = Depends(resp_parameters),
   # api_key: APIKey = Depends(get_api_key),
@@ -314,6 +347,8 @@ async def update_dsi(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
+  msg = '' 
+
   ### update in DBs
   res, status = crud.dataset_input.update_dsi(
     dsi_uuid = dsi_uuid,
@@ -323,10 +358,17 @@ async def update_dsi(
   log_.debug( "res : \n%s", pformat(res))
 
 
+  if status['status_code'] == 200 : 
+    msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been updated"
+  else : 
+    msg = f"there has been an error while updating DSI doc with dsi_uuid <{dsi_uuid}>"
+
+
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
       data = body,
+      msg = msg 
     )
   else : 
     time_end = datetime.now()
@@ -340,6 +382,7 @@ async def update_dsi(
       query = query,
       data =  body,
       stats = stats,
+      msg = msg 
     )
 
   resp_.status_code = status['status_code']
@@ -348,10 +391,13 @@ async def update_dsi(
 
 
 @router.delete("/remove/{dsi_uuid}")
-async def delete_dsi(
+async def delete_dsi_item(
   resp_: Response,
-  dsi_uuid: str,
+
+  # dsi_uuid: str,
+  dsi_uuid: str = Path(..., title="item UUID", description="`str` : UUID of the DSI item to delete"),
   # dsi_uuid: uuid.UUID,
+
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
   # api_key: APIKey = Depends(get_api_key),
@@ -376,22 +422,26 @@ async def delete_dsi(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
+  msg = '' 
 
   ### 1 - delete corresponding DSI 
   res, status = crud.dataset_input.remove_dsi(
     dsi_uuid = dsi_uuid,
+    query_params = query,
   )
   log_.debug( "res : \n%s", pformat(res))
 
 
-  res = {
-    "dsi_deleted" : dsi_uuid
-  }
+  if status['status_code'] == 200 : 
+    msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been deleted"
+  else : 
+    msg = f"there has been an error while deleting DSI doc with dsi_uuid <{dsi_uuid}>"
 
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
       data = res,
+      msg = msg
     )
   else : 
     time_end = datetime.now()
@@ -405,6 +455,7 @@ async def delete_dsi(
       query = query,
       data =  res,
       stats = stats,
+      msg = msg
     )
 
   resp_.status_code = status['status_code']

@@ -35,9 +35,16 @@ def create_mongodb_client(
   return client
 
 
-def create_mongodb_collections(
+def get_mongodb_database(
   mongodb=create_mongodb_client(),
-  db_name=MONGO_DBNAME,
+  db_name=MONGO_DBNAME,  
+  ) :
+  mongodb_db = mongodb[ db_name ]
+  return mongodb_db
+
+
+def create_mongodb_collections(
+  mongodb_db=get_mongodb_database(),
   collections=[
     MONGO_COLL_USERS,
     MONGO_COLL_DATASETS_INPUTS,
@@ -48,7 +55,6 @@ def create_mongodb_collections(
   ):
   """ create mongodb collection in database """
 
-  mongodb_db = mongodb[ db_name ]
   collections_dict = {}
 
   for coll in collections :
@@ -128,8 +134,8 @@ def build_mongodb_query(
 
 # async def view_mongodb_document(
 def view_mongodb_document(
-  m_client=create_mongodb_client(),
-  database=None,
+  m_client_db=get_mongodb_database(),
+  collection=None,
   index_name=None,
   doc_type=None,
   doc_uuid=None,
@@ -141,7 +147,7 @@ def view_mongodb_document(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  db = m_client[ database ]
+  db = m_client_db[ collection ]
 
   ### TO DO 
   res = db.find_one(
@@ -156,8 +162,8 @@ def view_mongodb_document(
 
 # async def search_mongodb_documents(
 def search_mongodb_documents(
-  m_client=create_mongodb_client(),
-  database=None,
+  m_client_db=get_mongodb_database(),
+  collection=None,
   index_name=None,
   doc_type=None,
   query={}
@@ -169,7 +175,7 @@ def search_mongodb_documents(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  db = m_client[ database ]
+  db = m_client_db[ collection ]
 
   ### TO DO 
 
@@ -187,8 +193,8 @@ def search_mongodb_documents(
 
 # async def add_mongodb_document(
 def add_mongodb_document(
-  m_client=create_mongodb_client(),
-  database=None,
+  m_client_db=get_mongodb_database(),
+  collection=None,
   index_name=None,
   doc_type=None,
   doc_uuid=None,
@@ -204,7 +210,7 @@ def add_mongodb_document(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  db = m_client[ database ]
+  db = m_client_db[ collection ]
 
   ### TO DO 
   res = db.insert_one(
@@ -219,8 +225,8 @@ def add_mongodb_document(
 
 # async def update_mongodb_document(
 def update_mongodb_document(
-  m_client=create_mongodb_client(),
-  database=None,
+  m_client_db=get_mongodb_database(),
+  collection=None,
   index_name=None,
   doc_type=None,
   doc_uuid=None,
@@ -234,7 +240,7 @@ def update_mongodb_document(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  db = m_client[ database ]
+  db = m_client_db[ collection ]
 
   ### TO DO
   
@@ -261,8 +267,8 @@ def update_mongodb_document(
 
 # async def remove_mongodb_document(
 def remove_mongodb_document(
-  m_client=create_mongodb_client(),
-  database=None,
+  m_client_db=get_mongodb_database(),
+  collection=None,
   index_name=None,
   doc_type=None,
   doc_uuid=None
@@ -274,16 +280,20 @@ def remove_mongodb_document(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  db = m_client[ database ]
+  db = m_client_db[ collection ]
 
   ### TO DO 
 
   # build query
-  query = {}
-  doc_query = build_mongodb_query( query, doc_uuid )
+  # doc_query = build_mongodb_query( query, doc_uuid )
+  doc_query = {
+    f"{index_name}_uuid" : doc_uuid
+  }
+  log_.debug( "doc_query : \n%s", pformat( doc_query ))
 
   # find and delete document
-  res = db.delete_one( doc_query )
+  res = {}
+  # res = db.delete_one( doc_query )
 
   log_.debug( "res : \n%s", pformat(res))
   print()
@@ -293,8 +303,8 @@ def remove_mongodb_document(
 
 # async def remove_mongodb_many_documents(
 def remove_mongodb_many_documents(
-  m_client=create_mongodb_client(),
-  database=None,
+  m_client_db=get_mongodb_database(),
+  collection=None,
   index_name=None,
   doc_type=None,
   ):
@@ -305,7 +315,7 @@ def remove_mongodb_many_documents(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
-  db = m_client[ database ]
+  db = m_client_db[ collection ]
 
   ### TO DO 
   # build query

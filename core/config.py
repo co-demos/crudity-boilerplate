@@ -71,7 +71,12 @@ ROLE_SUPERUSER = "superuser"
 # API_V1_STR = f"/api/{PROJECT_VERSION}"
 API_V1_STR = f"/api/v1"
 
-APP_MODE = os.getenv("APP_MODE", "default")
+APP_MODE = os.getenv("APP_MODE", "dev")
+
+# APP_AUTORELOAD = os.getenv("APP_AUTORELOAD", "false")
+APP_AUTORELOAD = formatEnvVar('APP_AUTORELOAD', format_type='boolean')
+
+DOCKER_MODE = os.getenv("DOCKER_MODE", "False")
 
 SECRET_KEY = os.getenvb(b"SECRET_KEY")
 if not SECRET_KEY:
@@ -85,9 +90,9 @@ COOKIE_DOMAIN = os.getenv("COOKIE_DOMAIN", "crudity.me")
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 8  # 60 minutes * 24 hours * 8 days = 8 days
 
 SENTRY_DSN = os.getenv("SENTRY_DSN")
-SERVER_NAME = os.getenv("SERVER_NAME")
-SERVER_HOST = os.getenv("SERVER_HOST")
-SERVER_PORT = os.getenv("SERVER_PORT")
+SERVER_NAME = os.getenv("SERVER_NAME", "localhost:8000")
+SERVER_HOST = os.getenv("SERVER_HOST", "localhost")
+SERVER_PORT = os.getenv("SERVER_PORT", "8000")
 BACKEND_CORS_ORIGINS = os.getenv(
   "BACKEND_CORS_ORIGINS"
 )  # a string of origins separated by commas, e.g: "http://localhost, http://localhost:4200, http://localhost:3000, http://localhost:8080, http://dev.couchbase-project.com, https://stag.couchbase-project.com, https://couchbase-project.com, http://local.dockertoolbox.tiangolo.com"

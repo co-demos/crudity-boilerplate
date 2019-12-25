@@ -57,19 +57,45 @@ You can edit those `.env` files and add real credentials inside.
 
 
 ### run CRUDity 
+
+- **with uvicorn from shell** :
+
 ```sh
 uvicorn main:app --reload
 ```
 then check : [`http://127.0.0.1:8000/docs`](http://127.0.0.1:8000/docs)
 
-... or* ... 
+... or ... 
 
 ```sh
-python main.py --port=8001
+uvicorn main:app --reload --host=localhost --port=8000
 ```
+
+
+- **with python from shell**
+
+```sh
+python main.py --host=localhost --port=8001 --autoreload=true
+```
+
 then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
 
-*note : if you run CRUdity with Python instead of uvicorn the hot reload will be disabled. Also running CRUDity with Python allows you to inject some parameters like `--port` with the command line (see the `main.py` file for the list of the CLI parameters you can use).  
+
+- **CLI arguments**
+
+*note* : running CRUDity with Python allows you to inject some parameters like `--port` with the command line (see the `main.py` file for the list of the CLI parameters you can use).
+
+```
+'--mode' (default='dev')         : The <mode> you need to run the app : default | dev | testing | preprod | production
+'--autoreload' (default='false') : The <autoreload> mode you want the app to run on : true | false
+'--auth' (default='dev')         : The <auth> mode you need to run the app : no_auth | dev | default | default_docker | server | server_docker | distant_preprod | distant_prod
+'--host' (default='localhost')   : The <host> name you want the app to run on : <IP_NUMBER>
+'--port' (default='8000')        : The <port> number you want the app to run on : <PORT_NUMBER>
+'--esdb' (default='local')       : The <esdb> you need to run the app : disabled | local | distant | server
+'--mongodb' (default='local')    : The <mongodb> you need to run the app : disabled | local | distant | server
+'--docker' (default='false')     : Are you running the app with <docker> : docker_off | docker_on
+'--https' (default='false')      : The <https> mode you want the app to run on : true | false
+```
 
 -----
 
@@ -83,6 +109,7 @@ pytest ./tests/
 ```
 
 or `pytest ./tests/ -v` for verbose
+
 or `pytest ./tests/ -s` for all outputs
 
 

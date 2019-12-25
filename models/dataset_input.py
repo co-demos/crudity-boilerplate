@@ -91,8 +91,8 @@ class DsiUpdate(DsiBase):
 # Properties to return to client
 class Dsi(DsiBase):
 
-  dsi_uuid: UUID
-  # dsi_uuid: str
+  # dsi_uuid: UUID
+  dsi_uuid: str
   # dsi_uuid: int
 
   title: str

@@ -25,6 +25,7 @@ class ResponseDataBase(BaseModel) :
   status: ResponseStatus = None
   data: AnyContent = None
   doc_version: DocVersion = None
+  msg: str = None
 
 class ResponseStatsNoTotal(BaseModel) :
   
