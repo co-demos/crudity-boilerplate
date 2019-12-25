@@ -127,8 +127,8 @@ def app_runner(mode, docker, mongodb, esdb, auth, host, port, https) :
   os.environ["APP_MODE"]      = mode
   os.environ["AUTH_MODE"]     = auth
 
-  os.environ["SERVER_NAME"]   = host
-  os.environ["SERVER_HOST"]   = port
+  os.environ["SERVER_HOST"]   = host
+  os.environ["SERVER_PORT"]   = port
 
   # os.environ["DOCKER_MODE"]   = docker
 

@@ -73,6 +73,21 @@ then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
 
 -----
 
+### Run tests with pytest
+
+
+
+```bash
+source venv/bin/activate
+pytest ./tests/
+```
+
+or `pytest ./tests/ -v` for verbose
+or `pytest ./tests/ -s` for all outputs
+
+
+-----
+
 ### doc FastAPI 
 cf : https://fastapi.tiangolo.com/
 

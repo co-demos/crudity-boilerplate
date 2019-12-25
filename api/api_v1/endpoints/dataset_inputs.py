@@ -288,7 +288,8 @@ async def create_dsi(
 async def update_dsi(
   *,
   resp_: Response,
-  dsi_uuid: uuid.UUID,
+  dsi_uuid: str,
+  # dsi_uuid: uuid.UUID,
   body: dict,
   resp_p: dict = Depends(resp_parameters),
   # api_key: APIKey = Depends(get_api_key),
@@ -349,7 +350,8 @@ async def update_dsi(
 @router.delete("/remove/{dsi_uuid}")
 async def delete_dsi(
   resp_: Response,
-  dsi_uuid: uuid.UUID,
+  dsi_uuid: str,
+  # dsi_uuid: uuid.UUID,
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
   # api_key: APIKey = Depends(get_api_key),

@@ -97,7 +97,7 @@ def update_dsi(
 
   ### check if DSI exists first 
 
-  ### update DSR document
+  ### update DSI document
   res, status = update_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
