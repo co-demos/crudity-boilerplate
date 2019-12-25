@@ -6,7 +6,7 @@ log_.debug(">>> db/database_mongodb.py")
 
 from datetime import datetime
 from bson.objectid import ObjectId
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 
 from core.config import *
 
@@ -151,12 +151,15 @@ def view_mongodb_document(
 
   ### TO DO 
   res = db.find_one(
-    { "_id" : doc_uuid }
+    { "_id" : doc_uuid },
+    { "_id": 0 } ### projection fields
   )
-
   log_.debug( "res : \n%s", pformat(res))
+  res_list = list(res)
+
+  log_.debug( "res_list : \n%s", pformat(res_list))
   print()
-  return res, status
+  return res_list, status
 
 
 
@@ -183,11 +186,16 @@ def search_mongodb_documents(
   doc_query = build_mongodb_query( query )
 
   ### find document
-  res = db.find( doc_query )
-
+  res = db.find( 
+    doc_query,
+    { "_id": 0 } ### projection fields
+  )
   log_.debug( "res : \n%s", pformat(res))
+  res_list = list(res)
+
+  log_.debug( "res_list : \n%s", pformat(res_list))
   print()
-  return res, status
+  return res_list, status
 
 
 
@@ -213,13 +221,29 @@ def add_mongodb_document(
   db = m_client_db[ collection ]
 
   ### TO DO 
-  res = db.insert_one(
-    doc_body
-  )
-
-  log_.debug( "res : \n%s", pformat(res))
+  try : 
+    res = db.insert_one(
+      doc_body,
+    )
+    res_add = { 
+      'item_id' : str(res.inserted_id),
+      'operation' : "item added" 
+    }
+  except : 
+    res = {}
+    res_add = { 
+      'item_id' : None,
+      'operation' : 'not added...' 
+    }
+    status = {
+      'status_code' : 500,
+      'error' : "",
+      'info' : ""
+    }
+  # log_.debug( "res : \n%s", pformat(res.__dict__))
+  log_.debug( "res_add : \n%s", pformat(res_add))
   print()
-  return res, status
+  return res_add, status
 
 
 
@@ -249,19 +273,28 @@ def update_mongodb_document(
   doc_query = build_mongodb_query( query, doc_uuid )
   
   # find and update
-  res = db.find_one_and_update(
-    doc_query,
-    { 
-      '$set' : {
+  try : 
+    res = db.find_one_and_update(
+      doc_query,
+      { 
+        '$set' : {
 
+        }
       }
+    ) 
+    log_.debug( "res : \n%s", pformat(res))
+    res_list = list(res)
+  except : 
+    res = {}
+    status = {
+      'status_code' : 500,
+      'error' : "",
+      'info' : "",
     }
-  ) 
 
-
-  log_.debug( "res : \n%s", pformat(res))
+  log_.debug( "res_list : \n%s", pformat(res_list))
   print()
-  return res, status
+  return res_list, status
 
 
 
@@ -292,8 +325,16 @@ def remove_mongodb_document(
   log_.debug( "doc_query : \n%s", pformat( doc_query ))
 
   # find and delete document
-  res = {}
-  # res = db.delete_one( doc_query )
+  try :
+    res = db.delete_one( doc_query )
+
+  except : 
+    res = {}
+    status = {
+      'status_code' : 500,
+      'error' : "",
+      'info' : "",
+    }
 
   log_.debug( "res : \n%s", pformat(res))
   print()
@@ -323,7 +364,15 @@ def remove_mongodb_many_documents(
   doc_query = build_mongodb_query( query )
 
   # find and delete many document
-  res = db.delete_many( doc_query )
+  try :
+    res = db.delete_many( doc_query )
+  except :
+    res = None
+    status = {
+      'status_code' : 500,
+      'error' : "",
+      'info' : "",
+    }
 
   log_.debug( "res : \n%s", pformat(res))
   print()

@@ -70,8 +70,8 @@ def create_dsr(
     body = body
   )
 
-  # log_.debug( "res : \n%s", pformat(res))
-  # log_.debug( "status : \n%s", pformat(status))
+  log_.debug( "status : \n%s", pformat(status))
+  log_.debug( "res : \n%s", pformat(res))
 
   return res, status
 

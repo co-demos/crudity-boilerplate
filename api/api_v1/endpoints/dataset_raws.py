@@ -12,7 +12,7 @@ from fastapi.security.api_key import APIKey
 from starlette.responses import Response
 from starlette.status import *
 
-from models.response import ResponseBase, ResponseDataBase
+from models.response import ResponseBase, ResponseDataBase, ResponseBaseResp
 from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData
 from models.parameters import *
 
@@ -86,7 +86,7 @@ async def read_dsi_items(
     res_dsrs = None
 
 
-  if status_dsr == 200 : 
+  if status_dsr['status_code'] == 200 : 
     data_list = res_dsrs
     msg = 'here comes the list of DSRs corresponding to this DSI'
   else :
@@ -253,7 +253,10 @@ async def create_dsr_item(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
-  log_.debug( "body : \n%s", pformat(query) )
+  log_.debug( "item_data : \n%s", pformat( item_data.dict() ) )
+  item_data_dict = item_data.dict()
+  item_data_ = item_data_dict
+
 
   msg = '' 
 
@@ -261,23 +264,60 @@ async def create_dsr_item(
 
   ### generate a random UUID / cf : https://docs.python.org/3/library/uuid.html
   dsr_uuid = crud.utils.generate_new_id()
-  
+
+  ### add infos
+  item_data_['dsi_uuid'] = dsi_uuid
+  item_data_['dsr_uuid'] = dsr_uuid
+  item_data_['created_at'] = datetime.now()
+  item_data_['created_by'] = user['infos']['email']
+  item_data_['owner'] = user['infos']['email']
+  log_.debug( "item_data_ (A): \n%s", pformat( item_data_ ) )
+
   ### add in DBs
   res, status = crud.dataset_raw.create_dsr(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
-    body = item_data
+    body = item_data_
   )
+  log_.debug( "res : \n%s", pformat(res))
+  log_.debug( "status : \n%s", pformat(status))
+  log_.debug( "item_data_ (B): \n%s", pformat( item_data_ ) )
 
+  try : 
+    del item_data_["_id"]
+  except : 
+    pass
+  log_.debug( "item_data_ (C): \n%s", pformat( item_data_ ) )
 
   ### response formatting
+  if status['status_code'] == 200 : 
+    msg = f"the DSR doc has been created for DSI dataset with dsi_uuid <{dsi_uuid}> "
+  else : 
+    msg = f"there has been an error while creating DSR doc with dsi_uuid <{dsi_uuid}>"
 
-  time_end = datetime.now()
-  response =  {
-    "dsr_uuid": dsr_uuid,
-    "item_data": item_data
-  }
+  if resp_p['only_data'] == True : 
+    response = ResponseDataBase(
+      status = status,
+      data = item_data_,
+      msg = msg
+    )
+  else : 
+    time_end = datetime.now()
+    stats = {
+      'queried_at' : str(time_start),  
+      'response_at' : str(time_end), 
+      'response_delta' : time_end - time_start,  
+    }
+    response = ResponseBaseResp(
+      status = status,
+      query = query,
+      data =  item_data_,
+      resp = res,
+      stats = stats,
+      msg = msg,
+    )
+
 
   resp_.status_code = status['status_code']
   return response
@@ -321,6 +361,10 @@ async def update_dsr_item(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
+  log_.debug( "item_data : \n%s", pformat( item_data.dict() ) )
+  item_data_dict = item_data.dict()
+  item_data_ = item_data_dict
+
   msg = '' 
 
   ### 1 - update corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
@@ -330,7 +374,7 @@ async def update_dsr_item(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
-    body = item_data
+    body = item_data_
   )
   log_.debug( "res : \n%s", pformat(res))
 
@@ -353,10 +397,11 @@ async def update_dsr_item(
       'response_at' : str(time_end), 
       'response_delta' : time_end - time_start,  
     }
-    response = ResponseBase(
+    response = ResponseBaseResp(
       status = status,
       query = query,
-      data =  res,
+      data =  item_data_,
+      response =  res,
       stats = stats,
       msg = msg
     )
@@ -432,10 +477,11 @@ async def delete_dsr_item(
       'response_at' : str(time_end), 
       'response_delta' : time_end - time_start,  
     }
-    response = ResponseBase(
+    response = ResponseBaseResp(
       status = status,
       query = query,
       data =  res,
+      response = res,
       stats = stats,
       msg = msg
     )

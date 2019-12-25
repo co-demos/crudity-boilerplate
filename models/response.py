@@ -44,7 +44,10 @@ class ResponseBase(ResponseDataBase) :
   stats: ResponseStats
 
 
-class ResponseBaseNoTotal(ResponseDataBase) : 
+class ResponseBaseResp(ResponseBase) : 
 
-  query: AnyContent
-  stats: ResponseStatsNoTotal
+  resp: AnyContent = None
+
+class ResponseBaseNoTotal(ResponseBase) : 
+
+  pass

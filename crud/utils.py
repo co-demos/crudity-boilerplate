@@ -280,6 +280,7 @@ def create_document(
     res, status = res_es, status_es
     
   if MONGODB_ENABLED :
+    body["version"] = 1
     res_mongodb, status_mongodb = add_mongodb_document(
       collection=doc_type,
       index_name=index_name,
@@ -313,6 +314,7 @@ def create_version_document(
     pass
     
   if MONGODB_ENABLED :
+    body["version"] = version
     pass
 
   status = { 'status_code' : 200 }

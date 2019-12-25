@@ -22,6 +22,7 @@ class DsrData(BaseModel) :
   
     schema_extra = {
       'example' : {
+
         'data' : {
           "field_01": "you can push any data you want",
           "field_02": "either nested or flat structure",
@@ -29,12 +30,14 @@ class DsrData(BaseModel) :
             "subfield_A" : "numerical or text...",
             "subfield_B" : "anything...",
             "subfield_C" : {
-              "subsubfield_1" : "you need to store..."
+              "subsubfield_1" : "you need to store...",
+              "subsubfield_2" : "... except a field called <_id> !!!"
             },
           },
           "field_04" : 42, 
           "field_05" : True, 
         }
+        
       }
     }
 

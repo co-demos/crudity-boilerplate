@@ -495,6 +495,7 @@ def remove_es_document(
   return res, status
 
 
+
 def remove_es_index(
   es=create_es_client(),
   index_name=None,
