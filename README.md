@@ -116,6 +116,8 @@ or `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py ` for test from a
 
 or `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py::test_get_one_dsi ` for test from a function in a specific test file
 
+or `pytest ./tests/ -k inputs -x ` for tests from files containing 'inputs' keyword
+
 -----
 
 ### doc FastAPI 
