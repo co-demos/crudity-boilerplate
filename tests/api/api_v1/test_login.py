@@ -12,7 +12,7 @@ client = TestClient(app)
 
 ### cf : https://fastapi.tiangolo.com/tutorial/testing/
 
-def test_client_anonymous_login( as_test = True ):
+def client_anonymous_login( as_test = True ):
 
   server_api = get_server_api()
   # log_.debug("=== server_api : %s", server_api)
@@ -27,8 +27,12 @@ def test_client_anonymous_login( as_test = True ):
   else : 
     return resp
 
+def test_client_anonymous_login():
+  client_anonymous_login() 
 
-def test_client_login( as_test = True, only_access_token = False ):
+
+
+def client_login( as_test = True, only_access_token = False ):
 
   server_api = get_server_api()
 
@@ -37,7 +41,7 @@ def test_client_login( as_test = True, only_access_token = False ):
   #   f"{server_api}{config.API_V1_STR}/anonymous_login"
   # )
   # response_ano_json = response_ano.json()
-  response_ano_json = test_client_anonymous_login( as_test=False )
+  response_ano_json = client_anonymous_login( as_test=False )
   # log_.debug("=== response_ano_json : \n%s", pformat( response_ano_json ))
 
   response_ano_access_token = response_ano_json['tokens']['access_token']
@@ -69,3 +73,6 @@ def test_client_login( as_test = True, only_access_token = False ):
       return resp['tokens']['access_token']
     else :
       return resp
+
+def test_client_login() :
+  client_login()

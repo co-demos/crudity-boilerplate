@@ -6,7 +6,7 @@ from log_config import log_, pformat
 
 from core import config
 from tests.utils.utils import get_server_api
-from .test_login import *
+from .test_login import client_login
 
 
 
@@ -48,12 +48,12 @@ def test_get_list_dsi(
 ### POST
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def test_create_one_dsi( as_test = True ):
+def create_one_dsi( as_test = True ):
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
-  test_user_access_token = test_client_login( as_test = False, only_access_token=True )
+  test_user_access_token = client_login( as_test = False, only_access_token=True )
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
 
   random_int = random.randint(0, 1000) 
@@ -84,7 +84,9 @@ def test_create_one_dsi( as_test = True ):
   else : 
     return resp
 
-
+def test_create_one_dsi( as_test = True ):
+  create_one_dsi( )
+  
 
 def get_random_dsi_uuid( only_test_dsi = False ) : 
 
@@ -105,7 +107,11 @@ def get_random_dsi_uuid( only_test_dsi = False ) :
 ### GET ONE
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def test_get_one_dsi( as_test = True, only_test_data = False ):
+def test_get_one_dsi( 
+  as_test = True, 
+  only_test_data = False 
+  ):
+
   server_api = get_server_api()
   log_.debug ('=== server_api : %s', server_api)
 
@@ -125,12 +131,12 @@ def test_get_one_dsi( as_test = True, only_test_data = False ):
     return resp
 
 
-def test_get_one_dsi_test(): 
-  try :
-    test_get_one_dsi( only_test_data = True )
-  except : 
-    log_.debug ('=== no test DSI ...' )
-    assert False
+# def test_get_one_dsi_test(): 
+#   try :
+#     test_get_one_dsi( only_test_data = True )
+#   except : 
+#     log_.debug ('=== no test DSI ...' )
+#     assert False
 
 
 
@@ -139,17 +145,17 @@ def test_get_one_dsi_test():
 ### DELETE
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def delete_dsi( 
+def delete_all_dsi( 
   as_test = True, 
   only_test_data = True,
-  full_remove = False
+  full_remove = False,
   ): 
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
   ### get test user
-  test_user_access_token = test_client_login( as_test = False, only_access_token=True )
+  test_user_access_token = client_login( as_test = False, only_access_token=True )
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
 
   ### get list of DSIs
@@ -189,8 +195,8 @@ def delete_dsi(
 
 
 def test_delete_dsi_no_full_remove(): 
-  delete_dsi( full_remove=False )
+  delete_all_dsi( full_remove=False )
 
 
 def test_delete_dsi_full_remove(): 
-  delete_dsi( full_remove=True )
+  delete_all_dsi( full_remove=True )
