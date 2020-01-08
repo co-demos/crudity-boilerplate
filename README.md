@@ -112,6 +112,9 @@ or `pytest ./tests/ -v` for verbose
 
 or `pytest ./tests/ -s` for all outputs
 
+or `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py ` for test from a specific test file
+
+or `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py::test_get_one_dsi ` for test from a function in a specific test file
 
 -----
 

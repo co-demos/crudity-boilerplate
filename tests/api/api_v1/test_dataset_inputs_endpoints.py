@@ -161,12 +161,18 @@ def delete_dsi(
   else : 
     testable_dsi_list = full_dsi_list
 
-  log_.debug ('=== testable_dsi_list : \n%s', pformat(testable_dsi_list) )
+  # log_.debug ('=== testable_dsi_list : \n%s', pformat(testable_dsi_list) )
 
   ### delete list of DSIs
   for dsi in testable_dsi_list : 
+
+    # log_.debug ('=== dsi : \n%s', pformat(dsi) )
+
+    dsi_uuid = dsi['dsi_uuid']
+    log_.debug ('=== dsi_uuid : %s', dsi_uuid )
+    
     params_delete = {
-      'dsi_uuid' : dsi['dsi_uuid'],
+      'dsi_uuid' : dsi_uuid ,
       'full_remove' : full_remove,
     }
     headers = {
@@ -184,6 +190,7 @@ def delete_dsi(
 
 def test_delete_dsi_no_full_remove(): 
   delete_dsi( full_remove=False )
+
 
 def test_delete_dsi_full_remove(): 
   delete_dsi( full_remove=True )
