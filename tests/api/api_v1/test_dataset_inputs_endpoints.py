@@ -172,7 +172,7 @@ def delete_dsi(
     log_.debug ('=== dsi_uuid : %s', dsi_uuid )
     
     params_delete = {
-      'dsi_uuid' : dsi_uuid ,
+      # 'dsi_uuid' : dsi_uuid ,
       'full_remove' : full_remove,
     }
     headers = {
@@ -181,7 +181,7 @@ def delete_dsi(
     }
 
     response = requests.delete(
-      f"{server_api}{config.API_V1_STR}/dsi/remove",
+      f"{server_api}{config.API_V1_STR}/dsi/remove/{dsi_uuid}",
       params = params_delete,
       headers = headers
     )
