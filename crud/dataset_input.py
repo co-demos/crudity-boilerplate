@@ -119,20 +119,53 @@ def remove_dsi(
   ):
   """ remove a dsi from ES / MongoDB """
 
-  ### remove DSI doc
-  res, status = remove_document(
-    index_name = DSI_DOC_TYPE,
-    doc_type = 'metadata',
-    doc_uuid = dsi_uuid,
-    params = query_params,
+  ### get dsi infos
+  res_dsi, status_dsi = view_dsi(
+    dsi_uuid = dsi_uuid,
+    query_params = query_params
   )
-  
-  ### remove corresponding DSRs docs 
-  res_dsr, status_dsr = remove_many_documents(
-    index_name = dsi_uuid,
-    doc_type = DSR_DOC_TYPE,
-    params = query_params,
-  )
+  log_.debug( "res_dsi : \n%s", pformat(res_dsi))
+
+  ### remove data
+  if query_params['full_remove'] == True : 
+
+    ### remove DSI doc
+    res, status = remove_document(
+      index_name = DSI_DOC_TYPE,
+      doc_type = 'metadata',
+      doc_uuid = dsi_uuid,
+      params = query_params,
+    )
+    
+    print("- - "*40)
+    
+    ### remove corresponding DSRs docs 
+    res_dsr, status_dsr = remove_many_documents(
+      index_name = dsi_uuid,
+      doc_type = DSR_DOC_TYPE,
+      params = query_params,
+    )
+
+  else : 
+    ### update DSI doc as 'deleted'
+    res, status = update_document(
+      index_name = DSI_DOC_TYPE,
+      doc_type = 'metadata',
+      doc_uuid = dsi_uuid,
+      params = query_params,
+      body = { 'is_deleted' : True }
+    )
+
+    ### update corresponding DSR docs as 'deleted'
+    ### TO DO 
+    ### update DSI doc as 'deleted'
+    res, status = update_many_document(
+      index_name = dsi_uuid,
+      doc_type = DSR_DOC_TYPE,
+      # doc_uuid_list = [ dsi_uuid ],
+      params = query_params,
+      body = { 'is_deleted' : True }
+    )
 
   # log_.debug( "res : \n%s", pformat(res))
   # log_.debug( "status : \n%s", pformat(status))

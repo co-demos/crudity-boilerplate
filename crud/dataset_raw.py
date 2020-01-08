@@ -109,13 +109,37 @@ def remove_dsr(
   ):
   """ remove a dsr from ES / MongoDB """
 
-  res, status = remove_document(
-    index_name = dsi_uuid,
-    doc_type = DSR_DOC_TYPE,
-    doc_uuid = dsr_uuid,
-    params = query_params,
+  ### get dsr infos
+  res_dsr, status_dsr = view_dsr(
+    dsi_uuid = dsi_uuid,
+    dsr_uuid = dsr_uuid,
+    query_params = query_params
   )
+  log_.debug( "res_dsr : \n%s", pformat(res_dsr))
+
+
+
+  if query_params['full_remove'] == True : 
+
+    ### remove corresponding DSR doc
+    res, status = remove_document(
+      index_name = dsi_uuid,
+      doc_type = DSR_DOC_TYPE,
+      doc_uuid = dsr_uuid,
+      params = query_params,
+    )
   
+  else : 
+
+    ### update corresponding DSR doc as 'deleted'
+    res, status = update_document(
+      index_name = dsi_uuid,
+      doc_type = DSR_DOC_TYPE,
+      doc_uuid = dsr_uuid,
+      params = query_params,
+      body = { 'is_deleted' : True }
+    )
+
   log_.debug( "res : \n%s", pformat(res))
   log_.debug( "status : \n%s", pformat(status))
 

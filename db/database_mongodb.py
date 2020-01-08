@@ -184,6 +184,10 @@ def search_mongodb_documents(
 
   # build query
   doc_query = build_mongodb_query( query )
+  
+  per_page = query['per_page'].value
+  from_item = ( query['page_n'] * per_page ) - per_page
+  log_.debug( "from_item : %s", from_item )
 
   ### find document
   res = db.find( 
@@ -326,7 +330,9 @@ def remove_mongodb_document(
 
   # find and delete document
   try :
-    res = db.delete_one( doc_query )
+    res = db.delete_one( 
+      doc_query 
+    )
 
   except : 
     res = {}

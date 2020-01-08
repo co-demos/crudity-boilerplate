@@ -350,11 +350,19 @@ def search_es_documents(
     #     .query( "match", title="python")   \
     #     .exclude( "match", description="beta")
 
+    per_page = query['per_page'].value
+    from_item = ( query['page_n'] * per_page ) - per_page
+    log_.debug( "from_item : %s", from_item )
+
     res = es.search(
-      index=index_name,
+      index = index_name,
       # doc_type=doc_type,
-      body=search_body
+      body = search_body,
+      size = per_page,
+      from_= from_item ,
     )
+    log_.debug( "res A: \n%s", pformat(res))
+    status['total'] = res['hits']['total']['value']
     res = res['hits']['hits']
 
   except ElasticsearchException as err : 
@@ -365,7 +373,7 @@ def search_es_documents(
     }
 
 
-  log_.debug( "res : \n%s", pformat(res))
+  log_.debug( "res B: \n%s", pformat(res))
   print()
   return res, status
 
@@ -499,6 +507,7 @@ def remove_es_document(
 def remove_es_index(
   es=create_es_client(),
   index_name=None,
+  doc_type=None,
   ):
   """Function to delete a specific ES index."""
 
@@ -508,8 +517,9 @@ def remove_es_index(
   log_.debug( "locals() : \n%s", pformat(locals()))
 
   try : 
-    res = es.delete(
+    res = es.indices.delete(
       index=index_name,
+      # doc_type=doc_type,
     )
   except ElasticsearchException as err : 
     res = None
@@ -520,5 +530,6 @@ def remove_es_index(
     }
 
   log_.debug( "res : \n%s", pformat(res))
+  log_.debug( "status : \n%s", pformat(status))
   print()
   return res, status

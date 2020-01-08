@@ -233,14 +233,14 @@ async def version_parameters(
   }
 
 async def pagination_parameters(
-  page: int = p_page_number,
+  page_n: int = p_page_number,
   per_page: PerPageEnum = p_per_page,
   sort_by: str = p_sort_by,  
   sort_order: OrderEnum = p_sort_order,   
   shuffle_seed: int = p_shuffle_seed,  
   ):
   return {
-    "page" : page,
+    "page_n" : page_n,
     "per_page" : per_page,
     "sort_by" : sort_by, 
     "sort_order" : sort_order, 

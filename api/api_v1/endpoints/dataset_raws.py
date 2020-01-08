@@ -108,7 +108,10 @@ async def read_dsi_items(
     log_.debug( "commons['only_data'] != True : %s", commons['only_data'] )
     time_end = datetime.now()
     stats = {
-      'total_items' : len(data_list),
+      'page_n' : query['page_n'],
+      'per_page' : query['per_page'].value,
+      # 'total_items' : len(data_list),
+      'total_items' : status_dsr.get('total', 0),
       'queried_at' : str(time_start),  
       'response_at' : str(time_end), 
       'response_delta' : time_end - time_start,  
@@ -197,7 +200,7 @@ async def read_dsr_item(
   time_end = datetime.now()
   # response =  {"dsr_uuid": dsr_uuid}
   stats = {
-    'total_items' : len([data]),
+    # 'total_items' : len([data]),
     'queried_at' : str(time_start),  
     'response_at' : str(time_end), 
     'response_delta' : time_end - time_start,  
@@ -426,6 +429,7 @@ async def delete_dsr_item(
 
   resp_p: dict = Depends(resp_parameters),
   remove_p: dict = Depends(delete_parameters),
+  version_p: dict = Depends(version_parameters),
   # api_key: APIKey = Depends(get_api_key),
   user: dict = Depends(need_user_infos),
   ):
@@ -446,6 +450,7 @@ async def delete_dsr_item(
     'dsr_uuid': dsr_uuid,
     **resp_p,
     **remove_p,
+    **version_p
   }
   log_.debug( "query : \n%s", pformat(query) )
 

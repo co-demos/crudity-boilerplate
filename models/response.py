@@ -35,7 +35,9 @@ class ResponseStatsNoTotal(BaseModel) :
 
 class ResponseStats(ResponseStatsNoTotal) :
 
-  total_items: int = None
+  total_items: Optional[int] = None
+  page_n: Optional[int] = None
+  per_page: Optional[int] = None
 
 
 class ResponseBase(ResponseDataBase) : 

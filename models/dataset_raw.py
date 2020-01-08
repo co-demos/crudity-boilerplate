@@ -53,7 +53,9 @@ class DsrBase(DsrData) :
   updated_at: datetime = None
   logs: List[ DataLogBase ] = []
 
-
+  is_deleted : Optional[bool] = False
+  is_test_data : Optional[bool] = False
+  
 
 # Properties to receive on item creation
 class DsrCreate(DsrBase):

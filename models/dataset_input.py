@@ -38,6 +38,9 @@ class DsiBase(BaseModel) :
   tags: List[ str ] = []
 
   is_geodata: bool = False
+  has_dsr_data : bool = False
+  is_test_data : Optional[bool] = False
+  is_deleted : Optional[bool] = False
 
   datamodel_fields  : List[DatamodelFieldBase] = []
   datamodel_template: DatamodelTemplatedBase = None
@@ -64,6 +67,10 @@ class DsiCreate(BaseModel):
   licence: Optional[str] = None
 
   is_geodata: bool = False
+  has_dsr_data : bool = False
+
+  is_test_data : Optional[bool] = False
+  is_deleted : Optional[bool] = False
 
   auth_preview: OpenDataLevelEnum = OpenDataLevelEnum.opendata
   auth_modif:   OpenDataLevelEnum = OpenDataLevelEnum.private

@@ -231,8 +231,8 @@ def search_documents(
       doc_type=doc_type,
       query=query_params
     )
-    log_.debug( "res_es : \n%s", pformat(res_es))
-    log_.debug( "status_es : \n%s", pformat(status_es))
+    # log_.debug( "res_es : \n%s", pformat(res_es))
+    # log_.debug( "status_es : \n%s", pformat(status_es))
     res, status = res_es, status_es
     
   if MONGODB_ENABLED and q_version != 'last' :
@@ -355,6 +355,35 @@ def update_document(
 
 
 
+# doc_uuid_list: List[str] = None,
+def update_many_document(
+  index_name: str = None,
+  doc_type: str = None,
+  params: dict = None,
+  body = None,
+  ):
+  """ update many document in ES / MongoDB """
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+  if ES_ENABLED :
+    pass
+    
+  if MONGODB_ENABLED :
+    pass
+
+
+  status = { 'status_code' : 200 }
+  res = {}
+
+  log_.debug( "res : \n%s", pformat(res))
+  print()
+  return res, status
+
+
+
+
 def remove_document(
   index_name: str = None,
   doc_type: str = None,
@@ -408,6 +437,7 @@ def remove_many_documents(
   if ES_ENABLED :
     res_es, status_es = remove_es_index(
       index_name=index_name,
+      doc_type=doc_type,
     )
 
   if MONGODB_ENABLED :
