@@ -135,6 +135,12 @@ p_version = Query(
   description="`str`: version of the data requested",
 )
 
+p_version_n = Query(
+  None, 
+  alias="version_n",
+  title="Version number",
+  description="`int`: version number of the data requested",
+)
 
 class DataFormats(str, Enum) :
   json = 'json'
@@ -170,6 +176,13 @@ p_fields_to_return = Query(
   description="`str`: Fields to return. Separate the fields by a comma after the parameter : `&fields_to_return=<field_A>,<field_B>`",
 )
 
+p_full_update = Query(
+  False, 
+  alias="full_update",
+  title="full_update",
+  description="`bool`: Completly renew data if `True` while updating",
+)
+
 p_full_remove = Query(
   False, 
   alias="full_remove",
@@ -184,6 +197,12 @@ p_only_data = Query(
   alias="only_data",
   title="Only data",
   description="`bool`: Response only contains results data",
+)
+p_include_src = Query(
+  True, 
+  alias="include_src",
+  title="Include source",
+  description="`bool`: Includes `_source` field in results",
 )
 
 p_normalize_data = Query(
@@ -227,9 +246,11 @@ async def tokens_parameters(
 
 async def version_parameters(
   version: VersionsEnum = p_version,
+  version_n: int = p_version_n,
   ):
   return {
     "version" : version,
+    "version_n" : version_n,
   }
 
 async def pagination_parameters(
@@ -281,10 +302,21 @@ async def resp_parameters(
     "only_data" : only_data,
   }
 
-async def delete_parameters(
-  full_remove: bool = p_full_remove,
+async def update_parameters(
+  full_update: bool = p_full_update,
+  version_n: int = p_version_n,
   ):
   return {
+    "version_n" : version_n,
+    "full_update" : full_update,
+  }
+
+async def delete_parameters(
+  full_remove: bool = p_full_remove,
+  version_n: int = p_version_n,
+  ):
+  return {
+    "version_n" : version_n,
     "full_remove" : full_remove,
   }
 

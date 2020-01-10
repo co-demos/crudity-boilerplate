@@ -294,7 +294,7 @@ def view_es_document(
   es=create_es_client(),
   index_name=None,
   doc_type=None,
-  doc_uuid=None
+  doc_uuid=None,
   ):
   """Function to view a ES document."""
 
@@ -307,7 +307,7 @@ def view_es_document(
     res = es.get(
       index=index_name, 
       doc_type=doc_type, 
-      id=doc_uuid
+      id=doc_uuid,
     )
   except ElasticsearchException as err : 
     res = None
@@ -327,7 +327,7 @@ def search_es_documents(
   es=create_es_client(),
   index_name=None,
   doc_type=None,
-  query={}
+  query={},
   ):
 
   """Function to make a ES searrch query."""
@@ -337,6 +337,7 @@ def search_es_documents(
 
   status = { 'status_code' : 200 }
   res = None
+  include_src = query.get('include_src', True)
 
   ### build search query
   search_body = build_es_query( query )
@@ -359,7 +360,8 @@ def search_es_documents(
       # doc_type=doc_type,
       body = search_body,
       size = per_page,
-      from_= from_item ,
+      from_= from_item,
+      _source = include_src
     )
     log_.debug( "res A: \n%s", pformat(res))
     status['total'] = res['hits']['total']['value']
@@ -424,7 +426,7 @@ def update_es_document(
   doc_type=None,
   doc_uuid=None,
   doc_body=None,
-  new=None
+  just_update=True
   ):
   """Function to edit a document either updating existing fields or adding a new field."""
 
@@ -433,7 +435,8 @@ def update_es_document(
 
   status = { 'status_code' : 200 }
 
-  if doc_body : 
+  if just_update == False : 
+
     try :
       res = es.index(
         index=index_name,

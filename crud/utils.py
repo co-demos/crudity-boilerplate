@@ -229,7 +229,7 @@ def search_documents(
     res_es, status_es = search_es_documents(
       index_name=index_name,
       doc_type=doc_type,
-      query=query_params
+      query=query_params,
     )
     # log_.debug( "res_es : \n%s", pformat(res_es))
     # log_.debug( "status_es : \n%s", pformat(status_es))
@@ -340,10 +340,41 @@ def update_document(
   log_.debug( "locals() : \n%s", pformat(locals()))
 
   if ES_ENABLED :
-    pass
-    
+
+    ### get original doc
+    orig_res_es, orig_status_es = view_es_document(
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid
+    )
+    log_.debug( "orig_res_es : \n%s", pformat(orig_res_es))
+    log_.debug( "orig_status_es : \n%s", pformat(orig_status_es))
+
+    ### TO DO 
+    ### compare original with doc_body
+
+    doc_body = body 
+    new = False 
+
+    ### update doc in ES
+    res_es, status_es = update_es_document(
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid,
+      doc_body=doc_body
+    )
+
+
+
+
   if MONGODB_ENABLED :
-    pass
+    res_mongodb, status_mongodb = update_mongodb_document(
+      collection=doc_type,
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid,
+      doc_body=body
+    )
 
 
   status = { 'status_code' : 200 }

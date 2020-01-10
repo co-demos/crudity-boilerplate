@@ -41,6 +41,28 @@ class DsrData(BaseModel) :
       }
     }
 
+class DsrUpdateData(BaseModel) : 
+
+  update_data: AnyContent
+
+  class Config:
+  
+    schema_extra = {
+      'example' : {
+
+        'update_data' : {
+          "field_01": "this is updated data on field_01",
+          "field_02": "my updated field_02 data",
+          "field_03": {
+            "subfield_A" : "Update data for numerical or text...",
+            "subfield_B" : 42,
+          }
+        }
+        
+      }
+    }
+
+
 class DsrBase(DsrData) : 
 
   type: str = DSR_DOC_TYPE

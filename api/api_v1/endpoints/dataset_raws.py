@@ -13,7 +13,7 @@ from starlette.responses import Response
 from starlette.status import *
 
 from models.response import ResponseBase, ResponseDataBase, ResponseBaseResp
-from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData
+from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData, DsrUpdateData
 from models.parameters import *
 
 import crud
@@ -38,6 +38,8 @@ async def read_dsi_items(
 
   dsr_uuid: list = p_dsr_uuid,
   commons: dict = Depends(search_dsrs_parameters),
+  include_src: bool = p_include_src,
+
   # api_key: APIKey = Depends(get_api_key_optional),
   user: dict = Depends(get_user_infos),
   ):
@@ -61,7 +63,8 @@ async def read_dsi_items(
   query = { 
     "method" : "GET",
     'dsr_uuid': dsr_uuid,
-    **commons
+    'include_src' : include_src,
+    **commons,
   }
   log_.debug( "query : \n%s", pformat(query) )
 
@@ -339,8 +342,10 @@ async def update_dsr_item(
   # dsi_uuid: uuid.UUID,
   # dsr_uuid: uuid.UUID,
 
+  update_p: dict = Depends(update_parameters),
   resp_p: dict = Depends(resp_parameters),
-  item_data: DsrData,
+  item_data: DsrUpdateData,
+
   # api_key: APIKey = Depends(get_api_key),
   user: dict = Depends(need_user_infos),
   ):
@@ -360,6 +365,7 @@ async def update_dsr_item(
     "method" : "PUT",
     'dsi_uuid': dsi_uuid,
     'dsr_uuid': dsr_uuid,
+    **update_p,
     **resp_p,
   }
   log_.debug( "query : \n%s", pformat(query) )

@@ -328,7 +328,11 @@ async def update_dsi_item(
   # dsi_uuid: str,
   # dsi_uuid: uuid.UUID,
 
-  body: dict,
+  # body: dict,
+  body: DsiUpdate,
+
+
+  # update_p: dict = Depends(update_parameters),
   resp_p: dict = Depends(resp_parameters),
   # api_key: APIKey = Depends(get_api_key),
   user: dict = Depends(need_user_infos),
@@ -348,6 +352,7 @@ async def update_dsi_item(
   query = {
     "method" : "PUT",
     "dsi_uuid": dsi_uuid,
+    # **update_p,
     **resp_p,
   }
   log_.debug( "query : \n%s", pformat(query) )

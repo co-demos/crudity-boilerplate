@@ -92,9 +92,26 @@ class DsiCreate(BaseModel):
 
 
 # Properties to receive on item update
-class DsiUpdate(DsiBase):
+class DsiUpdate(BaseModel):
 
-  data: AnyContent
+  update_data: AnyContent
+
+  class Config:
+  
+    schema_extra = {
+      'example' : {
+        
+        'update_data' : {
+          "title": "my updated dataset input",
+          "description": "my updated dataset input description",
+          "licence": "my peculiar licence",
+          # "is_geodata": False,
+          # "auth_preview": "opendata",
+          # "auth_modif": "private"
+        }
+        
+      }
+    }
 
 
 # Properties to return to client
