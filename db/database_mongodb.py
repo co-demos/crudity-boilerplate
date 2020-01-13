@@ -259,7 +259,7 @@ def update_mongodb_document(
   doc_type=None,
   doc_uuid=None,
   doc_body=None,
-  new=None
+  full_update=None
   ):
   """Function to edit a document either updating existing fields or adding a new field."""
 
@@ -276,29 +276,46 @@ def update_mongodb_document(
   query = {}
   doc_query = build_mongodb_query( query, doc_uuid )
   
-  # find and update
-  try : 
-    res = db.find_one_and_update(
-      doc_query,
-      { 
-        '$set' : {
+  #### find and update
 
+  if full_update : 
+    ### full update => replace doc by doc_body
+    try : 
+      res = db.find_one_and_update(
+        doc_query,
+        { 
+          '$set' : {
+
+          }
         }
+      ) 
+      log_.debug( "res : \n%s", pformat(res))
+      res_list = list(res)
+    except : 
+      res = None
+      status = {
+        'status_code' : 500,
+        'error' : "",
+        'info' : "",
       }
-    ) 
-    log_.debug( "res : \n%s", pformat(res))
-    res_list = list(res)
-  except : 
-    res = {}
-    status = {
-      'status_code' : 500,
-      'error' : "",
-      'info' : "",
-    }
 
-  log_.debug( "res_list : \n%s", pformat(res_list))
+  else : 
+    ### not full update => set fields
+    try : 
+      res = { 'msg_test' : 'TO DO mate !' }
+      ### to do 
+      pass 
+    except : 
+      res = None
+      status = {
+        'status_code' : 500,
+        'error' : "",
+        'info' : "",
+      }
+
+  log_.debug( "res : \n%s", pformat(res))
   print()
-  return res_list, status
+  return res, status
 
 
 

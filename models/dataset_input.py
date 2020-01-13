@@ -58,6 +58,8 @@ class DsiBase(BaseModel) :
 
   foreign_keys: List[ ForeignKey ] = [] 
 
+  modified_at : Optional[str] = None
+  modified_by : Optional[str] = None
 
 # Properties to receive on item creation
 class DsiCreate(BaseModel):
@@ -95,6 +97,8 @@ class DsiCreate(BaseModel):
 class DsiUpdate(BaseModel):
 
   update_data: AnyContent
+  modified_at : Optional[str] = None
+  modified_by : Optional[str] = None
 
   class Config:
   

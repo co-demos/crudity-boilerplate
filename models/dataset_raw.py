@@ -44,7 +44,9 @@ class DsrData(BaseModel) :
 class DsrUpdateData(BaseModel) : 
 
   update_data: AnyContent
-
+  modified_at : Optional[str] = None
+  modified_by : Optional[str] = None
+  
   class Config:
   
     schema_extra = {
@@ -74,6 +76,9 @@ class DsrBase(DsrData) :
   created_at: datetime = None
   updated_at: datetime = None
   logs: List[ DataLogBase ] = []
+  
+  modified_at : Optional[str] = None
+  modified_by : Optional[str] = None
 
   is_deleted : Optional[bool] = False
   is_test_data : Optional[bool] = False

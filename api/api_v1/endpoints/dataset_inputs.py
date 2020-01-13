@@ -256,6 +256,10 @@ async def create_dsi_item(
   }
 
   msg = '' 
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
 
   ### build / marshall a dsi from models
   dsi_client = DsiBase( **dsi_in.dict() )
@@ -285,6 +289,16 @@ async def create_dsi_item(
   )
   log_.debug( "res : \n%s", pformat(res))
   
+  ### populate response fields from res
+  if res : 
+    data = dsi_db
+    doc_version['version_n'] = res['_version']
+    doc_version['version_s'] = 'last'
+  else :
+    # data = dsi_db 
+    data = None
+
+  ### status from res
   if status['status_code'] == 200 : 
     msg = 'your DSI document has been created'
   else : 
@@ -294,7 +308,7 @@ async def create_dsi_item(
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
-      data = dsi_db,
+      data = data,
       msg = msg
     )
   else : 
@@ -307,7 +321,7 @@ async def create_dsi_item(
     response = ResponseBaseNoTotal(
       status = status,
       query = query,
-      data =  dsi_db,
+      data =  data,
       stats = stats,
       msg = msg
     )
@@ -331,7 +345,6 @@ async def update_dsi_item(
   # body: dict,
   body: DsiUpdate,
 
-
   # update_p: dict = Depends(update_parameters),
   resp_p: dict = Depends(resp_parameters),
   # api_key: APIKey = Depends(get_api_key),
@@ -349,6 +362,7 @@ async def update_dsi_item(
   # log_.debug( "api_key : %s", api_key )
   log_.debug( "user : \n%s", pformat(user) )
 
+
   query = {
     "method" : "PUT",
     "dsi_uuid": dsi_uuid,
@@ -358,6 +372,15 @@ async def update_dsi_item(
   log_.debug( "query : \n%s", pformat(query) )
 
   msg = '' 
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
+
+  ### add infos
+  body.modified_at = datetime.now()
+  body.modified_by = user['infos']['email']
+
 
   ### update in DBs
   res, status = crud.dataset_input.update_dsi(
@@ -368,16 +391,29 @@ async def update_dsi_item(
   log_.debug( "res : \n%s", pformat(res))
 
 
+  ### data from res
+  if res : 
+    data = res['_source']
+    doc_version['version_n'] = res['_version']
+    doc_version['version_s'] = 'last'
+  else :
+    data = None
+
+  ### status from res
   if status['status_code'] == 200 : 
     msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been updated"
   else : 
     msg = f"there has been an error while updating DSI doc with dsi_uuid <{dsi_uuid}>"
 
 
+
+
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
-      data = body,
+      # data = body,
+      data = data,
+      doc_version = doc_version,
       msg = msg 
     )
   else : 
@@ -390,7 +426,9 @@ async def update_dsi_item(
     response = ResponseBaseNoTotal(
       status = status,
       query = query,
-      data =  body,
+      # data =  body,
+      data = data,
+      doc_version = doc_version,
       stats = stats,
       msg = msg 
     )

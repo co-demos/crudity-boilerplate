@@ -426,7 +426,7 @@ def update_es_document(
   doc_type=None,
   doc_uuid=None,
   doc_body=None,
-  just_update=True
+  full_update=True
   ):
   """Function to edit a document either updating existing fields or adding a new field."""
 
@@ -435,16 +435,17 @@ def update_es_document(
 
   status = { 'status_code' : 200 }
 
-  if just_update == False : 
-
+  if full_update : 
+    ### full update => replace doc by doc_body
     try :
       res = es.index(
         index=index_name,
         doc_type=doc_type,
         id=doc_uuid,
-        body=doc_body
+        body={ 'doc' : doc_body }
       )
     except ElasticsearchException as err : 
+      log_.debug( "err : \n%s", pformat(err.__dict__))
       res = None
       status = {
         'status_code' : err.status_code,
@@ -453,14 +454,16 @@ def update_es_document(
       }
 
   else : 
+    ### not full update => set fields
     try : 
       res = es.update(
         index=index_name,
         doc_type=doc_type,
         id=doc_uuid,
-        body={ "doc" : new }
+        body={ 'doc' : doc_body }
       )
     except ElasticsearchException as err : 
+      log_.debug( "err : \n%s", pformat(err.__dict__))
       res = None
       status = {
         'status_code' : err.status_code,

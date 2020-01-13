@@ -190,7 +190,7 @@ async def read_dsr_item(
   log_.debug( "res : \n%s", pformat(res))
 
 
-  ### marshal / apply model to data
+  ### populate response fields
   if res : 
     # data =  Dsi(**res)
     data = Dsr( **res['_source'] )
@@ -265,6 +265,10 @@ async def create_dsr_item(
 
 
   msg = '' 
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
 
   ### 1 - post corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
@@ -290,11 +294,23 @@ async def create_dsr_item(
   log_.debug( "status : \n%s", pformat(status))
   log_.debug( "item_data_ (B): \n%s", pformat( item_data_ ) )
 
+
+
   try : 
     del item_data_["_id"]
   except : 
     pass
   log_.debug( "item_data_ (C): \n%s", pformat( item_data_ ) )
+
+
+  ### data from res
+  if res : 
+    data = item_data_
+    doc_version['version_n'] = res['_version']
+    doc_version['version_s'] = 'last'
+  else :
+    data = None
+
 
   ### response formatting
   if status['status_code'] == 200 : 
@@ -305,7 +321,8 @@ async def create_dsr_item(
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
-      data = item_data_,
+      data = data,
+      doc_version = doc_version,
       msg = msg
     )
   else : 
@@ -318,7 +335,8 @@ async def create_dsr_item(
     response = ResponseBaseResp(
       status = status,
       query = query,
-      data =  item_data_,
+      data =  data,
+      doc_version = doc_version,
       resp = res,
       stats = stats,
       msg = msg,
@@ -361,6 +379,7 @@ async def update_dsr_item(
   # log_.debug( "api_key : %s", api_key )
   log_.debug( "user : \n%s", pformat(user) )
 
+
   query = {
     "method" : "PUT",
     'dsi_uuid': dsi_uuid,
@@ -375,6 +394,14 @@ async def update_dsr_item(
   item_data_ = item_data_dict
 
   msg = '' 
+  doc_version = {
+    'version_n' : None,
+    'version_s' : None
+  }
+
+  ### add infos
+  item_data_['modified_at'] = datetime.now()
+  item_data_['modified_by'] = user['infos']['email']
 
   ### 1 - update corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
@@ -388,7 +415,17 @@ async def update_dsr_item(
   log_.debug( "res : \n%s", pformat(res))
 
 
+  ### populate response fields from res
+  if res : 
+    # data = item_data_,
+    data = res['_source']
+    doc_version['version_n'] = res['_version']
+    doc_version['version_s'] = 'last'
+  else :
+    # data = item_data_,
+    data = None
 
+  ### status from res
   if status['status_code'] == 200 : 
     msg = f"the DSR doc with dsr_uuid <{dsr_uuid}> has been updated"
   else : 
@@ -397,7 +434,8 @@ async def update_dsr_item(
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
-      data = res,
+      data = data,
+      doc_version = doc_version,
     )
   else : 
     time_end = datetime.now()
@@ -409,7 +447,8 @@ async def update_dsr_item(
     response = ResponseBaseResp(
       status = status,
       query = query,
-      data =  item_data_,
+      data = data,
+      doc_version = doc_version,
       response =  res,
       stats = stats,
       msg = msg

@@ -88,11 +88,27 @@ def update_dsr(
   ### check if DSR exists first 
 
   ### update DSR document
-  res, status = update_document(
+  res_update, status_update = update_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
     params = query_params,
+    body = {
+      'data' : { **body.update_data },
+      'modified_at' : body.modified_at,
+      'modified_by' : body.modified_by
+    }
+  )
+
+  ### retrieve full updated doc
+  res, status = view_document(
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    doc_uuid = dsr_uuid,
+    query_params = {
+      **query_params,
+      'version' : 'last'
+    },
   )
 
   # log_.debug( "res : \n%s", pformat(res))

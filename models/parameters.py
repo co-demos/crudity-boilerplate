@@ -139,7 +139,7 @@ p_version_n = Query(
   None, 
   alias="version_n",
   title="Version number",
-  description="`int`: version number of the data requested",
+  description="`int`: version number of the data requested (`0` means ignore)",
 )
 
 class DataFormats(str, Enum) :

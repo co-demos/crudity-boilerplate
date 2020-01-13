@@ -11,38 +11,6 @@ from .test_login import client_login
 
 
 
-### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### GET LIST DSIs
-### - - - - - - - - - - - - - - - - - - - - - - - ### 
-
-def test_get_list_dsi( 
-  as_test = True, 
-  page_number=1, 
-  results_per_page=100 
-  ):
-
-  server_api = get_server_api()
-  # log_.debug('=== server_api : %s', server_api)
-
-  params = {
-    'page_n' : page_number,
-    'per_page' : results_per_page
-  }
-
-  response = requests.get(
-    f"{server_api}{config.API_V1_STR}/dsi/list",
-    params=params
-  )
-  resp = response.json()
-  # log_.debug ('=== resp : \n%s', pformat(resp) )
-
-  if as_test : 
-    log_.debug ('=== resp : \n%s', pformat(resp) )
-    assert response.status_code == 200
-  else :
-    return resp
-
-
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### POST NEW DSI
@@ -89,13 +57,57 @@ def test_create_one_dsi( as_test = True ):
   create_one_dsi( as_test = as_test )
   
 
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### GET ONE DSI
+### GET LIST DSIs
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+
+def get_list_dsi( 
+  as_test = True, 
+  page_number=1, 
+  results_per_page=100 
+  ):
+
+  server_api = get_server_api()
+  # log_.debug('=== get_list_dsi / server_api : %s', server_api)
+
+  params = {
+    'page_n' : page_number,
+    'per_page' : results_per_page
+  }
+
+  response = requests.get(
+    f"{server_api}{config.API_V1_STR}/dsi/list",
+    params=params
+  )
+  resp = response.json()
+  # log_.debug ('=== resp : \n%s', pformat(resp) )
+
+  if as_test : 
+    log_.debug ('=== get_list_dsi / resp : \n%s', pformat(resp) )
+    assert response.status_code == 200
+  else :
+    return resp
+
+
+def test_get_list_dsi( 
+  as_test = True, 
+  page_number=1, 
+  results_per_page=100 
+  ):
+  get_list_dsi( as_test = as_test )
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+### UTILS DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def get_random_dsi_uuid( only_test_dsi = False ) : 
 
-  test_dsi_list = test_get_list_dsi( as_test = False )
+  test_dsi_list = get_list_dsi( as_test = False )
+  log_.debug ('=== get_random_dsi_uuid / test_dsi_list : \n%s', pformat(test_dsi_list))
+
   full_dsi_list = test_dsi_list['data']
   if only_test_dsi : 
     testable_dsi = [ i for i in full_dsi_list if i['is_test_data'] == True ]
@@ -106,6 +118,13 @@ def get_random_dsi_uuid( only_test_dsi = False ) :
   log_.debug ('=== get_random_dsi_uuid / test_dsi_uuid : %s', test_dsi_uuid)
   return test_dsi_uuid
 
+
+
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+### GET ONE DSI
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def test_get_one_dsi( as_test = True, only_test_data = False ):
 
@@ -137,31 +156,45 @@ def test_get_one_dsi( as_test = True, only_test_data = False ):
 
 
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### UPDATE DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def update_one_dsi( as_test = True, full_update = False ): 
+def update_one_dsi( as_test = True, version_n = None  ): 
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
   ### get test user
   test_user_access_token = client_login( as_test = False, only_access_token=True )
-  log_.debug ('=== test_update_one_dsi / test_user_access_token : %s', test_user_access_token )
+  log_.debug ('=== update_one_dsi / test_user_access_token : %s', test_user_access_token )
 
   ### create a test DSI
   test_dsi = create_one_dsi( as_test = False )
-  log_.debug ('=== test_update_one_dsi / test_dsi : \n%s', pformat(test_dsi) )
+  log_.debug ('=== update_one_dsi / test_dsi : \n%s', pformat(test_dsi) )
+  assert test_dsi['data']['is_test_data'] == True
+
+  test_dsi_uuid = test_dsi['data']['dsi_uuid'] 
+  log_.debug ('=== update_one_dsi / test_dsi_uuid : %s', test_dsi_uuid )
+
+  ### test get created doc
+  # response_get = requests.get(
+  #   f"{server_api}{config.API_V1_STR}/dsi/get_one/{test_dsi_uuid}"
+  # )
+  # resp_get = response_get.json()
+  # log_.debug ('=== update_one_dsi / resp_get : \n%s', pformat(resp_get) )
 
   ### mockup update field
   update_data = {
-    "licence" : "my-test-licence",
-    "auth_preview" : "private"
+    "update_data" : {
+      "licence" : "my-test-licence",
+      "auth_preview" : "private"
+    }
   }
 
   params_update = {
-    'full_update' : full_update,
+    'version_n' : version_n
   }
 
   headers = {
@@ -171,27 +204,29 @@ def update_one_dsi( as_test = True, full_update = False ):
 
   ### update doc
   response = requests.put(
-    f"{server_api}{config.API_V1_STR}/dsi/create",
+    f"{server_api}{config.API_V1_STR}/dsi/update/{test_dsi_uuid}",
     json = update_data,
     params = params_update,
     headers = headers
   )
   resp = response.json() 
-  log_.debug ('=== test_update_one_dsi / resp : \n%s', pformat(resp) )
+  log_.debug ('=== update_one_dsi / resp : \n%s', pformat(resp) )
 
   if as_test : 
-    assert resp['data']['licence'] == update_data['licence']
-    assert resp['data']['licence'] == update_data['licence']
     assert response.status_code == 200
+    assert resp['data']['licence']      == update_data['update_data']['licence']
+    assert resp['data']['auth_preview'] == update_data['update_data']['auth_preview']
   else : 
     return resp
 
 
-def test_update_one_dsi_no_full_update() :
+def test_update_one_dsi() :
   update_one_dsi()
 
-def test_update_one_dsi_full_update() :
-  update_one_dsi( full_update=True )
+### TO DO 
+# def test_update_one_dsi_version( ) :
+#   update_one_dsi( version_n = 2)
+
 
 
 
@@ -213,12 +248,15 @@ def delete_one_dsi(
 
   if dsi_uuid == None : 
     test_dsi = create_one_dsi( as_test = False ) 
+    assert test_dsi['data']['is_test_data'] == True
     dsi_uuid = test_dsi['data']['dsi_uuid']
 
   ### get test user
   if access_token == None :
     test_user_access_token = client_login( as_test = False, only_access_token=True )
-    log_.debug ('=== test_user_access_token : %s', test_user_access_token )
+    log_.debug ('=== delete_one_dsi / test_user_access_token : %s', test_user_access_token )
+  else :
+    test_user_access_token = access_token
 
   params_delete = {
     'full_remove' : full_remove,
@@ -228,14 +266,14 @@ def delete_one_dsi(
     'access_token' : test_user_access_token,
   }
 
-
+  ### send request
   response = requests.delete(
     f"{server_api}{config.API_V1_STR}/dsi/remove/{dsi_uuid}",
     params = params_delete,
     headers = headers
   )
 
-
+  return response
 
 
 def delete_all_dsi( 
@@ -249,10 +287,10 @@ def delete_all_dsi(
 
   ### get test user
   test_user_access_token = client_login( as_test = False, only_access_token=True )
-  log_.debug ('=== test_user_access_token : %s', test_user_access_token )
+  log_.debug ('=== delete_all_dsi / test_user_access_token : %s', test_user_access_token )
 
   ### get list of DSIs
-  test_dsi_list = test_get_list_dsi( as_test = False )
+  test_dsi_list = get_list_dsi( as_test = False )
   full_dsi_list = test_dsi_list['data']
 
   if only_test_data : 
@@ -268,24 +306,9 @@ def delete_all_dsi(
     # log_.debug ('=== dsi : \n%s', pformat(dsi) )
 
     dsi_uuid = dsi['dsi_uuid']
-    log_.debug ('=== dsi_uuid : %s', dsi_uuid )
+    log_.debug ('=== delete_all_dsi / dsi_uuid : %s', dsi_uuid )
     
-
-
-    # params_delete = {
-    #   # 'dsi_uuid' : dsi_uuid ,
-    #   'full_remove' : full_remove,
-    # }
-    # headers = {
-    #   'accept': 'application/json',
-    #   'access_token' : test_user_access_token,
-    # }
-
-    # response = requests.delete(
-    #   f"{server_api}{config.API_V1_STR}/dsi/remove/{dsi_uuid}",
-    #   params = params_delete,
-    #   headers = headers
-    # )
+    ### send request
     response = delete_one_dsi( 
       as_test=False, 
       server_api=server_api,
@@ -293,6 +316,7 @@ def delete_all_dsi(
       access_token=test_user_access_token,
       full_remove=full_remove
     )
+    log_.debug ('=== delete_all_dsi / response : \n%s', pformat(response) )
 
     assert response.status_code == 200 
 

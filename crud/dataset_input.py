@@ -98,14 +98,31 @@ def update_dsi(
   ### check if DSI exists first 
 
   ### update DSI document
-  res, status = update_document(
+  res_update, status_update = update_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
     params = query_params,
-    body = body
+    body = {
+      **body.update_data,
+      'modified_at' : body.modified_at,
+      'modified_by' : body.modified_by
+    }
   )
+  # log_.debug( "res_update : \n%s", pformat(res_update))
+  # log_.debug( "status_update : \n%s", pformat(status_update))
 
+
+  ### retrieve full updated doc
+  res, status = view_document(
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    query_params = {
+      **query_params,
+      'version' : 'last'
+    },
+  )
   # log_.debug( "res : \n%s", pformat(res))
   # log_.debug( "status : \n%s", pformat(status))
 

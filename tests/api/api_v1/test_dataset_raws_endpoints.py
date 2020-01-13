@@ -6,14 +6,14 @@ from log_config import log_, pformat
 
 from core import config
 from tests.utils.utils import get_server_api
-from .test_dataset_inputs_endpoints import get_random_dsi_uuid, create_one_dsi, delete_all_dsi
 from .test_login import client_login
+from .test_dataset_inputs_endpoints import get_random_dsi_uuid, create_one_dsi, delete_all_dsi
 
 
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### POST
+### POST DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def create_one_dsr ( 
@@ -59,6 +59,7 @@ def test_create_one_dsr():
 
   test_dsi = create_one_dsi( as_test=False )
   log_.debug ('=== test_dsi : \n%s', pformat(test_dsi) )
+  assert test_dsi['data']['is_test_data'] == True
 
   test_dsi_uuid = test_dsi['data']['dsi_uuid']
   log_.debug ('=== test_dsi_uuid : %s', test_dsi_uuid )
@@ -66,8 +67,10 @@ def test_create_one_dsr():
   create_one_dsr( dsi_uuid = test_dsi_uuid )
 
 
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### GET LIST
+### GET LIST DSRs
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def get_list_dsr( 
@@ -82,6 +85,7 @@ def get_list_dsr(
 
   if dsi_uuid == None : 
     test_dsi = create_one_dsi ( as_test = False ) 
+    assert test_dsi['data']['is_test_data'] == True
     test_dsi_uuid = test_dsi['data']['dsi_uuid']
   else :
     test_dsi_uuid = dsi_uuid
@@ -119,8 +123,9 @@ def test_get_list_dsr(
 
 
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### UTILS
+### UTILS DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def get_random_dsr_uuid( 
@@ -151,8 +156,9 @@ def get_random_dsr_uuid(
 
 
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### GET ONE
+### GET ONE DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def test_get_one_dsr( 
@@ -167,23 +173,24 @@ def test_get_one_dsr(
   ### get DSI UUID
   if dsi_uuid == None : 
     test_dsi = create_one_dsi ( as_test = False ) 
+    assert test_dsi['data']['is_test_data'] == True
     test_dsi_uuid = test_dsi['data']['dsi_uuid']
   else :
     test_dsi_uuid = dsi_uuid
-  log_.debug('=== test_dsi_uuid : %s', test_dsi_uuid )
+  log_.debug('=== test_get_one_dsr / test_dsi_uuid : %s', test_dsi_uuid )
 
   ### get DSR UUID
   test_dsr = create_one_dsr( as_test=False, dsi_uuid=test_dsi_uuid )
-  log_.debug('=== test_dsr : \n%s', pformat(test_dsr) )
+  log_.debug('=== test_get_one_dsr / test_dsr : \n%s', pformat(test_dsr) )
   test_dsr_uuid = test_dsr['data']['dsr_uuid']
-  log_.debug('=== test_dsr_uuid : %s', test_dsr_uuid )
+  log_.debug('=== test_get_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
 
   ### get DSRs list
   response = requests.get(
     f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/get_one/{test_dsr_uuid}"
   )
   resp = response.json()
-  log_.debug('=== resp : \n%s', pformat(resp) )
+  log_.debug('=== test_get_one_dsr / resp : \n%s', pformat(resp) )
   
   if as_test : 
     assert response.status_code == 200
@@ -192,8 +199,80 @@ def test_get_one_dsr(
 
 
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### DELETE
+### UPDATE DSR
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+
+def update_one_dsr( as_test = True, full_update = False, version_n = None ): 
+
+  server_api = get_server_api()
+  # log_.debug ('=== server_api : %s', server_api)
+
+  ### get test user
+  test_user_access_token = client_login( as_test = False, only_access_token=True )
+  log_.debug ('=== update_one_dsr / test_user_access_token : %s', test_user_access_token )
+
+  ### create a test DSR
+  test_dsr = create_one_dsr( as_test = False )
+  log_.debug ('=== update_one_dsr / test_dsr : \n%s', pformat(test_dsr) )
+  test_dsi_uuid = test_dsr['data']['dsi_uuid']
+  test_dsr_uuid = test_dsr['data']['dsr_uuid']
+  log_.debug('=== update_one_dsr / test_dsi_uuid : %s', test_dsi_uuid )
+  log_.debug('=== update_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
+
+  ### mockup update field
+  update_data = {
+    "update_data" : {
+      "field_01": "this is updated data on field_01",
+      "field_02": "my updated field_02 data",
+      "field_03": {
+        "subfield_A": "Update data for numerical or text...",
+        "subfield_B": 42
+      }
+    }
+  }
+
+  params_update = {
+    'full_update' : full_update,
+    'version_n' : version_n
+  }
+
+  headers = {
+    'accept': 'application/json',
+    'access_token' : test_user_access_token,
+  }
+
+  ### update doc
+  response = requests.put(
+    f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/update/{test_dsr_uuid}",
+    json = update_data,
+    params = params_update,
+    headers = headers
+  )
+  resp = response.json() 
+  log_.debug ('=== update_one_dsr / resp : \n%s', pformat(resp) )
+
+  if as_test : 
+    assert response.status_code == 200
+    assert resp['data']['field_01'] == update_data['update_data']['field_01']
+    assert resp['data']['field_02'] == update_data['update_data']['field_02']
+    assert resp['data']['field_03'] == update_data['update_data']['field_03']
+  else : 
+    return resp
+
+
+def test_update_one_dsr_no_full_update() :
+  update_one_dsr()
+
+def test_update_one_dsr_full_update() :
+  update_one_dsr( full_update=True )
+
+
+
+
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+### DELETE DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def delete_one_dsr (
@@ -210,6 +289,7 @@ def delete_one_dsr (
 
   if dsi_uuid == None :
     test_dsi = create_one_dsi ( as_test = False ) 
+    assert test_dsi['data']['is_test_data'] == True
     test_dsi_uuid = test_dsi['data']['dsi_uuid']
     test_dsr_01 = create_one_dsr( as_test=False, dsi_uuid=test_dsi_uuid )
     log_.debug('=== delete_one_dsr / test_dsr_01 : \n%s', pformat(test_dsr_01) )
@@ -258,7 +338,6 @@ def test_delete_dsr_no_full_remove():
     dsi_uuid = dsi_uuid,
   )
 
-
 def test_delete_dsr_full_remove():
 
   # dsi_uuid = 'c6dc3cd0904a4090a75be94033a574c7'
@@ -269,7 +348,6 @@ def test_delete_dsr_full_remove():
     full_remove = True 
   )
 
-
-### clean up all that
+### clean up all test DSRs and DSIs
 def test_delete_all_test_dsr_dsi():
   delete_all_dsi( full_remove=True )

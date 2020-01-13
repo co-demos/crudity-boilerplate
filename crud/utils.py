@@ -339,6 +339,9 @@ def update_document(
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
+  full_update = params.get('full_update' , False) 
+
+
   if ES_ENABLED :
 
     ### get original doc
@@ -350,35 +353,43 @@ def update_document(
     log_.debug( "orig_res_es : \n%s", pformat(orig_res_es))
     log_.debug( "orig_status_es : \n%s", pformat(orig_status_es))
 
+
     ### TO DO 
     ### compare original with doc_body
+    # doc_body = body 
+    # doc_body_dict = body.update_data
+    doc_body_dict = body
 
-    doc_body = body 
-    new = False 
 
     ### update doc in ES
     res_es, status_es = update_es_document(
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
-      doc_body=doc_body
+      doc_body=doc_body_dict,
+      full_update = full_update 
     )
 
+    res = res_es
+    # status = { 'status_code' : status_es['status_code'] }
+    status = status_es
 
 
-
+  ### update doc in MongoDB
   if MONGODB_ENABLED :
     res_mongodb, status_mongodb = update_mongodb_document(
       collection=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
-      doc_body=body
+      doc_body=doc_body_dict,
+      full_update = full_update 
     )
+    if ES_ENABLED == False :
+      res = res_mongodb
+      # status = { 'status_code' : status_mongodb['status_code'] }
+      status = status_mongodb
 
-
-  status = { 'status_code' : 200 }
-  res = {}
 
   log_.debug( "res : \n%s", pformat(res))
   print()
