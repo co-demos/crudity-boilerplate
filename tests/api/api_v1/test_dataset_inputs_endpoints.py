@@ -193,6 +193,7 @@ def get_one_dsi(
 def test_get_one_dsi():
   get_one_dsi()
 
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### UPDATE DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -259,8 +260,8 @@ def update_one_dsi(
 
   if as_test : 
     assert response.status_code == 200
-    assert resp['data']['licence']      == update_data['update_data']['licence']
-    assert resp['data']['auth_preview'] == update_data['update_data']['auth_preview']
+    for key in update_data['update_data'].keys() :
+      assert resp['data'][key] == update_data['update_data'][key]
   else : 
     return resp
 
@@ -269,9 +270,23 @@ def update_one_dsi(
 def test_update_one_dsi() :
   update_one_dsi()
 
+@pytest.mark.update
+def test_update_one_dsi_with_data() :
+
+  update_data = {
+    "update_data" : {
+      "auth_modif": "team",
+    }
+  }
+
+  update_one_dsi(
+    update_data = update_data,
+  )
+
 ### TO DO 
 # def test_update_one_dsi_version( ) :
 #   update_one_dsi( version_n = 2)
+
 
 
 
@@ -346,6 +361,10 @@ def test_delete_one_dsi_full_remove():
   )
 
 
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+### CLEANUP DSI
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+
 def delete_all_dsi( 
   as_test = True, 
   only_test_data = True,
@@ -397,9 +416,6 @@ def test_delete_dsi_no_full_remove():
     only_test_data = True,
     full_remove = False 
   )
-
-
-### CLEANUP 
 
 @pytest.mark.delete
 def test_delete_dsi_full_remove(): 

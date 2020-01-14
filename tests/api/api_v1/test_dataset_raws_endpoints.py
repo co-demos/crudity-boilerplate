@@ -14,7 +14,7 @@ from .test_dataset_inputs_endpoints import get_random_dsi_uuid, create_one_dsi, 
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
-### POST DSR
+### POST NEW DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def create_one_dsr ( 
@@ -254,17 +254,23 @@ def update_one_dsr(
   update_data = None,
   dsi_uuid = None,
   dsr_uuid = None,
+  access_token = None,
   ): 
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
   ### get test user
-  test_user_access_token = client_login( as_test = False, only_access_token=True )
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else : 
+    test_user_access_token = access_token
   log_.debug ('=== update_one_dsr / test_user_access_token : %s', test_user_access_token )
 
   ### create a test DSI and DSR
   if dsi_uuid == None and dsr_uuid == None :
+    log_.debug ('=== update_one_dsr / no dsi_uuid nor dsr_uuid...')
+
     test_dsr = create_one_dsr( as_test = False, dsi_uuid=dsi_uuid )
     log_.debug ('=== update_one_dsr / test_dsr : \n%s', pformat(test_dsr) )
     test_dsi_uuid = test_dsr['data']['dsi_uuid']
@@ -275,7 +281,7 @@ def update_one_dsr(
   else : 
     test_dsi_uuid = dsi_uuid
 
-    if dsi_uuid != None :
+    if dsi_uuid != None and dsr_uuid == None :
       test_dsr = create_one_dsr( as_test = False, dsi_uuid=dsi_uuid )
       test_dsr_uuid = test_dsr['data']['dsr_uuid']
     else :
@@ -321,7 +327,9 @@ def update_one_dsr(
 
   if as_test : 
     assert response.status_code == 200
-    assert resp['data']['data']['field_01'] == update_data['update_data']['field_01']
+    for key in update_data['update_data'].keys() :
+      assert resp['data']['data'][key] == update_data['update_data'][key]
+    # assert resp['data']['data']['field_01'] == update_data['update_data']['field_01']
     # assert resp['data']['data']['field_02'] == update_data['update_data']['field_02']
     # assert resp['data']['data']['field_03'] == update_data['update_data']['field_03']
   else : 
@@ -333,6 +341,46 @@ def test_update_one_dsr_no_full_update() :
   update_one_dsr(
     full_update = False 
   )
+
+@pytest.mark.update
+def test_update_one_dsr_no_full_update_with_data() :
+
+  random_int = random.randint(0, 1000) 
+  test_user_access_token = client_login( as_test = False, only_access_token=True )
+
+  update_data_one = {
+    "update_data" : {
+      "field_01": f"my data field_01 data +BIS+ - {random_int}",
+      "field_02": f"my data field_02 data +BIS+ - {random_int}",
+      "field_03": f"my data field_03 data +BIS+ - {random_int}",
+    }
+  }
+
+  resp_one = update_one_dsr(
+    as_test = False,
+    update_data = update_data_one,
+    full_update = False,
+    access_token = test_user_access_token
+  )
+  log_.debug ('=== test_update_one_dsr_no_full_update_with_data / resp_one : \n%s', pformat(resp_one) )
+  dsi_uuid = resp_one['data']['dsi_uuid']
+  dsr_uuid = resp_one['data']['dsr_uuid']
+
+  update_data_bis = {
+    "update_data" : {
+      "field_02": f"my updated field_02 data +BIS+ - {random_int + 1}",
+    }
+  }
+  resp_bis = update_one_dsr(
+    # as_test = False,
+    full_update = False, 
+    update_data = update_data_bis,
+    dsi_uuid = dsi_uuid,
+    dsr_uuid = dsr_uuid,
+    access_token = test_user_access_token
+  )
+  # log_.debug ('=== test_update_one_dsr_no_full_update_with_data / resp_one : \n%s', pformat(resp_one) )
+  # log_.debug ('=== test_update_one_dsr_no_full_update_with_data / resp_bis : \n%s', pformat(resp_bis) )
 
 @pytest.mark.update
 def test_update_one_dsr_full_update() :
@@ -441,7 +489,9 @@ def test_delete_dsr_full_remove():
   )
 
 
-### CLEANUP 
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
+### CLEANUP DSRs
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### clean up all test DSRs and DSIs
 
 @pytest.mark.delete

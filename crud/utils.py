@@ -22,6 +22,31 @@ if MONGODB_ENABLED :
   from db.database_mongodb import *
 
 
+### AUTH LEVEL
+
+def is_user_authorized( 
+  user = None,
+  authorized_levels = [ 'owner' ],
+  doc_creator = None,
+  doc_team = None
+  ):
+
+  user_infos = user.get('infos', None) 
+  user_email = user_infos.get('email', 'no_email')
+
+  ### check if user == doc_creator
+  is_user_creator = user_email == doc_creator 
+
+  ### check if user is authorized as team member
+  is_user_authorized_in_team = False
+  if is_user_creator == False :
+    ### TO DO 
+    pass
+
+  is_authorized = is_user_creator or is_user_authorized_in_team
+
+  return is_authorized
+
 
 ### INDEX LEVEL
 
@@ -356,19 +381,21 @@ def update_document(
   if ES_ENABLED :
 
     ### get original doc
-    # orig_res_es, orig_status_es = view_es_document(
-    #   index_name=index_name,
-    #   doc_type=doc_type,
-    #   doc_uuid=doc_uuid
-    # )
-    # log_.debug( "orig_res_es : \n%s", pformat(orig_res_es))
-    # log_.debug( "orig_status_es : \n%s", pformat(orig_status_es))
+    orig_res_es, orig_status_es = view_es_document(
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid
+    )
+    log_.debug( "orig_res_es : \n%s", pformat(orig_res_es))
+    log_.debug( "orig_status_es : \n%s", pformat(orig_status_es))
 
     ### TO DO 
     ### compare original with doc_body
-    # doc_body = body 
-    # doc_body_dict = body.update_data
-    # doc_body_dict = body
+    doc_body = body 
+    if full_update == False :
+      pass
+      # doc_body_dict = body.update_data
+      # doc_body_dict = body
 
 
     ### update doc in ES
@@ -377,7 +404,7 @@ def update_document(
       doc_type=doc_type,
       doc_uuid=doc_uuid,
       # doc_body=doc_body_dict,
-      doc_body=body,
+      doc_body=doc_body,
       full_update=full_update 
     )
 
@@ -405,13 +432,14 @@ def update_document(
   ### update doc in MongoDB
   if MONGODB_ENABLED :
     # doc_body_dict = body
+    doc_body = body
     res_mongodb, status_mongodb = update_mongodb_document(
       collection=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
       # doc_body=doc_body_dict,
-      doc_body=body,
+      doc_body=doc_body,
       full_update=full_update 
     )
     if ES_ENABLED == False :

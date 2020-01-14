@@ -18,13 +18,12 @@ def client_anonymous_login( as_test = True ):
   server_api = get_server_api()
   # log_.debug("=== server_api : %s", server_api)
 
-  # response = requests.get(
-  #   f"{server_api}{config.API_V1_STR}/anonymous_login"
-  # )
-
+  # url = f"{server_api}{config.API_V1_STR}/anonymous_login"
   url = f"{config.API_V1_STR}/anonymous_login"
-  log_.debug("=== url : %s", url)
+  
+  # log_.debug("=== url : %s", url)
 
+  # response = requests.get(
   response = client.get(
     url,
   )

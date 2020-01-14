@@ -112,7 +112,6 @@ then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
   ```
 
 - **output :** 
-  `pytest ./tests/ -v` for verbose
   `pytest ./tests/ -s` for all outputs
 
 #### - Run some of the tests
@@ -126,6 +125,7 @@ then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
 
 - **by keyword :**
   `pytest ./tests/ -k inputs` for tests from files containing 'inputs' keyword
+  or `pytest ./tests/ -k 'update and input'`
 
 - **by marker name :** 
   `pytest ./tests/ -m delete ` for tests marked with 'delete' keyword
