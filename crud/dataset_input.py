@@ -20,6 +20,9 @@ def view_dsi(
   ):
   """ get a dsi from ES / MongoDB """
 
+  ### TO DO 
+  ### check user's auth 
+  
   res, status = view_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
@@ -40,6 +43,9 @@ def search_dsis(
   user: dict = None
   ):
   """ search dsi(s) from ES / MongoDB """
+
+  ### TO DO 
+  ### check user's auth 
 
   res, status = search_documents(
     index_name = DSI_DOC_TYPE,
@@ -105,6 +111,9 @@ def update_dsi(
 
   ### check if DSI exists first 
 
+  ### TO DO 
+  ### check user's auth 
+
   ### update DSI document
   res_update, status_update = update_document(
     index_name = DSI_DOC_TYPE,
@@ -153,6 +162,11 @@ def remove_dsi(
     query_params = query_params
   )
   log_.debug( "res_dsi : \n%s", pformat(res_dsi))
+
+
+  ### TO DO 
+  ### check user's auth 
+
 
   ### remove data
   if query_params['full_remove'] == True : 

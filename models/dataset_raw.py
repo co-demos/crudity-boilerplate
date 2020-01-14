@@ -17,6 +17,7 @@ AnyContent = TypeVar('AnyContent')
 class DsrData(BaseModel) : 
 
   data: AnyContent
+  is_test_data : Optional[bool] = False
 
   class Config:
   

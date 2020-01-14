@@ -3,7 +3,14 @@ import requests
 import random
 import string 
 
+from log_config import log_, pformat
+from starlette.testclient import TestClient
+
+from main import app
 from core import config
+
+
+client = TestClient(app)
 
 
 def random_lower_string():

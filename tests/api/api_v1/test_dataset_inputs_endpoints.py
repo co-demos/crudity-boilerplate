@@ -4,11 +4,11 @@ import random
 secure_random = random.SystemRandom()
 
 from log_config import log_, pformat
+from starlette.testclient import TestClient
 
 from core import config
-from tests.utils.utils import get_server_api
+from tests.utils.utils import get_server_api, client
 from .test_login import client_login
-
 
 
 
@@ -37,8 +37,12 @@ def create_one_dsi( as_test = True ):
     "is_test_data" : True
   }
 
-  response = requests.post(
-    f"{server_api}{config.API_V1_STR}/dsi/create",
+  # url = f"{server_api}{config.API_V1_STR}/dsi/create"
+  url = f"{config.API_V1_STR}/dsi/create"
+
+  # response = requests.post(
+  response = client.post(
+    url,
     json = dsi_test_payload,
     headers = {
       'accept': 'application/json',
@@ -79,8 +83,12 @@ def get_list_dsi(
     'per_page' : results_per_page
   }
 
-  response = requests.get(
-    f"{server_api}{config.API_V1_STR}/dsi/list",
+  # url = f"{server_api}{config.API_V1_STR}/dsi/list",
+  url = f"{config.API_V1_STR}/dsi/list"
+
+  # response = requests.get(
+  response = client.get(
+    url,
     params=params
   )
   resp = response.json()
@@ -100,6 +108,8 @@ def test_get_list_dsi(
   results_per_page=100 
   ):
   get_list_dsi( as_test = as_test )
+
+
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -132,18 +142,43 @@ def get_random_dsi_uuid(
 ### GET ONE DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-@pytest.mark.get
-def test_get_one_dsi( as_test = True, only_test_data = False ):
+def get_one_dsi( 
+  as_test = True,
+  only_test_data = False,
+  dsi_uuid = None,
+  access_token = None,
+  ):
 
   server_api = get_server_api()
   log_.debug ('=== test_get_one_dsi / server_api : %s', server_api)
 
-  # test_dsi_uuid = '3ffbacf768f1481cb2b8968381490a72'
-  test_dsi_uuid = get_random_dsi_uuid( only_test_dsi = only_test_data ) 
+
+  ### get test user
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else :
+    test_user_access_token = access_token
+  
+  ### dsi
+  if dsi_uuid == None :
+    # test_dsi_uuid = '3ffbacf768f1481cb2b8968381490a72'
+    test_dsi_uuid = get_random_dsi_uuid( only_test_dsi = only_test_data ) 
+  else : 
+    test_dsi_uuid = dsi_uuid
   log_.debug ('=== test_get_one_dsi / test_dsi_uuid : %s', test_dsi_uuid)
 
-  response = requests.get(
-    f"{server_api}{config.API_V1_STR}/dsi/get_one/{test_dsi_uuid}"
+  headers = {
+    'accept': 'application/json',
+    'access_token' : test_user_access_token,
+  }
+
+  # url = f"{server_api}{config.API_V1_STR}/dsi/get_one/{test_dsi_uuid}"
+  url = f"{config.API_V1_STR}/dsi/get_one/{test_dsi_uuid}"
+
+  # response = requests.get(
+  response = client.get(
+    url,
+    headers = headers
   )
   resp = response.json()
   log_.debug ('=== test_get_one_dsi / resp : \n%s', pformat(resp) )
@@ -154,15 +189,9 @@ def test_get_one_dsi( as_test = True, only_test_data = False ):
     return resp
 
 
-# def test_get_one_dsi_test(): 
-#   try :
-#     test_get_one_dsi( only_test_data = True )
-#   except : 
-#     log_.debug ('=== no test DSI ...' )
-#     assert False
-
-
-
+@pytest.mark.get
+def test_get_one_dsi():
+  get_one_dsi()
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### UPDATE DSI
@@ -170,38 +199,40 @@ def test_get_one_dsi( as_test = True, only_test_data = False ):
 
 def update_one_dsi( 
   as_test = True, 
-  version_n = None  
+  version_n = None,
+  update_data = None,
+  dsi_uuid = None,
+  access_token = None,
   ): 
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
   ### get test user
-  test_user_access_token = client_login( as_test = False, only_access_token=True )
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else :
+    test_user_access_token = access_token
   log_.debug ('=== update_one_dsi / test_user_access_token : %s', test_user_access_token )
 
   ### create a test DSI
-  test_dsi = create_one_dsi( as_test = False )
-  log_.debug ('=== update_one_dsi / test_dsi : \n%s', pformat(test_dsi) )
-  assert test_dsi['data']['is_test_data'] == True
-
-  test_dsi_uuid = test_dsi['data']['dsi_uuid'] 
+  if dsi_uuid == None :
+    test_dsi = create_one_dsi( as_test = False )
+    log_.debug ('=== update_one_dsi / test_dsi : \n%s', pformat(test_dsi) )
+    assert test_dsi['data']['is_test_data'] == True
+    test_dsi_uuid = test_dsi['data']['dsi_uuid'] 
+  else : 
+    test_dsi_uuid = dsi_uuid
   log_.debug ('=== update_one_dsi / test_dsi_uuid : %s', test_dsi_uuid )
 
-  ### test get created doc
-  # response_get = requests.get(
-  #   f"{server_api}{config.API_V1_STR}/dsi/get_one/{test_dsi_uuid}"
-  # )
-  # resp_get = response_get.json()
-  # log_.debug ('=== update_one_dsi / resp_get : \n%s', pformat(resp_get) )
-
   ### mockup update field
-  update_data = {
-    "update_data" : {
-      "licence" : "my-test-licence",
-      "auth_preview" : "private"
+  if update_data == None :
+    update_data = {
+      "update_data" : {
+        "licence" : "my-test-licence",
+        "auth_preview" : "private"
+      }
     }
-  }
 
   params_update = {
     'version_n' : version_n
@@ -212,9 +243,13 @@ def update_one_dsi(
     'access_token' : test_user_access_token,
   }
 
+  # url = f"{server_api}{config.API_V1_STR}/dsi/update/{test_dsi_uuid}"
+  url = f"{config.API_V1_STR}/dsi/update/{test_dsi_uuid}"
+
   ### update doc
-  response = requests.put(
-    f"{server_api}{config.API_V1_STR}/dsi/update/{test_dsi_uuid}",
+  # response = requests.put(
+  response = client.put(
+    url,
     json = update_data,
     params = params_update,
     headers = headers
@@ -277,8 +312,12 @@ def delete_one_dsi(
     'access_token' : test_user_access_token,
   }
 
+  # url =f"{server_api}{config.API_V1_STR}/dsi/remove/{dsi_uuid}"
+  url = f"{config.API_V1_STR}/dsi/remove/{dsi_uuid}"
+
   ### send request
-  response = requests.delete(
+  # response = requests.delete(
+  response = client.delete(
     f"{server_api}{config.API_V1_STR}/dsi/remove/{dsi_uuid}",
     params = params_delete,
     headers = headers
@@ -371,7 +410,9 @@ def test_delete_dsi_full_remove():
 
 
 ### WARNING : RESET TEST !!!
-### this test erases ALL DATA in DBs !! use at your own risks !!!
+### this test erases ALL DATA in DBs !! 
+### uncomment and use at your own risks !!!
+
 # def test_delete_ALL_dsi_full_remove(): 
 #   delete_all_dsi( 
 #     only_test_data = False,

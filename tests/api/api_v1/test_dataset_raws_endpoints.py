@@ -4,12 +4,12 @@ import random
 secure_random = random.SystemRandom()
 
 from log_config import log_, pformat
+from starlette.testclient import TestClient
 
 from core import config
-from tests.utils.utils import get_server_api
+from tests.utils.utils import get_server_api, client
 from .test_login import client_login
 from .test_dataset_inputs_endpoints import get_random_dsi_uuid, create_one_dsi, delete_all_dsi
-
 
 
 
@@ -19,11 +19,16 @@ from .test_dataset_inputs_endpoints import get_random_dsi_uuid, create_one_dsi, 
 
 def create_one_dsr ( 
   as_test = True,
-  dsi_uuid = None
+  dsi_uuid = None,
+  access_token = None
   ) : 
 
   server_api = get_server_api()
-  test_user_access_token = client_login( as_test = False, only_access_token=True )
+
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else : 
+    test_user_access_token = access_token
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
   
   if dsi_uuid == None :
@@ -39,13 +44,18 @@ def create_one_dsr (
   random_int = random.randint(0, 1000) 
 
   dsr_test_payload = {
+    "is_test_data": True,
     "data": {
       "field_01": f"test DSR - {random_int}"
     }
   }
 
-  response = requests.post(
-    f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/create",
+  # url = f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/create"
+  url = f"{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/create"
+
+  # response = requests.post(
+  response = client.post(
+    url,
     json = dsr_test_payload,
     headers = {
       'accept': 'application/json',
@@ -104,8 +114,12 @@ def get_list_dsr(
     'per_page' : results_per_page
   }
 
-  response = requests.get(
-    f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}",
+  # url = f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}"
+  url = f"{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}"
+
+  # response = requests.get(
+  response = client.get(
+    url,
     params=params
   )
   resp = response.json() 
@@ -169,15 +183,22 @@ def get_random_dsr_uuid(
 ### GET ONE DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-@pytest.mark.get
-def test_get_one_dsr( 
+def get_one_dsr( 
   as_test = True, 
   only_test_data = False, 
-  dsi_uuid = None
+  dsi_uuid = None,
+  access_token = None,
   ):
 
   server_api = get_server_api()
   # log_.debug('=== server_api : %s', server_api)
+
+  ### get test user
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else :
+    test_user_access_token = access_token
+  log_.debug ('=== update_one_dsr / test_user_access_token : %s', test_user_access_token )
 
   ### get DSI UUID
   if dsi_uuid == None : 
@@ -194,9 +215,19 @@ def test_get_one_dsr(
   test_dsr_uuid = test_dsr['data']['dsr_uuid']
   log_.debug('=== test_get_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
 
+  headers = {
+    'accept': 'application/json',
+    'access_token' : test_user_access_token,
+  }
+
+  # url = f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/get_one/{test_dsr_uuid}"
+  url = f"{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/get_one/{test_dsr_uuid}"
+
   ### get DSRs list
-  response = requests.get(
-    f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/get_one/{test_dsr_uuid}"
+  # response = requests.get(
+  response = client.get(
+    url,
+    headers = headers
   )
   resp = response.json()
   log_.debug('=== test_get_one_dsr / resp : \n%s', pformat(resp) )
@@ -207,6 +238,9 @@ def test_get_one_dsr(
     return resp
 
 
+@pytest.mark.get
+def test_get_one_dsr():
+  get_one_dsr()
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -219,6 +253,7 @@ def update_one_dsr(
   version_n = None,
   update_data = None,
   dsi_uuid = None,
+  dsr_uuid = None,
   ): 
 
   server_api = get_server_api()
@@ -228,13 +263,23 @@ def update_one_dsr(
   test_user_access_token = client_login( as_test = False, only_access_token=True )
   log_.debug ('=== update_one_dsr / test_user_access_token : %s', test_user_access_token )
 
-  ### create a test DSR
-  test_dsr = create_one_dsr( as_test = False, dsi_uuid=dsi_uuid )
-  log_.debug ('=== update_one_dsr / test_dsr : \n%s', pformat(test_dsr) )
-  test_dsi_uuid = test_dsr['data']['dsi_uuid']
-  test_dsr_uuid = test_dsr['data']['dsr_uuid']
-  log_.debug('=== update_one_dsr / test_dsi_uuid : %s', test_dsi_uuid )
-  log_.debug('=== update_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
+  ### create a test DSI and DSR
+  if dsi_uuid == None and dsr_uuid == None :
+    test_dsr = create_one_dsr( as_test = False, dsi_uuid=dsi_uuid )
+    log_.debug ('=== update_one_dsr / test_dsr : \n%s', pformat(test_dsr) )
+    test_dsi_uuid = test_dsr['data']['dsi_uuid']
+    test_dsr_uuid = test_dsr['data']['dsr_uuid']
+    log_.debug('=== update_one_dsr / test_dsi_uuid : %s', test_dsi_uuid )
+    log_.debug('=== update_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
+  
+  else : 
+    test_dsi_uuid = dsi_uuid
+
+    if dsi_uuid != None :
+      test_dsr = create_one_dsr( as_test = False, dsi_uuid=dsi_uuid )
+      test_dsr_uuid = test_dsr['data']['dsr_uuid']
+    else :
+      test_dsr_uuid = dsr_uuid
 
   ### mockup update field
   if update_data == None :
@@ -260,9 +305,13 @@ def update_one_dsr(
     'access_token' : test_user_access_token,
   }
 
+  # url = f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/update/{test_dsr_uuid}"
+  url = f"{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/update/{test_dsr_uuid}"
+
   ### update doc
-  response = requests.put(
-    f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/update/{test_dsr_uuid}",
+  # response = requests.put(
+  response = client.put(
+    url,
     json = update_data,
     params = params_update,
     headers = headers
@@ -299,6 +348,8 @@ def test_update_one_dsr_full_update() :
     full_update = True,
     update_data = update_data
   )
+
+
 
 
 
@@ -353,8 +404,12 @@ def delete_one_dsr (
     'access_token' : test_user_access_token,
   }
 
-  response = requests.delete(
-    f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/remove/{test_dsr_uuid}",
+  # url = f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/remove/{test_dsr_uuid}"
+  url = f"{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/remove/{test_dsr_uuid}"
+
+  # response = requests.delete(
+  response = client.delete(
+    url,
     params = params_delete,
     headers = headers
   )

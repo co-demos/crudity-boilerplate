@@ -19,6 +19,9 @@ def view_dsr(
   ):
   """ get a dsr from ES / MongoDB """
 
+  ### TO DO 
+  ### check user's auth 
+  
   res, status = view_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
@@ -40,6 +43,9 @@ def search_dsrs(
   user: dict = None
   ):
   """ search dsr(s) from ES / MongoDB """
+
+  ### TO DO 
+  ### check user's auth 
 
   res, status = search_documents(
     index_name = dsi_uuid,
@@ -92,7 +98,11 @@ def update_dsr(
   ):
   """ update a dsr from ES / MongoDB """
 
+
   ### check if DSR exists first 
+
+  ### TO DO 
+  ### check user's auth 
 
   ### update DSR document
   res_update, status_update = update_document(
@@ -136,15 +146,19 @@ def remove_dsr(
   """ remove a dsr from ES / MongoDB """
 
   ### get dsr infos
-  # res_dsr, status_dsr = view_dsr(
-  #   dsi_uuid = dsi_uuid,
-  #   dsr_uuid = dsr_uuid,
-  #   query_params = query_params,
-  #   user = user
-  # )
-  # log_.debug( "res_dsr : \n%s", pformat(res_dsr))
+  res_dsr, status_dsr = view_dsr(
+    dsi_uuid = dsi_uuid,
+    dsr_uuid = dsr_uuid,
+    query_params = query_params,
+    user = user
+  )
+  log_.debug( "res_dsr : \n%s", pformat(res_dsr))
+
+  ### TO DO 
+  ### check user's auth 
 
 
+  ### remove doc
   if query_params['full_remove'] == True : 
 
     ### remove corresponding DSR doc

@@ -100,7 +100,7 @@ then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
 
 -----
 
-### Run tests with pytest
+### Run tests with Pytest
 
 
 #### - Run all tests

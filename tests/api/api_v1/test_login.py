@@ -3,11 +3,11 @@ import requests
 from log_config import log_, pformat
 from starlette.testclient import TestClient
 
-from main import app
+# from main import app
 from core import config
-from tests.utils.utils import get_server_api
+from tests.utils.utils import get_server_api, client
 
-client = TestClient(app)
+# client = TestClient(app)
 # log_.debug("=== client : %s", client)
 
 
@@ -17,11 +17,20 @@ def client_anonymous_login( as_test = True ):
 
   server_api = get_server_api()
   # log_.debug("=== server_api : %s", server_api)
-  response = requests.get(
-    f"{server_api}{config.API_V1_STR}/anonymous_login"
+
+  # response = requests.get(
+  #   f"{server_api}{config.API_V1_STR}/anonymous_login"
+  # )
+
+  url = f"{config.API_V1_STR}/anonymous_login"
+  log_.debug("=== url : %s", url)
+
+  response = client.get(
+    url,
   )
   resp = response.json()
-  # log_.debug("=== resp : \n%s", pformat( resp ))
+  log_.debug("=== resp : \n%s", pformat( resp ))
+
 
   if as_test : 
     assert response.status_code == 200
@@ -56,8 +65,13 @@ def client_login( as_test = True, only_access_token = False ):
       "password": "a-very-common-password"
     }
   }
-  response = requests.post(
-    f"{server_api}{config.API_V1_STR}/login",
+
+  # url = f"{server_api}{config.API_V1_STR}/login"
+  url = f"{config.API_V1_STR}/login"
+
+  # response = requests.post(
+  response = client.post(
+    url,
     json = login_test,
     headers = { 
       'accept': 'application/json',
