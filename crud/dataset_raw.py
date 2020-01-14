@@ -15,6 +15,7 @@ def view_dsr(
   dsi_uuid: str = None,
   dsr_uuid: str = None,
   query_params: dict = None,
+  user: dict = None
   ):
   """ get a dsr from ES / MongoDB """
 
@@ -23,6 +24,7 @@ def view_dsr(
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
     query_params = query_params,
+    user = user
   )
 
   # log_.debug( "res : \n%s", pformat(res))
@@ -35,6 +37,7 @@ def view_dsr(
 def search_dsrs(
   dsi_uuid: str = None,
   query_params: dict = None,
+  user: dict = None
   ):
   """ search dsr(s) from ES / MongoDB """
 
@@ -42,6 +45,7 @@ def search_dsrs(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     query_params = query_params,
+    user = user
   )
 
   # log_.debug( "res : \n%s", pformat(res))
@@ -56,6 +60,7 @@ def create_dsr(
   dsr_uuid: str = None,
   query_params: dict = None,
   body = None,
+  user: dict = None
   ):
   """ create a dsr in ES / MongoDB """
 
@@ -67,7 +72,8 @@ def create_dsr(
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
     params = query_params,
-    body = body
+    body = body,
+    user = user
   )
 
   log_.debug( "status : \n%s", pformat(status))
@@ -82,6 +88,7 @@ def update_dsr(
   dsr_uuid: str = None,
   query_params: dict = None,
   body = None,
+  user: dict = None
   ):
   """ update a dsr from ES / MongoDB """
 
@@ -97,7 +104,8 @@ def update_dsr(
       'data' : { **body.update_data },
       'modified_at' : body.modified_at,
       'modified_by' : body.modified_by
-    }
+    },
+    user = user,
   )
 
   ### retrieve full updated doc
@@ -109,6 +117,7 @@ def update_dsr(
       **query_params,
       'version' : 'last'
     },
+    user = user
   )
 
   # log_.debug( "res : \n%s", pformat(res))
@@ -122,17 +131,18 @@ def remove_dsr(
   dsi_uuid: str = None,
   dsr_uuid: str = None,
   query_params: dict = None,
+  user: dict = None
   ):
   """ remove a dsr from ES / MongoDB """
 
   ### get dsr infos
-  res_dsr, status_dsr = view_dsr(
-    dsi_uuid = dsi_uuid,
-    dsr_uuid = dsr_uuid,
-    query_params = query_params
-  )
-  log_.debug( "res_dsr : \n%s", pformat(res_dsr))
-
+  # res_dsr, status_dsr = view_dsr(
+  #   dsi_uuid = dsi_uuid,
+  #   dsr_uuid = dsr_uuid,
+  #   query_params = query_params,
+  #   user = user
+  # )
+  # log_.debug( "res_dsr : \n%s", pformat(res_dsr))
 
 
   if query_params['full_remove'] == True : 
@@ -143,6 +153,7 @@ def remove_dsr(
       doc_type = DSR_DOC_TYPE,
       doc_uuid = dsr_uuid,
       params = query_params,
+      user = user
     )
   
   else : 
@@ -153,7 +164,8 @@ def remove_dsr(
       doc_type = DSR_DOC_TYPE,
       doc_uuid = dsr_uuid,
       params = query_params,
-      body = { 'is_deleted' : True }
+      body = { 'is_deleted' : True },
+      user = user
     )
 
   log_.debug( "res : \n%s", pformat(res))

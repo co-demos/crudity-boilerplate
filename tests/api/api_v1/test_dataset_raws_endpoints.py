@@ -1,3 +1,4 @@
+import pytest 
 import requests
 import random
 secure_random = random.SystemRandom()
@@ -26,7 +27,12 @@ def create_one_dsr (
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
   
   if dsi_uuid == None :
-    test_dsi_uuid = get_random_dsi_uuid( only_test_dsi = True )
+    try : 
+      test_dsi_uuid = get_random_dsi_uuid( only_test_dsi = True )
+    except : 
+      test_dsi = create_one_dsi ( as_test = False ) 
+      test_dsi_uuid = test_dsi['data']['dsi_uuid']
+
   else : 
     test_dsi_uuid = dsi_uuid
 
@@ -55,6 +61,7 @@ def create_one_dsr (
     return resp
 
 
+@pytest.mark.new
 def test_create_one_dsr():
 
   test_dsi = create_one_dsi( as_test=False )
@@ -110,6 +117,7 @@ def get_list_dsr(
     return resp
 
 
+@pytest.mark.get
 def test_get_list_dsr( 
   as_test = True,
   test_dsi_uuid = None
@@ -161,6 +169,7 @@ def get_random_dsr_uuid(
 ### GET ONE DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
+@pytest.mark.get
 def test_get_one_dsr( 
   as_test = True, 
   only_test_data = False, 
@@ -204,7 +213,13 @@ def test_get_one_dsr(
 ### UPDATE DSR
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def update_one_dsr( as_test = True, full_update = False, version_n = None ): 
+def update_one_dsr( 
+  as_test = True, 
+  full_update = False, 
+  version_n = None,
+  update_data = None,
+  dsi_uuid = None,
+  ): 
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
@@ -214,7 +229,7 @@ def update_one_dsr( as_test = True, full_update = False, version_n = None ):
   log_.debug ('=== update_one_dsr / test_user_access_token : %s', test_user_access_token )
 
   ### create a test DSR
-  test_dsr = create_one_dsr( as_test = False )
+  test_dsr = create_one_dsr( as_test = False, dsi_uuid=dsi_uuid )
   log_.debug ('=== update_one_dsr / test_dsr : \n%s', pformat(test_dsr) )
   test_dsi_uuid = test_dsr['data']['dsi_uuid']
   test_dsr_uuid = test_dsr['data']['dsr_uuid']
@@ -222,16 +237,18 @@ def update_one_dsr( as_test = True, full_update = False, version_n = None ):
   log_.debug('=== update_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
 
   ### mockup update field
-  update_data = {
-    "update_data" : {
-      "field_01": "this is updated data on field_01",
-      "field_02": "my updated field_02 data",
-      "field_03": {
-        "subfield_A": "Update data for numerical or text...",
-        "subfield_B": 42
+  if update_data == None :
+    random_int = random.randint(0, 1000) 
+    update_data = {
+      "update_data" : {
+        "field_01": f"this is updated data on field_01 - {random_int}",
+        "field_02": f"my updated field_02 data - {random_int}",
+        "field_03": {
+          "subfield_A": f"Update data for numerical or text... {random_int}",
+          "subfield_B": random_int
+        }
       }
     }
-  }
 
   params_update = {
     'full_update' : full_update,
@@ -255,18 +272,33 @@ def update_one_dsr( as_test = True, full_update = False, version_n = None ):
 
   if as_test : 
     assert response.status_code == 200
-    assert resp['data']['field_01'] == update_data['update_data']['field_01']
-    assert resp['data']['field_02'] == update_data['update_data']['field_02']
-    assert resp['data']['field_03'] == update_data['update_data']['field_03']
+    assert resp['data']['data']['field_01'] == update_data['update_data']['field_01']
+    # assert resp['data']['data']['field_02'] == update_data['update_data']['field_02']
+    # assert resp['data']['data']['field_03'] == update_data['update_data']['field_03']
   else : 
     return resp
 
 
+@pytest.mark.update
 def test_update_one_dsr_no_full_update() :
-  update_one_dsr()
+  update_one_dsr(
+    full_update = False 
+  )
 
+@pytest.mark.update
 def test_update_one_dsr_full_update() :
-  update_one_dsr( full_update=True )
+
+  random_int = random.randint(0, 1000) 
+  update_data = {
+    "update_data" : {
+      "field_01": f"this is +full_update+ updated data on field_01 - {random_int}",
+      "field_42": f"this is +full_update+ updated data on field_42 - {random_int}",
+    }
+  }
+  update_one_dsr( 
+    full_update = True,
+    update_data = update_data
+  )
 
 
 
@@ -277,16 +309,23 @@ def test_update_one_dsr_full_update() :
 
 def delete_one_dsr (
   as_test = True, 
-  only_test_data = True,
+  server_api = None,
+  access_token = None,
   full_remove = False,
   dsi_uuid = None 
   ) :
 
-  server_api = get_server_api()
+  if server_api == None :
+    server_api = get_server_api()
 
-  test_user_access_token = client_login( as_test = False, only_access_token=True )
-  log_.debug ('=== delete_one_dsr / test_user_access_token : %s', test_user_access_token )
+  ### get test user
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+    log_.debug ('=== delete_one_dsr / test_user_access_token : %s', test_user_access_token )
+  else :
+    test_user_access_token = access_token
 
+  ### get DSI uuid
   if dsi_uuid == None :
     test_dsi = create_one_dsi ( as_test = False ) 
     assert test_dsi['data']['is_test_data'] == True
@@ -307,7 +346,6 @@ def delete_one_dsr (
   log_.debug('=== delete_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
 
   params_delete = {
-    # 'dsi_uuid' : dsi_uuid ,
     'full_remove' : full_remove,
   }
   headers = {
@@ -320,34 +358,39 @@ def delete_one_dsr (
     params = params_delete,
     headers = headers
   )
-  resp = response.json()
-  log_.debug ('=== delete_one_dsr / resp : \n%s', pformat(resp) )
+  log_.debug ('=== delete_one_dsr / response : \n%s', pformat(response) )
 
   if as_test : 
     assert response.status_code == 200
   else : 
+    resp = response.json()
     return resp
 
 
+@pytest.mark.delete
 def test_delete_dsr_no_full_remove():
 
-  # dsi_uuid = 'c6dc3cd0904a4090a75be94033a574c7'
   dsi_uuid = None 
-
   delete_one_dsr(
     dsi_uuid = dsi_uuid,
+    full_remove = False 
   )
 
+@pytest.mark.delete
 def test_delete_dsr_full_remove():
 
-  # dsi_uuid = 'c6dc3cd0904a4090a75be94033a574c7'
   dsi_uuid = None 
-
   delete_one_dsr( 
     dsi_uuid = dsi_uuid,
     full_remove = True 
   )
 
+
+### CLEANUP 
 ### clean up all test DSRs and DSIs
+
+@pytest.mark.delete
 def test_delete_all_test_dsr_dsi():
-  delete_all_dsi( full_remove=True )
+  delete_all_dsi( 
+    full_remove=True 
+  )

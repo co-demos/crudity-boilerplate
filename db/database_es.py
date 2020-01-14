@@ -442,7 +442,7 @@ def update_es_document(
         index=index_name,
         doc_type=doc_type,
         id=doc_uuid,
-        body={ 'doc' : doc_body }
+        body=doc_body 
       )
     except ElasticsearchException as err : 
       log_.debug( "err : \n%s", pformat(err.__dict__))

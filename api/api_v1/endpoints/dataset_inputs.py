@@ -76,7 +76,8 @@ async def list_of_dsi_items(
 
   ### TO DO / retrieve results given the query 
   res, status = crud.dataset_input.search_dsis(
-    query_params = query
+    query_params = query,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
 
@@ -180,6 +181,7 @@ async def read_dsi_item(
   res, status = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = commons,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
 
@@ -386,7 +388,8 @@ async def update_dsi_item(
   res, status = crud.dataset_input.update_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
-    body = body
+    body = body,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
 
@@ -478,12 +481,17 @@ async def delete_dsi_item(
   res, status = crud.dataset_input.remove_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
+  log_.debug( "status : \n%s", pformat(status))
 
 
   if status['status_code'] == 200 : 
-    msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been deleted"
+    if query['full_remove'] : 
+      msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been deleted"
+    else : 
+      msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been tagged as deleted"
   else : 
     msg = f"there has been an error while deleting DSI doc with dsi_uuid <{dsi_uuid}>"
 

@@ -25,10 +25,12 @@ if MONGODB_ENABLED :
 
 ### INDEX LEVEL
 
+### TO DO 
 def check_index(
   index_name: str = None,
   doc_type: str = None,
   doc_uuid: str = None,
+  user: dict = None
   ):
   """ check if index already exists.""" 
 
@@ -58,12 +60,13 @@ def check_index(
   return is_index, status
 
 
-
+### TO DO 
 def create_index_check(
   index_name: str = None,
   doc_type: str = None,
   doc_uuid: str = None,
   index_params: dict = None,
+  user: dict = None
   ):
   """ create an index if doesn't already exist"""
 
@@ -99,12 +102,13 @@ def create_index_check(
   return res, status
 
 
-
+### TO DO 
 def update_index_check(
   index_name: str = None,
   doc_type: str = None,
   doc_uuid: str = None,
   index_params: dict = None,
+  user: dict = None
   ):
   """ update an index if doesn't already exist"""
 
@@ -144,7 +148,9 @@ def update_index_check(
 
 ### UTILS
 
-def generate_new_id( format = 'hex' ):
+def generate_new_id( 
+  format = 'hex' 
+  ):
 
   ### cf : https://www.geeksforgeeks.org/generating-random-ids-using-uuid-python/ 
   
@@ -170,6 +176,7 @@ def view_document(
   doc_type: str = None,
   doc_uuid: str = None,
   query_params: dict = None,
+  user: dict = None
   ):
   """ get a document from ES / MongoDB """
 
@@ -179,7 +186,7 @@ def view_document(
   status = { 'status_code' : 200 }
   res = {}
 
-  q_version = query_params['version']
+  q_version = query_params.get('version', 'last')
 
   if ES_ENABLED and q_version == 'last':
     res_es, status_es = view_es_document(
@@ -214,6 +221,7 @@ def search_documents(
   index_name: str = None,
   doc_type: str = None,
   query_params: dict = None,
+  user: dict = None
   ):
   """ search a document from ES / MongoDB """
 
@@ -259,6 +267,7 @@ def create_document(
   doc_uuid: str = None,
   params: dict = None,
   body = None,
+  user: dict = None
   ):
   """ create a document in ES / MongoDB """
 
@@ -305,6 +314,7 @@ def create_version_document(
   params: dict = None,
   version: int = None,
   body = None,
+  user: dict = None
   ):
   """ create a version document in MongoDB """
 
@@ -333,6 +343,7 @@ def update_document(
   doc_uuid: str = None,
   params: dict = None,
   body = None,
+  user: dict = None
   ):
   """ update a document in ES / MongoDB """
 
@@ -345,20 +356,19 @@ def update_document(
   if ES_ENABLED :
 
     ### get original doc
-    orig_res_es, orig_status_es = view_es_document(
-      index_name=index_name,
-      doc_type=doc_type,
-      doc_uuid=doc_uuid
-    )
-    log_.debug( "orig_res_es : \n%s", pformat(orig_res_es))
-    log_.debug( "orig_status_es : \n%s", pformat(orig_status_es))
-
+    # orig_res_es, orig_status_es = view_es_document(
+    #   index_name=index_name,
+    #   doc_type=doc_type,
+    #   doc_uuid=doc_uuid
+    # )
+    # log_.debug( "orig_res_es : \n%s", pformat(orig_res_es))
+    # log_.debug( "orig_status_es : \n%s", pformat(orig_status_es))
 
     ### TO DO 
     ### compare original with doc_body
     # doc_body = body 
     # doc_body_dict = body.update_data
-    doc_body_dict = body
+    # doc_body_dict = body
 
 
     ### update doc in ES
@@ -366,24 +376,43 @@ def update_document(
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
-      doc_body=doc_body_dict,
-      full_update = full_update 
+      # doc_body=doc_body_dict,
+      doc_body=body,
+      full_update=full_update 
     )
 
     res = res_es
-    # status = { 'status_code' : status_es['status_code'] }
     status = status_es
+
+    ### get updated doc in ES
+    res_es_updated, status_es_updated = view_document(
+      index_name=index_name,
+      doc_type=doc_type,
+      doc_uuid=doc_uuid,
+      query_params=params,
+    )
+    log_.debug( "res_es_updated : \n%s", pformat(res_es_updated))
+    log_.debug( "status_es_updated : \n%s", pformat(status_es_updated))
+
+    res = res_es_updated
+    status = status_es_updated
+
+
+
+
 
 
   ### update doc in MongoDB
   if MONGODB_ENABLED :
+    # doc_body_dict = body
     res_mongodb, status_mongodb = update_mongodb_document(
       collection=doc_type,
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
-      doc_body=doc_body_dict,
-      full_update = full_update 
+      # doc_body=doc_body_dict,
+      doc_body=body,
+      full_update=full_update 
     )
     if ES_ENABLED == False :
       res = res_mongodb
@@ -403,6 +432,7 @@ def update_many_document(
   doc_type: str = None,
   params: dict = None,
   body = None,
+  user: dict = None
   ):
   """ update many document in ES / MongoDB """
 
@@ -431,6 +461,7 @@ def remove_document(
   doc_type: str = None,
   doc_uuid: str = None,
   params: dict = None,
+  user: dict = None
   ):
   """ remove a document from ES / MongoDB """
 
@@ -470,6 +501,7 @@ def remove_many_documents(
   index_name: str = None,
   doc_type: str = None,
   params: dict = None,
+  user: dict = None
   ):
   """ remove a document from ES / MongoDB """
 

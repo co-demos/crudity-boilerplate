@@ -1,3 +1,4 @@
+import pytest
 import requests
 import random
 secure_random = random.SystemRandom()
@@ -53,6 +54,7 @@ def create_one_dsi( as_test = True ):
     return resp
 
 
+@pytest.mark.new
 def test_create_one_dsi( as_test = True ):
   create_one_dsi( as_test = as_test )
   
@@ -91,6 +93,7 @@ def get_list_dsi(
     return resp
 
 
+@pytest.mark.get
 def test_get_list_dsi( 
   as_test = True, 
   page_number=1, 
@@ -103,12 +106,15 @@ def test_get_list_dsi(
 ### UTILS DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def get_random_dsi_uuid( only_test_dsi = False ) : 
+def get_random_dsi_uuid( 
+  only_test_dsi = False 
+  ) : 
 
   test_dsi_list = get_list_dsi( as_test = False )
   log_.debug ('=== get_random_dsi_uuid / test_dsi_list : \n%s', pformat(test_dsi_list))
 
   full_dsi_list = test_dsi_list['data']
+
   if only_test_dsi : 
     testable_dsi = [ i for i in full_dsi_list if i['is_test_data'] == True ]
     test_dsi = secure_random.choice( testable_dsi )
@@ -126,6 +132,7 @@ def get_random_dsi_uuid( only_test_dsi = False ) :
 ### GET ONE DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
+@pytest.mark.get
 def test_get_one_dsi( as_test = True, only_test_data = False ):
 
   server_api = get_server_api()
@@ -161,7 +168,10 @@ def test_get_one_dsi( as_test = True, only_test_data = False ):
 ### UPDATE DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def update_one_dsi( as_test = True, version_n = None  ): 
+def update_one_dsi( 
+  as_test = True, 
+  version_n = None  
+  ): 
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
@@ -220,6 +230,7 @@ def update_one_dsi( as_test = True, version_n = None  ):
     return resp
 
 
+@pytest.mark.update
 def test_update_one_dsi() :
   update_one_dsi()
 
@@ -236,7 +247,7 @@ def test_update_one_dsi() :
 
 def delete_one_dsi( 
   as_test = True,
-  server_api=None,
+  server_api = None,
   dsi_uuid = None, 
   access_token = None,
   full_remove = False,
@@ -272,8 +283,28 @@ def delete_one_dsi(
     params = params_delete,
     headers = headers
   )
+  log_.debug ('=== delete_one_dsi / response : \n%s', pformat(response) )
 
-  return response
+  if as_test : 
+    assert response.status_code == 200
+  else : 
+    # resp = response.json() 
+    # log_.debug ('=== delete_one_dsi / resp : \n%s', pformat(resp) )
+    # return resp
+    return response
+
+
+@pytest.mark.delete
+def test_delete_one_dsi_no_full_remove():
+  delete_one_dsi(
+    full_remove = False
+  )
+
+@pytest.mark.delete
+def test_delete_one_dsi_full_remove():
+  delete_one_dsi(
+    full_remove = True
+  )
 
 
 def delete_all_dsi( 
@@ -321,9 +352,28 @@ def delete_all_dsi(
     assert response.status_code == 200 
 
 
+@pytest.mark.delete
 def test_delete_dsi_no_full_remove(): 
-  delete_all_dsi( full_remove=False )
+  delete_all_dsi( 
+    only_test_data = True,
+    full_remove = False 
+  )
 
 
+### CLEANUP 
+
+@pytest.mark.delete
 def test_delete_dsi_full_remove(): 
-  delete_all_dsi( full_remove=True )
+  delete_all_dsi( 
+    only_test_data = True,
+    full_remove = True 
+  )
+
+
+### WARNING : RESET TEST !!!
+### this test erases ALL DATA in DBs !! use at your own risks !!!
+# def test_delete_ALL_dsi_full_remove(): 
+#   delete_all_dsi( 
+#     only_test_data = False,
+#     full_remove = True 
+#   )

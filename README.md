@@ -1,21 +1,21 @@
 
-# CRUDity
+# CRUDo
 
 ### (currently in development)
 
 ------
-### what is Crudity for ? 
+### what is CRUDo for ? 
 
-A simple CRUD Restful API, backed with Elastic Search to have a scalable REST backend app
+A simple CRUD Restful API, backed with ElasticSearch to have a scalable REST backend app, and MonngoDB for versionning
 
 Two main concepts :
-- DSI : DataSet Input, a corpus of documents and its metadata (the equivalent of the informations surrouding a table, its name, author, schema, ...)
-- DSR : DataSet Raw, a document part of a DSI (the equivalent of a line of a table)
+- **DSI** : or `DataSet Input`, a corpus of documents and its metadata (the equivalent of the informations surrouding a table/spreadsheet, its name, author, schema, ...)
+- **DSR** : or `DataSet Raw`, a document part of a DSI (the equivalent of a line of a table/spreadsheet)
 
 So to : 
 - push a list of documents (DSRs) as part of a dataset (DSI)
-- CRUD operations on a DSR
 - CRUD operations on a DSI
+- CRUD operations on a DSR
 - query a list of DSR of a DSI
 - use pagination arguments when querying data
 - data / schema agnostic
@@ -27,15 +27,16 @@ So to :
 
 - language : [python 3.7](https://docs.python.org/3.7/)
 - framework : [FastAPI](https://fastapi.tiangolo.com/)
-- DB : [Elastic Search](https://www.elastic.co) and/or [MongoDB](https://www.mongodb.com/)
+- tests : [Pytest](https://docs.pytest.org/en/latest/)
+- databases : [Elastic Search](https://www.elastic.co) and/or [MongoDB](https://www.mongodb.com/)
 
 ### dependencies
 
-You must have `mongodb` and/or `ElasticSearch` running on your machine to use CRUDity. Check | Edit your `.env` files (see below)
+You must have `ElasticSearch` and/or `mongodb` running on your machine to use CRUDo. Check | Edit your `.env` files (see below)
 
 -----
 
-### Install CRUDity 
+### Install CRUDo
 
 Go to your destination folder and type : 
 
@@ -56,7 +57,7 @@ cp env-mongodb.example.env env-mongodb.env
 You can edit those `.env` files and add real credentials inside. 
 
 
-### run CRUDity 
+### run CRUDo
 
 - **with uvicorn from shell** :
 
@@ -83,7 +84,7 @@ then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
 
 - **CLI arguments**
 
-*note* : running CRUDity with Python allows you to inject some parameters like `--port` with the command line (see the `main.py` file for the list of the CLI parameters you can use).
+*note* : running CRUDo with Python allows you to inject some parameters like `--port` with the command line (see the `main.py` file for the list of the CLI parameters you can use).
 
 ```
 '--mode' (default='dev')         : The <mode> you need to run the app : default | dev | testing | preprod | production
@@ -102,32 +103,55 @@ then check : [`http://localhost:8001/docs`](http://localhost:8001/docs)
 ### Run tests with pytest
 
 
+#### - Run all tests
 
-```bash
-source venv/bin/activate
-pytest ./tests/
-```
+- **run tests :**
+  ```bash
+  source venv/bin/activate
+  pytest ./tests/
+  ```
 
-or `pytest ./tests/ -v` for verbose
+- **output :** 
+  `pytest ./tests/ -v` for verbose
+  `pytest ./tests/ -s` for all outputs
 
-or `pytest ./tests/ -s` for all outputs
+#### - Run some of the tests
 
-or `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py ` for test from a specific test file
 
-or `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py::test_get_one_dsi ` for test from a function in a specific test file
+- **by file name :** 
+  `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py ` for test from a specific test file
 
-or `pytest ./tests/ -k inputs -x ` for tests from files containing 'inputs' keyword
+- **by function name :** 
+  `pytest ./tests/api/api_v1/test_dataset_inputs_endpoints.py::test_get_one_dsi ` for test from a function in a specific test file
+
+- **by keyword :**
+  `pytest ./tests/ -k inputs` for tests from files containing 'inputs' keyword
+
+- **by marker name :** 
+  `pytest ./tests/ -m delete ` for tests marked with 'delete' keyword
+
+
+#### - Configuration
+
+You will find a `pytest.ini` configuration file at the root of the repository. For more information please refer to the [Pytest documentation](https://docs.pytest.org/en/latest)
+
 
 -----
 
-### doc FastAPI 
+### Documentations
+#### doc FastAPI 
 cf : https://fastapi.tiangolo.com/
 
-### doc uvicorn
+#### doc Uvicorn
 cf : https://www.uvicorn.org/deployment/
 
-### doc Elastic search / Python 
+#### doc Elastic search / Python 
 cf : https://elasticsearch-py.readthedocs.io/en/master/
+
+
+
+
+
 
 
 ----
@@ -143,6 +167,8 @@ Use the Jupyter notebooks of your choice from the `./_notebooks` folder to push 
 
 ### Inspirations
 
+CRUDo aims to be a generic backend for exposing data. It could be though as an alternative or a backend for apps such as : 
+
 - Solidata (open source)
 - Datasette (open source)
 - CSVapi
@@ -154,6 +180,9 @@ Use the Jupyter notebooks of your choice from the `./_notebooks` folder to push 
 --------
 
 ### logs
+
+- **v.0.1.1 / 2020-01-14** : 
+  adding pytests drafts and modifications on main endpoints... 
 
 - **v.0.1 / 2019-12-11** : 
   first draft of the application. Adding models for parameters on endpoints. Discovering FastAPI. Tests with local ES db... 

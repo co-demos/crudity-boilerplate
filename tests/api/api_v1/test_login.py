@@ -1,3 +1,4 @@
+import pytest
 import requests
 from log_config import log_, pformat
 from starlette.testclient import TestClient
@@ -27,6 +28,7 @@ def client_anonymous_login( as_test = True ):
   else : 
     return resp
 
+@pytest.mark.user
 def test_client_anonymous_login():
   client_anonymous_login() 
 
@@ -74,5 +76,6 @@ def client_login( as_test = True, only_access_token = False ):
     else :
       return resp
 
+@pytest.mark.user
 def test_client_login() :
   client_login()

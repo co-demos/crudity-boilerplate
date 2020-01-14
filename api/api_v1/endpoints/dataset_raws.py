@@ -72,6 +72,7 @@ async def read_dsi_items(
   res_dsi, status_dsi = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
+    user = user,
   )
   doc_version['version_n'] = res_dsi['_version']
   doc_version['version_s'] = commons['version']
@@ -178,6 +179,7 @@ async def read_dsr_item(
   res_dsi, status_dsi = crud.dataset_input.view_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
+    user = user,
   )
   log_.debug( "res_dsi : \n%s", pformat(res_dsi))
 
@@ -186,6 +188,7 @@ async def read_dsr_item(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
 
@@ -288,7 +291,8 @@ async def create_dsr_item(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
-    body = item_data_
+    body = item_data_,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
   log_.debug( "status : \n%s", pformat(status))
@@ -389,9 +393,9 @@ async def update_dsr_item(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
-  log_.debug( "item_data : \n%s", pformat( item_data.dict() ) )
-  item_data_dict = item_data.dict()
-  item_data_ = item_data_dict
+  item_data_ = item_data
+  # item_data_ = item_data.dict()
+  log_.debug( "item_data_ : \n%s", pformat( item_data_ ) )
 
   msg = '' 
   doc_version = {
@@ -400,8 +404,10 @@ async def update_dsr_item(
   }
 
   ### add infos
-  item_data_['modified_at'] = datetime.now()
-  item_data_['modified_by'] = user['infos']['email']
+  # item_data_['modified_at'] = datetime.now()
+  # item_data_['modified_by'] = user['infos']['email']
+  item_data_.modified_at = datetime.now()
+  item_data_.modified_by = user['infos']['email']
 
   ### 1 - update corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
@@ -410,7 +416,8 @@ async def update_dsr_item(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
-    body = item_data_
+    body = item_data_,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
 
@@ -506,6 +513,7 @@ async def delete_dsr_item(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
+    user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
 

@@ -16,6 +16,7 @@ log_.debug(">>> crud/dataset_input.py")
 def view_dsi(
   dsi_uuid: str = None,
   query_params: dict = None,
+  user: dict = None
   ):
   """ get a dsi from ES / MongoDB """
 
@@ -24,6 +25,7 @@ def view_dsi(
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
     query_params = query_params,
+    user= user,
   )
 
   # log_.debug( "res : \n%s", pformat(res))
@@ -35,6 +37,7 @@ def view_dsi(
 
 def search_dsis(
   query_params: dict = None,
+  user: dict = None
   ):
   """ search dsi(s) from ES / MongoDB """
 
@@ -42,6 +45,7 @@ def search_dsis(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     query_params = query_params,
+    user = user
   )
 
   # log_.debug( "res : \n%s", pformat(res))
@@ -55,6 +59,7 @@ def create_dsi(
   dsi_uuid: str = None,
   query_params: dict = None,
   body = None,
+  user: dict = None
   ):
   """ create a dsi in ES / MongoDB """
 
@@ -66,6 +71,7 @@ def create_dsi(
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
     index_params = query_params,
+    user = user,
   )
 
   ### create metadata doc
@@ -74,7 +80,8 @@ def create_dsi(
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
     params = query_params,
-    body = body
+    body = body,
+    user = user,
   )
 
   ### loop if necessary to create dmt | dmf 
@@ -92,6 +99,7 @@ def update_dsi(
   dsi_uuid: str = None,
   query_params: dict = None,
   body = None,
+  user: dict = None
   ):
   """ update a dsi from ES / MongoDB """
 
@@ -107,32 +115,35 @@ def update_dsi(
       **body.update_data,
       'modified_at' : body.modified_at,
       'modified_by' : body.modified_by
-    }
+    },
+    user = user
   )
   # log_.debug( "res_update : \n%s", pformat(res_update))
   # log_.debug( "status_update : \n%s", pformat(status_update))
 
 
   ### retrieve full updated doc
-  res, status = view_document(
-    index_name = DSI_DOC_TYPE,
-    doc_type = 'metadata',
-    doc_uuid = dsi_uuid,
-    query_params = {
-      **query_params,
-      'version' : 'last'
-    },
-  )
+  # res, status = view_document(
+  #   index_name = DSI_DOC_TYPE,
+  #   doc_type = 'metadata',
+  #   doc_uuid = dsi_uuid,
+  #   query_params = {
+  #     **query_params,
+  #     'version' : 'last'
+  #   },
+  # )
   # log_.debug( "res : \n%s", pformat(res))
   # log_.debug( "status : \n%s", pformat(status))
 
-  return res, status
+  return res_update, status_update
+  # return res, status
 
 
 
 def remove_dsi(
   dsi_uuid: str = None,
   query_params: dict = None,
+  user: dict = None
   ):
   """ remove a dsi from ES / MongoDB """
 
@@ -152,6 +163,7 @@ def remove_dsi(
       doc_type = 'metadata',
       doc_uuid = dsi_uuid,
       params = query_params,
+      user = user,
     )
     
     print("- - "*40)
@@ -161,6 +173,7 @@ def remove_dsi(
       index_name = dsi_uuid,
       doc_type = DSR_DOC_TYPE,
       params = query_params,
+      user = user
     )
 
   else : 
@@ -170,19 +183,20 @@ def remove_dsi(
       doc_type = 'metadata',
       doc_uuid = dsi_uuid,
       params = query_params,
-      body = { 'is_deleted' : True }
+      body = { 'is_deleted' : True },
+      user = user
     )
 
     ### update corresponding DSR docs as 'deleted'
     ### TO DO 
-    ### update DSI doc as 'deleted'
-    res, status = update_many_document(
-      index_name = dsi_uuid,
-      doc_type = DSR_DOC_TYPE,
-      # doc_uuid_list = [ dsi_uuid ],
-      params = query_params,
-      body = { 'is_deleted' : True }
-    )
+    ### update DSI's DSR docs as 'deleted'
+    # res, status = update_many_document(
+    #   index_name = dsi_uuid,
+    #   doc_type = DSR_DOC_TYPE,
+    #   # doc_uuid_list = [ dsi_uuid ],
+    #   params = query_params,
+    #   body = { 'is_deleted' : True }
+    # )
 
   # log_.debug( "res : \n%s", pformat(res))
   # log_.debug( "status : \n%s", pformat(status))
