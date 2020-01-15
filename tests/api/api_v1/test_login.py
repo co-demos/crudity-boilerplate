@@ -13,9 +13,12 @@ from tests.utils.utils import get_server_api, client
 
 ### cf : https://fastapi.tiangolo.com/tutorial/testing/
 
-def client_anonymous_login( as_test = True ):
+def client_anonymous_login( 
+  as_test = True,
+  only_access_token = False,
+  ):
 
-  server_api = get_server_api()
+  # server_api = get_server_api()
   # log_.debug("=== server_api : %s", server_api)
 
   # url = f"{server_api}{config.API_V1_STR}/anonymous_login"
@@ -28,13 +31,15 @@ def client_anonymous_login( as_test = True ):
     url,
   )
   resp = response.json()
-  log_.debug("=== resp : \n%s", pformat( resp ))
-
+  # log_.debug("=== resp : \n%s", pformat( resp ))
 
   if as_test : 
     assert response.status_code == 200
   else : 
-    return resp
+    if only_access_token : 
+      return resp['tokens']['access_token']
+    else :
+      return resp
 
 @pytest.mark.user
 def test_client_anonymous_login():
@@ -42,9 +47,12 @@ def test_client_anonymous_login():
 
 
 
-def client_login( as_test = True, only_access_token = False ):
+def client_login( 
+  as_test = True, 
+  only_access_token = False 
+  ):
 
-  server_api = get_server_api()
+  # server_api = get_server_api()
 
   ### get ano access token
   # response_ano = requests.get(

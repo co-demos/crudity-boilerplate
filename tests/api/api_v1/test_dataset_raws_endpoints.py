@@ -50,6 +50,11 @@ def create_one_dsr (
     }
   }
 
+  headers = {
+    'accept': 'application/json',
+    'access_token' : test_user_access_token,
+  }
+
   # url = f"{server_api}{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/create"
   url = f"{config.API_V1_STR}/crud/dataset/{test_dsi_uuid}/dsr/create"
 
@@ -57,10 +62,7 @@ def create_one_dsr (
   response = client.post(
     url,
     json = dsr_test_payload,
-    headers = {
-      'accept': 'application/json',
-      'access_token' : test_user_access_token,
-    }
+    headers = headers
   )
   resp = response.json() 
   log_.debug ('=== resp : \n%s', pformat(resp) )
@@ -94,11 +96,18 @@ def get_list_dsr(
   as_test = True,
   page_number=1, 
   results_per_page=100,
-  dsi_uuid = None
+  dsi_uuid = None,
+  access_token = None
   ):
 
   server_api = get_server_api()
   # log_.debug('=== server_api : %s', server_api)
+
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else : 
+    test_user_access_token = access_token
+  log_.debug ('=== test_user_access_token : %s', test_user_access_token )
 
   if dsi_uuid == None : 
     test_dsi = create_one_dsi ( as_test = False ) 
@@ -108,6 +117,11 @@ def get_list_dsr(
     test_dsi_uuid = dsi_uuid
 
   log_.debug('=== get_list_dsr / test_dsi_uuid : %s', test_dsi_uuid)
+  
+  headers = {
+    'accept': 'application/json',
+    'access_token' : test_user_access_token,
+  }
 
   params = {
     'page_n' : page_number,
@@ -120,7 +134,8 @@ def get_list_dsr(
   # response = requests.get(
   response = client.get(
     url,
-    params=params
+    params=params,
+    headers=headers
   )
   resp = response.json() 
   log_.debug('=== get_list_dsr / resp : \n%s', pformat(resp) )

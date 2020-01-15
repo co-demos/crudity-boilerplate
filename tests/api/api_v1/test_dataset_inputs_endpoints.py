@@ -17,12 +17,18 @@ from .test_login import client_login
 ### POST NEW DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
-def create_one_dsi( as_test = True ):
+def create_one_dsi( 
+  as_test = True,
+  access_token = None
+  ):
 
-  server_api = get_server_api()
+  # server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
-  test_user_access_token = client_login( as_test = False, only_access_token=True )
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else : 
+    test_user_access_token = access_token
   log_.debug ('=== create_one_dsi / test_user_access_token : %s', test_user_access_token )
 
   random_int = random.randint(0, 1000) 
@@ -37,6 +43,11 @@ def create_one_dsi( as_test = True ):
     "is_test_data" : True
   }
 
+  headers = {
+    'accept': 'application/json',
+    'access_token' : test_user_access_token,
+  }
+
   # url = f"{server_api}{config.API_V1_STR}/dsi/create"
   url = f"{config.API_V1_STR}/dsi/create"
 
@@ -44,10 +55,7 @@ def create_one_dsi( as_test = True ):
   response = client.post(
     url,
     json = dsi_test_payload,
-    headers = {
-      'accept': 'application/json',
-      'access_token' : test_user_access_token,
-    }
+    headers = headers
   )
   resp = response.json() 
   log_.debug ('=== create_one_dsi / resp : \n%s', pformat(resp) )
@@ -71,16 +79,28 @@ def test_create_one_dsi( as_test = True ):
 
 def get_list_dsi( 
   as_test = True, 
-  page_number=1, 
-  results_per_page=100 
+  page_number = 1, 
+  results_per_page = 100, 
+  access_token = None
   ):
 
-  server_api = get_server_api()
+  # server_api = get_server_api()
   # log_.debug('=== get_list_dsi / server_api : %s', server_api)
 
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else : 
+    test_user_access_token = access_token
+  log_.debug ('=== test_user_access_token : %s', test_user_access_token )
+  
   params = {
     'page_n' : page_number,
     'per_page' : results_per_page
+  }
+
+  headers = {
+    'accept': 'application/json',
+    'access_token' : test_user_access_token,
   }
 
   # url = f"{server_api}{config.API_V1_STR}/dsi/list",
@@ -89,7 +109,8 @@ def get_list_dsi(
   # response = requests.get(
   response = client.get(
     url,
-    params=params
+    params=params, 
+    headers=headers
   )
   resp = response.json()
   # log_.debug ('=== resp : \n%s', pformat(resp) )
