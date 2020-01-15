@@ -73,10 +73,13 @@ def create_one_dsr (
     return resp
 
 
-@pytest.mark.new
-def test_create_one_dsr():
+@pytest.mark.create
+def test_create_one_dsr(client_access_token):
 
-  test_dsi = create_one_dsi( as_test=False )
+  test_dsi = create_one_dsi( 
+    access_token = client_access_token,
+    as_test=False 
+  )
   log_.debug ('=== test_dsi : \n%s', pformat(test_dsi) )
   assert test_dsi['data']['is_test_data'] == True
 
@@ -117,7 +120,7 @@ def get_list_dsr(
     test_dsi_uuid = dsi_uuid
 
   log_.debug('=== get_list_dsr / test_dsi_uuid : %s', test_dsi_uuid)
-  
+
   headers = {
     'accept': 'application/json',
     'access_token' : test_user_access_token,
@@ -148,11 +151,15 @@ def get_list_dsr(
 
 @pytest.mark.get
 def test_get_list_dsr( 
+  client_access_token,
   as_test = True,
-  test_dsi_uuid = None
+  test_dsi_uuid = None,
   ) : 
 
-  resp = get_list_dsr( dsi_uuid = test_dsi_uuid )
+  resp = get_list_dsr( 
+    access_token = client_access_token,
+    dsi_uuid = test_dsi_uuid,
+  )
   log_.debug('=== test_get_list_dsr / resp : \n%s', pformat(resp) )
 
   if as_test == False :
@@ -254,8 +261,10 @@ def get_one_dsr(
 
 
 @pytest.mark.get
-def test_get_one_dsr():
-  get_one_dsr()
+def test_get_one_dsr(client_access_token):
+  get_one_dsr(
+    access_token = client_access_token,
+  )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -352,16 +361,19 @@ def update_one_dsr(
 
 
 @pytest.mark.update
-def test_update_one_dsr_no_full_update() :
+def test_update_one_dsr_no_full_update(client_access_token) :
   update_one_dsr(
+    access_token = client_access_token,
     full_update = False 
   )
 
 @pytest.mark.update
-def test_update_one_dsr_no_full_update_with_data() :
+def test_update_one_dsr_no_full_update_with_data(client_access_token) :
 
   random_int = random.randint(0, 1000) 
-  test_user_access_token = client_login( as_test = False, only_access_token=True )
+
+  # test_user_access_token = client_login( as_test = False, only_access_token=True )
+  test_user_access_token = client_access_token
 
   update_data_one = {
     "update_data" : {
@@ -398,7 +410,7 @@ def test_update_one_dsr_no_full_update_with_data() :
   # log_.debug ('=== test_update_one_dsr_no_full_update_with_data / resp_bis : \n%s', pformat(resp_bis) )
 
 @pytest.mark.update
-def test_update_one_dsr_full_update() :
+def test_update_one_dsr_full_update(client_access_token) :
 
   random_int = random.randint(0, 1000) 
   update_data = {
@@ -408,6 +420,7 @@ def test_update_one_dsr_full_update() :
     }
   }
   update_one_dsr( 
+    access_token = client_access_token,
     full_update = True,
     update_data = update_data
   )
@@ -486,21 +499,23 @@ def delete_one_dsr (
 
 
 @pytest.mark.delete
-def test_delete_dsr_no_full_remove():
+def test_delete_dsr_no_full_remove(client_access_token):
 
   dsi_uuid = None 
   delete_one_dsr(
+    access_token = client_access_token,
     dsi_uuid = dsi_uuid,
     full_remove = False 
   )
 
 @pytest.mark.delete
-def test_delete_dsr_full_remove():
+def test_delete_dsr_full_remove(client_access_token):
 
   dsi_uuid = None 
   delete_one_dsr( 
+    access_token = client_access_token,
     dsi_uuid = dsi_uuid,
-    full_remove = True 
+    full_remove = True,
   )
 
 
@@ -510,7 +525,9 @@ def test_delete_dsr_full_remove():
 ### clean up all test DSRs and DSIs
 
 @pytest.mark.delete
-def test_delete_all_test_dsr_dsi():
+def test_delete_all_test_dsr_dsi(client_access_token):
   delete_all_dsi( 
-    full_remove=True 
+    access_token = client_access_token,
+    only_test_data = True,
+    full_remove = True 
   )

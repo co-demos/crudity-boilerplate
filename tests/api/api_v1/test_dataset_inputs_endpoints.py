@@ -66,9 +66,15 @@ def create_one_dsi(
     return resp
 
 
-@pytest.mark.new
-def test_create_one_dsi( as_test = True ):
-  create_one_dsi( as_test = as_test )
+@pytest.mark.create
+def test_create_one_dsi( 
+  client_access_token,
+  as_test = True 
+  ):
+  create_one_dsi( 
+    access_token = client_access_token,
+    as_test = as_test 
+  )
   
 
 
@@ -92,7 +98,7 @@ def get_list_dsi(
   else : 
     test_user_access_token = access_token
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
-  
+
   params = {
     'page_n' : page_number,
     'per_page' : results_per_page
@@ -124,11 +130,15 @@ def get_list_dsi(
 
 @pytest.mark.get
 def test_get_list_dsi( 
+  client_access_token,
   as_test = True, 
   page_number=1, 
   results_per_page=100 
   ):
-  get_list_dsi( as_test = as_test )
+  get_list_dsi( 
+    access_token = client_access_token,
+    as_test = as_test 
+  )
 
 
 
@@ -211,8 +221,11 @@ def get_one_dsi(
 
 
 @pytest.mark.get
-def test_get_one_dsi():
-  get_one_dsi()
+def test_get_one_dsi(client_access_token):
+  log_.debug("test_get_one_dsi / client_access_token : %s" , client_access_token )
+  get_one_dsi(
+    access_token = client_access_token,
+  )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -288,11 +301,13 @@ def update_one_dsi(
 
 
 @pytest.mark.update
-def test_update_one_dsi() :
-  update_one_dsi()
+def test_update_one_dsi(client_access_token) :
+  update_one_dsi(
+    access_token = client_access_token,
+  )
 
 @pytest.mark.update
-def test_update_one_dsi_with_data() :
+def test_update_one_dsi_with_data(client_access_token) :
 
   update_data = {
     "update_data" : {
@@ -301,6 +316,7 @@ def test_update_one_dsi_with_data() :
   }
 
   update_one_dsi(
+    access_token = client_access_token,
     update_data = update_data,
   )
 
@@ -370,14 +386,16 @@ def delete_one_dsi(
 
 
 @pytest.mark.delete
-def test_delete_one_dsi_no_full_remove():
+def test_delete_one_dsi_no_full_remove(client_access_token):
   delete_one_dsi(
+    access_token = client_access_token,
     full_remove = False
   )
 
 @pytest.mark.delete
-def test_delete_one_dsi_full_remove():
+def test_delete_one_dsi_full_remove(client_access_token):
   delete_one_dsi(
+    access_token = client_access_token,
     full_remove = True
   )
 
@@ -390,13 +408,17 @@ def delete_all_dsi(
   as_test = True, 
   only_test_data = True,
   full_remove = False,
+  access_token = None,
   ): 
 
   server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
   ### get test user
-  test_user_access_token = client_login( as_test = False, only_access_token=True )
+  if access_token == None :
+    test_user_access_token = client_login( as_test = False, only_access_token=True )
+  else : 
+    test_user_access_token = access_token
   log_.debug ('=== delete_all_dsi / test_user_access_token : %s', test_user_access_token )
 
   ### get list of DSIs
@@ -432,15 +454,17 @@ def delete_all_dsi(
 
 
 @pytest.mark.delete
-def test_delete_dsi_no_full_remove(): 
+def test_delete_dsi_no_full_remove(client_access_token): 
   delete_all_dsi( 
+    access_token = client_access_token,
     only_test_data = True,
     full_remove = False 
   )
 
 @pytest.mark.delete
-def test_delete_dsi_full_remove(): 
+def test_delete_dsi_full_remove(client_access_token): 
   delete_all_dsi( 
+    access_token = client_access_token,
     only_test_data = True,
     full_remove = True 
   )

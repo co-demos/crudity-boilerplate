@@ -28,7 +28,7 @@ def is_user_authorized(
   user = None,
   authorized_levels = [ 'owner' ],
   doc_creator = None,
-  doc_team = None
+  doc_team = None,
   ):
 
   user_infos = user.get('infos', None) 
@@ -201,7 +201,7 @@ def view_document(
   doc_type: str = None,
   doc_uuid: str = None,
   query_params: dict = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ get a document from ES / MongoDB """
 
@@ -246,7 +246,7 @@ def search_documents(
   index_name: str = None,
   doc_type: str = None,
   query_params: dict = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ search a document from ES / MongoDB """
 
@@ -292,7 +292,7 @@ def create_document(
   doc_uuid: str = None,
   params: dict = None,
   body = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ create a document in ES / MongoDB """
 
@@ -339,7 +339,7 @@ def create_version_document(
   params: dict = None,
   version: int = None,
   body = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ create a version document in MongoDB """
 
@@ -368,7 +368,7 @@ def update_document(
   doc_uuid: str = None,
   params: dict = None,
   body = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ update a document in ES / MongoDB """
 
@@ -460,7 +460,7 @@ def update_many_document(
   doc_type: str = None,
   params: dict = None,
   body = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ update many document in ES / MongoDB """
 
@@ -489,7 +489,7 @@ def remove_document(
   doc_type: str = None,
   doc_uuid: str = None,
   params: dict = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ remove a document from ES / MongoDB """
 
@@ -529,18 +529,23 @@ def remove_many_documents(
   index_name: str = None,
   doc_type: str = None,
   params: dict = None,
-  user: dict = None
+  user: dict = None,
   ):
   """ remove a document from ES / MongoDB """
 
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
 
+  status = { 'status_code' : 200 }
+  res = {}
+
   if ES_ENABLED :
     res_es, status_es = remove_es_index(
       index_name=index_name,
       doc_type=doc_type,
     )
+    log_.debug( "res_es : \n%s", pformat(res_es))
+    res, status = res_es, status_es
 
   if MONGODB_ENABLED :
     res_mongodb, status_mongodb = remove_mongodb_many_documents(
@@ -548,9 +553,8 @@ def remove_many_documents(
       index_name=index_name,
       doc_type=doc_type,
     )
+    log_.debug( "res_mongodb : \n%s", pformat(res_mongodb))
 
-  status = { 'status_code' : 200 }
-  res = {}
 
   log_.debug( "res : \n%s", pformat(res))
   print()
