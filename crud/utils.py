@@ -331,7 +331,7 @@ def create_document(
   return res, status
 
 
-
+### TO DO 
 def create_version_document(
   index_name: str = None,
   doc_type: str = None,
@@ -377,9 +377,10 @@ def update_document(
 
   full_update = params.get('full_update' , False) 
 
+  doc_body = body 
 
   if ES_ENABLED :
-
+  
     ### get original doc
     orig_res_es, orig_status_es = view_es_document(
       index_name=index_name,
@@ -389,13 +390,10 @@ def update_document(
     log_.debug( "orig_res_es : \n%s", pformat(orig_res_es))
     log_.debug( "orig_status_es : \n%s", pformat(orig_status_es))
 
-    ### TO DO 
+    ### TO DO ?
     ### compare original with doc_body
-    doc_body = body 
     if full_update == False :
       pass
-      # doc_body_dict = body.update_data
-      # doc_body_dict = body
 
 
     ### update doc in ES
@@ -403,7 +401,6 @@ def update_document(
       index_name=index_name,
       doc_type=doc_type,
       doc_uuid=doc_uuid,
-      # doc_body=doc_body_dict,
       doc_body=doc_body,
       full_update=full_update 
     )
@@ -426,26 +423,36 @@ def update_document(
 
 
 
-
-
-
+  ### TO DO INSTEAD - just insert res_es_updated doc in mongoDB
   ### update doc in MongoDB
   if MONGODB_ENABLED :
-    # doc_body_dict = body
-    doc_body = body
-    res_mongodb, status_mongodb = update_mongodb_document(
-      collection=doc_type,
-      index_name=index_name,
-      doc_type=doc_type,
-      doc_uuid=doc_uuid,
-      # doc_body=doc_body_dict,
-      doc_body=doc_body,
-      full_update=full_update 
-    )
-    if ES_ENABLED == False :
-      res = res_mongodb
-      # status = { 'status_code' : status_mongodb['status_code'] }
-      status = status_mongodb
+
+    ### TO DO 
+    if ES_ENABLED : 
+      pass
+      # body = res_es_updated['data']
+      # body["version"] = res_es_updated['doc_version']['version_n']
+      # body["_id"] = f"{ doc_uuid }-v{ body['version'] }" 
+      # res_mongodb, status_mongodb = add_mongodb_document(
+      #   collection=doc_type,
+      #   index_name=index_name,
+      #   doc_type=doc_type,
+      #   doc_uuid=doc_uuid,
+      #   doc_body=body,
+      # )
+
+    else :
+      res_mongodb, status_mongodb = update_mongodb_document(
+        collection=doc_type,
+        index_name=index_name,
+        doc_type=doc_type,
+        doc_uuid=doc_uuid,
+        doc_body=doc_body,
+        full_update=full_update 
+      )
+
+    #   res = res_mongodb
+    #   status = status_mongodb
 
 
   log_.debug( "res : \n%s", pformat(res))
@@ -454,6 +461,7 @@ def update_document(
 
 
 
+### TO DO 
 # doc_uuid_list: List[str] = None,
 def update_many_document(
   index_name: str = None,

@@ -1,13 +1,12 @@
 import pytest
 import requests
 import random
-secure_random = random.SystemRandom()
+# secure_random = random.SystemRandom()
 
 from log_config import log_, pformat
-from starlette.testclient import TestClient
 
 from core import config
-from tests.utils.utils import get_server_api, client
+from tests.utils.utils import get_server_api, secure_random, client
 from .test_login import client_login
 
 
@@ -34,8 +33,8 @@ def create_one_dsi(
   random_int = random.randint(0, 1000) 
 
   dsi_test_payload = {
-    "title": f"my test DSI - {random_int}",
-    "description": "my DSI description",
+    "title": f"my test DSI - test {random_int}",
+    "description": "my DSI description - test {random_int}",
     "licence": "MIT",
     "is_geodata": False,
     "auth_preview": "opendata",
@@ -168,7 +167,6 @@ def get_random_dsi_uuid(
 
 
 
-
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### GET ONE DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -193,7 +191,12 @@ def get_one_dsi(
   ### dsi
   if dsi_uuid == None :
     # test_dsi_uuid = '3ffbacf768f1481cb2b8968381490a72'
-    test_dsi_uuid = get_random_dsi_uuid( only_test_dsi = only_test_data ) 
+    # test_dsi_uuid = get_random_dsi_uuid( only_test_dsi = only_test_data ) 
+    test_dsi = create_one_dsi ( 
+      as_test = False 
+    )
+    assert test_dsi['data']['is_test_data'] == True
+    test_dsi_uuid = test_dsi['data']['dsi_uuid']
   else : 
     test_dsi_uuid = dsi_uuid
   log_.debug ('=== test_get_one_dsi / test_dsi_uuid : %s', test_dsi_uuid)
@@ -320,9 +323,24 @@ def test_update_one_dsi_with_data(client_access_token) :
     update_data = update_data,
   )
 
+
 ### TO DO 
-# def test_update_one_dsi_version( ) :
-#   update_one_dsi( version_n = 2)
+@pytest.mark.update
+@pytest.mark.skip(reason='not developped yet')
+def test_update_one_dsi_version( ) :
+
+  version_n = 2
+
+  update_data = {
+    "update_data" : {
+      'description': 'my DSI version description',
+    }
+  }
+  
+  update_one_dsi( 
+    update_data = update_data,
+    version_n = version_n
+  )
 
 
 
@@ -400,6 +418,8 @@ def test_delete_one_dsi_full_remove(client_access_token):
   )
 
 
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### CLEANUP DSI
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -442,11 +462,11 @@ def delete_all_dsi(
     
     ### send request
     response = delete_one_dsi( 
-      as_test=False, 
-      server_api=server_api,
-      dsi_uuid=dsi_uuid,
-      access_token=test_user_access_token,
-      full_remove=full_remove
+      as_test = False, 
+      server_api = server_api,
+      dsi_uuid = dsi_uuid,
+      access_token = test_user_access_token,
+      full_remove = full_remove
     )
     log_.debug ('=== delete_all_dsi / response : \n%s', pformat(response) )
 
@@ -472,8 +492,11 @@ def test_delete_dsi_full_remove(client_access_token):
 
 ### WARNING : RESET TEST !!!
 ### this test erases ALL DATA in DBs !! 
-### uncomment and use at your own risks !!!
+### comment / uncomment -skip + use at your own risks !!!
 
+# @pytest.mark.delete
+# @pytest.mark.reset
+# @pytest.mark.skip(reason='DANGEROUS')
 # def test_delete_ALL_dsi_full_remove(): 
 #   delete_all_dsi( 
 #     only_test_data = False,

@@ -9,8 +9,11 @@ from starlette.testclient import TestClient
 from main import app
 from core import config
 
-
 client = TestClient(app)
+secure_random = random.SystemRandom()
+
+### cf : https://fastapi.tiangolo.com/tutorial/testing/
+
 
 
 def random_lower_string():

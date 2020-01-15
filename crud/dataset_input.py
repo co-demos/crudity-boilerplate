@@ -90,6 +90,7 @@ def create_dsi(
     user = user,
   )
 
+  ### TO DO 
   ### loop if necessary to create dmt | dmf 
 
 
@@ -123,7 +124,7 @@ def update_dsi(
     body = {
       **body.update_data,
       'modified_at' : body.modified_at,
-      'modified_by' : body.modified_by
+      'modified_by' : body.modified_by,
     },
     user = user
   )

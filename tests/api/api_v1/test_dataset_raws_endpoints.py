@@ -1,13 +1,12 @@
 import pytest 
 import requests
 import random
-secure_random = random.SystemRandom()
+# secure_random = random.SystemRandom()
 
 from log_config import log_, pformat
-from starlette.testclient import TestClient
 
 from core import config
-from tests.utils.utils import get_server_api, client
+from tests.utils.utils import get_server_api, secure_random, client
 from .test_login import client_login
 from .test_dataset_inputs_endpoints import get_random_dsi_uuid, create_one_dsi, delete_all_dsi
 
@@ -97,13 +96,13 @@ def test_create_one_dsr(client_access_token):
 
 def get_list_dsr( 
   as_test = True,
-  page_number=1, 
-  results_per_page=100,
+  page_number = 1, 
+  results_per_page = 100,
   dsi_uuid = None,
   access_token = None
   ):
 
-  server_api = get_server_api()
+  # server_api = get_server_api()
   # log_.debug('=== server_api : %s', server_api)
 
   if access_token == None :
@@ -113,7 +112,10 @@ def get_list_dsr(
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
 
   if dsi_uuid == None : 
-    test_dsi = create_one_dsi ( as_test = False ) 
+    test_dsi = create_one_dsi ( 
+      as_test = False, 
+      access_token = test_user_access_token 
+    ) 
     assert test_dsi['data']['is_test_data'] == True
     test_dsi_uuid = test_dsi['data']['dsi_uuid']
   else :
@@ -224,7 +226,9 @@ def get_one_dsr(
 
   ### get DSI UUID
   if dsi_uuid == None : 
-    test_dsi = create_one_dsi ( as_test = False ) 
+    test_dsi = create_one_dsi ( 
+      as_test = False 
+    )
     assert test_dsi['data']['is_test_data'] == True
     test_dsi_uuid = test_dsi['data']['dsi_uuid']
   else :
@@ -232,7 +236,10 @@ def get_one_dsr(
   log_.debug('=== test_get_one_dsr / test_dsi_uuid : %s', test_dsi_uuid )
 
   ### get DSR UUID
-  test_dsr = create_one_dsr( as_test=False, dsi_uuid=test_dsi_uuid )
+  test_dsr = create_one_dsr( 
+    as_test=False, 
+    dsi_uuid=test_dsi_uuid 
+  )
   log_.debug('=== test_get_one_dsr / test_dsr : \n%s', pformat(test_dsr) )
   test_dsr_uuid = test_dsr['data']['dsr_uuid']
   log_.debug('=== test_get_one_dsr / test_dsr_uuid : %s', test_dsr_uuid )
@@ -519,9 +526,12 @@ def test_delete_dsr_full_remove(client_access_token):
   )
 
 
+
+
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### CLEANUP DSRs
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
+
 ### clean up all test DSRs and DSIs
 
 @pytest.mark.delete

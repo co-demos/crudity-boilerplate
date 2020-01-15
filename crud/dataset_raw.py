@@ -113,7 +113,7 @@ def update_dsr(
     body = {
       'data' : { **body.update_data },
       'modified_at' : body.modified_at,
-      'modified_by' : body.modified_by
+      'modified_by' : body.modified_by,
     },
     user = user,
   )
