@@ -7,6 +7,13 @@ from pydantic import BaseModel
 
 
 
+class Comment(BaseModel) : 
+
+  text: str = None 
+  created_by: str = None
+  created_at: datetime = None
+
+
 class DataLogBase(BaseModel):
   
   created_by: str = None

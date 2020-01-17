@@ -1,7 +1,6 @@
 import pytest 
 import requests
 import random
-# secure_random = random.SystemRandom()
 
 from log_config import log_, pformat
 
@@ -19,17 +18,20 @@ from .test_dataset_inputs_endpoints import get_random_dsi_uuid, create_one_dsi, 
 def create_one_dsr ( 
   as_test = True,
   dsi_uuid = None,
-  access_token = None
+  access_token = None,
+  payload = None,
   ) : 
 
-  server_api = get_server_api()
+  # server_api = get_server_api()
 
+  ### ACCESS TOKEN
   if access_token == None :
     test_user_access_token = client_login( as_test = False, only_access_token=True )
   else : 
     test_user_access_token = access_token
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
-  
+
+  ### DSI UUID
   if dsi_uuid == None :
     try : 
       test_dsi_uuid = get_random_dsi_uuid( only_test_dsi = True )
@@ -40,15 +42,21 @@ def create_one_dsr (
   else : 
     test_dsi_uuid = dsi_uuid
 
-  random_int = random.randint(0, 1000) 
-
-  dsr_test_payload = {
-    "is_test_data": True,
-    "data": {
-      "field_01": f"test DSR - {random_int}"
+  ### PAYLOAD
+  if payload == None :
+    random_int = random.randint(0, 1000) 
+    dsr_test_payload = {
+      "is_test_data": True,
+      "auth_preview": "opendata",
+      "auth_modif": "private",
+      "data": {
+        "field_01": f"test DSR - {random_int}"
+      }
     }
-  }
+  else : 
+    dsr_test_payload = payload
 
+  ### REQUEST
   headers = {
     'accept': 'application/json',
     'access_token' : test_user_access_token,
@@ -77,7 +85,7 @@ def test_create_one_dsr(client_access_token):
 
   test_dsi = create_one_dsi( 
     access_token = client_access_token,
-    as_test=False 
+    as_test = False 
   )
   log_.debug ('=== test_dsi : \n%s', pformat(test_dsi) )
   assert test_dsi['data']['is_test_data'] == True
@@ -323,11 +331,18 @@ def update_one_dsr(
     random_int = random.randint(0, 1000) 
     update_data = {
       "update_data" : {
-        "field_01": f"this is updated data on field_01 - {random_int}",
-        "field_02": f"my updated field_02 data - {random_int}",
-        "field_03": {
-          "subfield_A": f"Update data for numerical or text... {random_int}",
-          "subfield_B": random_int
+
+        'source' : f'my new source - {random_int}',
+        'licence' : 'Obbl-42',
+        "auth_preview": "commons",
+        "auth_modif": "team",
+        "data" : {
+          "field_01": f"this is updated data on field_01 - {random_int}",
+          "field_02": f"my updated field_02 data - {random_int}",
+          "field_03": {
+            "subfield_A": f"Update data for numerical or text... {random_int}",
+            "subfield_B": random_int
+          }
         }
       }
     }
@@ -359,10 +374,10 @@ def update_one_dsr(
   if as_test : 
     assert response.status_code == 200
     for key in update_data['update_data'].keys() :
-      assert resp['data']['data'][key] == update_data['update_data'][key]
-    # assert resp['data']['data']['field_01'] == update_data['update_data']['field_01']
-    # assert resp['data']['data']['field_02'] == update_data['update_data']['field_02']
-    # assert resp['data']['data']['field_03'] == update_data['update_data']['field_03']
+      if key != 'data' : 
+        assert resp['data'][key] == update_data['update_data'][key]
+    for key in update_data['update_data']['data'].keys() :
+      assert resp['data']['data'][key] == update_data['update_data']['data'][key]
   else : 
     return resp
 
@@ -384,9 +399,11 @@ def test_update_one_dsr_no_full_update_with_data(client_access_token) :
 
   update_data_one = {
     "update_data" : {
-      "field_01": f"my data field_01 data +BIS+ - {random_int}",
-      "field_02": f"my data field_02 data +BIS+ - {random_int}",
-      "field_03": f"my data field_03 data +BIS+ - {random_int}",
+      "data" : {
+        "field_01": f"my data field_01 data +BIS+ - {random_int}",
+        "field_02": f"my data field_02 data +BIS+ - {random_int}",
+        "field_03": f"my data field_03 data +BIS+ - {random_int}",
+      }
     }
   }
 
@@ -402,7 +419,9 @@ def test_update_one_dsr_no_full_update_with_data(client_access_token) :
 
   update_data_bis = {
     "update_data" : {
-      "field_02": f"my updated field_02 data +BIS+ - {random_int + 1}",
+      "data" : {
+        "field_02": f"my updated field_02 data +BIS+ - {random_int + 1}",
+      }
     }
   }
   resp_bis = update_one_dsr(
@@ -422,8 +441,10 @@ def test_update_one_dsr_full_update(client_access_token) :
   random_int = random.randint(0, 1000) 
   update_data = {
     "update_data" : {
-      "field_01": f"this is +full_update+ updated data on field_01 - {random_int}",
-      "field_42": f"this is +full_update+ updated data on field_42 - {random_int}",
+      "data" : {
+        "field_01": f"this is +full_update+ updated data on field_01 - {random_int}",
+        "field_42": f"this is +full_update+ updated data on field_42 - {random_int}",
+      }
     }
   }
   update_one_dsr( 

@@ -13,7 +13,7 @@ from starlette.responses import Response
 from starlette.status import *
 
 from models.response import ResponseBase, ResponseDataBase, ResponseBaseResp
-from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData, DsrUpdateData
+from models.dataset_raw import Dsr, DsrCreate, DsrUpdate, DsrData, DsrUpdateData, DsrUpdateDataIn
 from models.parameters import *
 
 import crud
@@ -91,7 +91,7 @@ async def read_dsi_items(
 
 
   if status_dsr['status_code'] == 200 : 
-    data_list = res_dsrs
+    data_list = [ Dsr( **res['_source'] ) for res in res_dsrs ]
     msg = 'here comes the list of DSRs corresponding to this DSI'
   else :
     data_list = []
@@ -190,7 +190,7 @@ async def read_dsr_item(
     query_params = query,
     user = user,
   )
-  log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "res : \n%s", pformat(res))
 
 
   ### populate response fields
@@ -262,9 +262,13 @@ async def create_dsr_item(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
+  ### generate a random UUID / cf : https://docs.python.org/3/library/uuid.html
+  dsr_uuid = crud.utils.generate_new_id()
+
+
   log_.debug( "item_data : \n%s", pformat( item_data.dict() ) )
   item_data_dict = item_data.dict()
-  item_data_ = item_data_dict
+  item_data_ = Dsr( **item_data_dict, dsr_uuid = dsr_uuid )
 
 
   msg = '' 
@@ -275,15 +279,19 @@ async def create_dsr_item(
 
   ### 1 - post corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
-  ### generate a random UUID / cf : https://docs.python.org/3/library/uuid.html
-  dsr_uuid = crud.utils.generate_new_id()
-
   ### add infos
-  item_data_['dsi_uuid'] = dsi_uuid
-  item_data_['dsr_uuid'] = dsr_uuid
-  item_data_['created_at'] = datetime.now()
-  item_data_['created_by'] = user['infos']['email']
-  item_data_['owner'] = user['infos']['email']
+  item_data_.dsi_uuid = dsi_uuid
+  # item_data_.dsr_uuid = dsr_uuid
+  item_data_.created_at = datetime.now()
+  item_data_.created_by = user['infos']['email']
+  item_data_.owner = user['infos']['email']
+  item_data_ = item_data_.dict()
+
+  # item_data_['dsi_uuid'] = dsi_uuid
+  # item_data_['dsr_uuid'] = dsr_uuid
+  # item_data_['created_at'] = datetime.now()
+  # item_data_['created_by'] = user['infos']['email']
+  # item_data_['owner'] = user['infos']['email']
   log_.debug( "item_data_ (A): \n%s", pformat( item_data_ ) )
 
   ### add in DBs
@@ -366,6 +374,7 @@ async def update_dsr_item(
 
   update_p: dict = Depends(update_parameters),
   resp_p: dict = Depends(resp_parameters),
+
   item_data: DsrUpdateData,
 
   # api_key: APIKey = Depends(get_api_key),
@@ -377,12 +386,10 @@ async def update_dsr_item(
   print()
   print("-+- "*40)
   log_.debug( "PUT / %s", inspect.stack()[0][3] )
-  log_.debug( "item_data : \n%s", pformat(item_data) )
   time_start = datetime.now()
 
   # log_.debug( "api_key : %s", api_key )
   log_.debug( "user : \n%s", pformat(user) )
-
 
   query = {
     "method" : "PUT",
@@ -393,9 +400,27 @@ async def update_dsr_item(
   }
   log_.debug( "query : \n%s", pformat(query) )
 
-  item_data_ = item_data
-  # item_data_ = item_data.dict()
+  log_.debug( "item_data.dict() : \n%s", pformat(item_data.dict()) )
+
+  item_data_raw = item_data.update_data
+
+  item_data_ = DsrUpdateDataIn ( 
+    **item_data_raw,
+    modified_at = datetime.now(),
+    modified_by = user['infos']['email'],
+  )
+  item_data_ = item_data_.dict()
   log_.debug( "item_data_ : \n%s", pformat( item_data_ ) )
+
+  allowed_keys = [ 'modified_at', 'modified_by', *item_data_raw.keys() ]
+  # log_.debug( "allowed_keys : \n%s", pformat(allowed_keys) )
+
+  ### filter out keys from body
+  item_data_filtered = { k : item_data_[k] for k in item_data_.keys() if k in allowed_keys }
+  log_.debug( "item_data_filtered : \n%s", pformat(item_data_filtered) )
+
+
+
 
   msg = '' 
   doc_version = {
@@ -403,11 +428,6 @@ async def update_dsr_item(
     'version_s' : None
   }
 
-  ### add infos
-  # item_data_['modified_at'] = datetime.now()
-  # item_data_['modified_by'] = user['infos']['email']
-  item_data_.modified_at = datetime.now()
-  item_data_.modified_by = user['infos']['email']
 
   ### 1 - update corresponding DSR from dsi_uuid as index_name and dsr_uuid as id
 
@@ -416,7 +436,7 @@ async def update_dsr_item(
     dsi_uuid = dsi_uuid,
     dsr_uuid = dsr_uuid,
     query_params = query,
-    body = item_data_,
+    body = item_data_filtered,
     user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
@@ -424,12 +444,10 @@ async def update_dsr_item(
 
   ### populate response fields from res
   if res : 
-    # data = item_data_,
     data = res['_source']
     doc_version['version_n'] = res['_version']
     doc_version['version_s'] = 'last'
   else :
-    # data = item_data_,
     data = None
 
   ### status from res

@@ -3,6 +3,7 @@ import inspect
 
 from core import config
 from models.config import DSI_DOC_TYPE, DSR_DOC_TYPE
+from models.auth import *
 
 from .utils import *
 
@@ -15,26 +16,36 @@ log_.debug(">>> crud/dataset_input.py")
 
 def view_dsi(
   dsi_uuid: str = None,
-  query_params: dict = None,
-  user: dict = None
+  query_params: dict = {},
+  user: dict = {},
   ):
   """ get a dsi from ES / MongoDB """
 
   ### TO DO 
   ### check user's auth 
   
-  res, status = view_document(
+  res_dsi, status_dsi = view_document(
     index_name = DSI_DOC_TYPE,
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
     query_params = query_params,
-    user= user,
+    user = user,
   )
+  # log_.debug( "res_dsi : \n%s", pformat(res_dsi))
+  # log_.debug( "status_dsi : \n%s", pformat(status_dsi))
 
-  # log_.debug( "res : \n%s", pformat(res))
-  # log_.debug( "status : \n%s", pformat(status))
+  ### TO DO 
+  ### check user's auth 
 
-  return res, status
+  has_user_auth = is_user_authorized(
+    user = user,
+    doc_auth = DocAuthData(**res_dsi['_source']),
+  )
+    # level = level,
+  log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
+
+
+  return res_dsi, status_dsi
 
 
 
@@ -112,8 +123,24 @@ def update_dsi(
 
   ### check if DSI exists first 
 
+  ### get corresponding DSI
+  res_dsi, status_dsi = view_document(
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    user = user,
+  )
+  log_.debug( "res_dsi : \n%s", pformat(res_dsi))
+
   ### TO DO 
   ### check user's auth 
+  has_user_auth = is_user_authorized(
+    user = user,
+    doc_auth = DocAuthData(**res_dsi['_source']),
+  )
+  log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
+
+
 
   ### update DSI document
   res_update, status_update = update_document(
@@ -121,11 +148,12 @@ def update_dsi(
     doc_type = 'metadata',
     doc_uuid = dsi_uuid,
     params = query_params,
-    body = {
-      **body.update_data,
-      'modified_at' : body.modified_at,
-      'modified_by' : body.modified_by,
-    },
+    body = body,
+    # body = {
+    #   **body.update_data,
+    #   'modified_at' : body.modified_at,
+    #   'modified_by' : body.modified_by,
+    # },
     user = user
   )
   # log_.debug( "res_update : \n%s", pformat(res_update))
@@ -152,21 +180,28 @@ def update_dsi(
 
 def remove_dsi(
   dsi_uuid: str = None,
-  query_params: dict = None,
-  user: dict = None
+  query_params: dict = {},
+  user: dict = {}
   ):
   """ remove a dsi from ES / MongoDB """
 
-  ### get dsi infos
-  res_dsi, status_dsi = view_dsi(
-    dsi_uuid = dsi_uuid,
-    query_params = query_params
-  )
-  log_.debug( "res_dsi : \n%s", pformat(res_dsi))
+  ### get corresponding DSI
 
+  res_dsi, status_dsi = view_document(
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    user = user,
+  )
 
   ### TO DO 
   ### check user's auth 
+  has_user_auth = is_user_authorized(
+    user = user,
+    doc_auth = DocAuthData(**res_dsi['_source']),
+  )
+  log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
+
 
 
   ### remove data

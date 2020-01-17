@@ -43,9 +43,9 @@ def get_only_api_key(
   """ 
   get API access token
   """ 
-  log_.debug("api_key_query  : %s", api_key_query )
-  log_.debug("api_key_header : %s", api_key_header )
-  log_.debug("api_key_cookie : %s", api_key_cookie )
+  log_.debug(">>> api_key_query  : %s", api_key_query )
+  log_.debug(">>> api_key_header : %s", api_key_header )
+  log_.debug(">>> api_key_cookie : %s", api_key_cookie )
 
   api_key = None 
 
@@ -94,7 +94,7 @@ async def get_api_key(
         func_name="token_claims",
         token=api_key
       )
-      log_.debug("resp_auth : \n%s", pformat(resp_auth) )
+      log_.debug(">>> resp_auth : \n%s", pformat(resp_auth) )
 
       
     return api_key
@@ -153,7 +153,7 @@ async def get_api_key_optional(
         func_name="token_claims",
         token=api_key
       )
-      log_.debug("resp_auth : \n%s", pformat(resp_auth) )
+      log_.debug(">>> resp_auth : \n%s", pformat(resp_auth) )
     return api_key
 
   else : 
@@ -172,24 +172,22 @@ def get_user_claims(
   ### DEBUGGING
   print()
   print("->- "*40)
-  log_.debug( ">>> get_user..." )
+  log_.debug( ">>> get_user_claims..." )
 
   user = {
-    # 'claims': {
-      '_id': None,
-      'is_anonymous': True,
-      'auth': {
-        'conf_usr': False, 
-        'role': 'anonymous'
-      },
-      'infos': {
-        'email': 'anonymous'
-      },
-      'profile': {
-        'lang': 'en'
-      }
+    '_id': None,
+    'is_anonymous': True,
+    'auth': {
+      'conf_usr': False, 
+      'role': 'anonymous'
     },
-  # }
+    'infos': {
+      'email': 'anonymous'
+    },
+    'profile': {
+      'lang': 'en'
+    },
+  }
 
   api_key = get_only_api_key( api_key_query, api_key_header, api_key_cookie)
 
@@ -233,6 +231,7 @@ async def get_user_infos(
   log_.debug( ">>> get_user_infos..." )
 
   user = get_user_claims( api_key_query, api_key_header, api_key_cookie)
+  log_.debug( ">>> user : \n%s", pformat(user) )
 
   return user
 
@@ -362,11 +361,11 @@ def getDistantEndpointconfig (func_name) :
   # print (". "*50)
 
   func_protocol = functions_protocols[func_name]
-  field = func_protocol["endpoint_config"]
-  subfield = func_protocol["endpoint_code"]
+  field         = func_protocol["endpoint_config"]
+  subfield      = func_protocol["endpoint_code"]
 
   auth_dist_configs = config.AUTH_DISTANT_ENDPOINTS
-  endpoint_config = auth_dist_configs[field][subfield] 
+  endpoint_config   = auth_dist_configs[field][subfield] 
 
   return endpoint_config
 

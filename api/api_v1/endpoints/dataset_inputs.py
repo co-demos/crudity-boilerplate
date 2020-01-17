@@ -13,7 +13,7 @@ from starlette.responses import Response
 from starlette.status import *
 
 from models.response import ResponseBase, ResponseDataBase, ResponseBaseNoTotal
-from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate, DsiEs, DsiESList
+from models.dataset_input import DsiBase, Dsi, DsiCreate, DsiUpdate, DsiUpdateIn, DsiEs, DsiESList
 from models.parameters import *
 
 import crud
@@ -27,14 +27,6 @@ log_.debug(">>> api/api_v1/endpoints/dataset_inputs.py")
 
 from pprint import pprint, pformat, PrettyPrinter
 pp = PrettyPrinter(indent=4)
-
-
-# ### test item
-# test_dsi = {
-#   'title' : 'test_dsi',
-#   'dsi_uuid' : 'd7b0cd1b-599a-4f3e-8820-9acc8e1d59e6',
-#   'owner' : 'system'
-# }
 
 router = APIRouter()
 
@@ -79,7 +71,7 @@ async def list_of_dsi_items(
     query_params = query,
     user = user,
   )
-  log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "res : \n%s", pformat(res))
 
   ### marshal / apply model to data
   if res :
@@ -133,7 +125,7 @@ async def list_of_dsi_items(
       msg = msg
     )
 
-  log_.debug( "response : \n%s", pformat( response.dict() ))
+  # log_.debug( "response : \n%s", pformat( response.dict() ))
 
   resp_.status_code = status['status_code']
   return response
@@ -183,7 +175,7 @@ async def read_dsi_item(
     query_params = commons,
     user = user,
   )
-  log_.debug( "res : \n%s", pformat(res))
+  # log_.debug( "res : \n%s", pformat(res))
 
 
   ### marshal / apply model to data
@@ -281,23 +273,23 @@ async def create_dsi_item(
 
   ### format as DSI for DB
   dsi_db = Dsi( **dsi_client_dict )
-  log_.debug( "dsi_db : \n%s", pformat( dsi_db.dict() ) )
+  dsi_db_ = dsi_db.dict()
+  log_.debug( "dsi_db_ : \n%s", pformat( dsi_db_ ) )
 
   ### add in DBs
   res, status = crud.dataset_input.create_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
-    body = dsi_db.dict()
+    body = dsi_db_
   )
   log_.debug( "res : \n%s", pformat(res))
   
   ### populate response fields from res
   if res : 
-    data = dsi_db
+    data = Dsi( **dsi_db_ ) 
     doc_version['version_n'] = res['_version']
     doc_version['version_s'] = 'last'
   else :
-    # data = dsi_db 
     data = None
 
   ### status from res
@@ -344,10 +336,9 @@ async def update_dsi_item(
   # dsi_uuid: str,
   # dsi_uuid: uuid.UUID,
 
-  # body: dict,
+  # body: DsiUpdateIn,
   body: DsiUpdate,
-
-  # update_p: dict = Depends(update_parameters),
+  
   resp_p: dict = Depends(resp_parameters),
   # api_key: APIKey = Depends(get_api_key),
   user: dict = Depends(need_user_infos),
@@ -361,7 +352,6 @@ async def update_dsi_item(
   log_.debug( "body : \n%s", pformat(body) )
   time_start = datetime.now()
 
-  # log_.debug( "api_key : %s", api_key )
   log_.debug( "user : \n%s", pformat(user) )
 
 
@@ -379,16 +369,29 @@ async def update_dsi_item(
     'version_s' : None
   }
 
-  ### add infos
-  body.modified_at = datetime.now()
-  body.modified_by = user['infos']['email']
+  ### refilter body
+  body_filtered = DsiUpdateIn(
+    **body.update_data,
+    modified_at = datetime.now(),
+    modified_by = user['infos']['email'],
+  )
+  body_filtered_dict = body_filtered.dict()
+  # log_.debug( "body_filtered_dict : \n%s", pformat( body_filtered_dict ) )
+  
+  allowed_keys = [ 'modified_at', 'modified_by', *body.update_data.keys() ]
+  # log_.debug( "allowed_keys : \n%s", pformat(allowed_keys) )
+  
+  ### filter out keys from body
+  body_filtered_dict_ = { k : body_filtered_dict[k] for k in body_filtered_dict.keys() if k in allowed_keys }
+  log_.debug( "body_filtered_dict_ : \n%s", pformat(body_filtered_dict_) )
+
 
 
   ### update in DBs
   res, status = crud.dataset_input.update_dsi(
     dsi_uuid = dsi_uuid,
     query_params = query,
-    body = body,
+    body = body_filtered_dict_,
     user = user,
   )
   log_.debug( "res : \n%s", pformat(res))
@@ -410,7 +413,7 @@ async def update_dsi_item(
 
 
 
-
+  ### trim response
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
@@ -436,6 +439,8 @@ async def update_dsi_item(
       msg = msg 
     )
 
+
+  ### return response
   resp_.status_code = status['status_code']
   return response
 
@@ -486,15 +491,16 @@ async def delete_dsi_item(
   log_.debug( "res : \n%s", pformat(res))
   log_.debug( "status : \n%s", pformat(status))
 
-
+  ### message
   if status['status_code'] == 200 : 
     if query['full_remove'] : 
-      msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been deleted"
+      msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been fully deleted"
     else : 
       msg = f"the DSI doc with dsi_uuid <{dsi_uuid}> has been tagged as deleted"
   else : 
     msg = f"there has been an error while deleting DSI doc with dsi_uuid <{dsi_uuid}>"
 
+  ### trim response
   if resp_p['only_data'] == True : 
     response = ResponseDataBase(
       status = status,
@@ -516,5 +522,6 @@ async def delete_dsi_item(
       msg = msg
     )
 
+  ### return 
   resp_.status_code = status['status_code']
   return response

@@ -1,13 +1,15 @@
 from typing import List, Optional, Union
+from datetime import date, datetime, time, timedelta
 
 from pydantic import BaseModel
 
 from models.config import USERPROFILE_DOC_TYPE
-from models.role import RoleEnum
+from models.datalog import DataLogBase, Comment
+from models.role import RoleEnum, RoleEditEnum
 
 
-# Shared properties in Couchbase and Sync Gateway
 class UserLogin(BaseModel):
+
   email: str
   password: str
 
@@ -18,6 +20,51 @@ class UserLogin(BaseModel):
         "password": "a-very-common-password",
       },
     }
+
+
+class TeamMember(BaseModel):
+  
+  email: str
+  roles: List[ Union[str, RoleEditEnum] ] = [ RoleEditEnum.read ]
+  comments: Optional[ List[ Comment ] ] = []
+
+  # user_id: Optional[ str ] = None 
+
+  # disabled: Optional[ bool ] = False
+
+  class Config:
+
+    schema_extra = {
+
+      'example': {
+        "email": "test@email.com",
+        "roles": [ 
+          "read", 
+          "comment", 
+          "edit", 
+          "delete", 
+          "manage"
+        ],
+        "comments" : [
+          {
+            'text' : "a test user who can do anything on this document",
+            'created_by' : "test@email.com",
+            'created_at' : datetime.now()
+          }
+        ]
+      },
+
+    }
+
+class TeamMemberIn(TeamMember):
+  
+  added_at: datetime = None
+  added_by: str = None
+
+
+
+
+
 
 
 class UserBase(BaseModel):

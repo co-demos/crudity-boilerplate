@@ -1,6 +1,7 @@
 from log_config import log_, pformat
 import inspect 
 
+from models.auth import *
 from models.dataset_input import *
 from models.dataset_raw import *
 
@@ -22,17 +23,45 @@ if MONGODB_ENABLED :
   from db.database_mongodb import *
 
 
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### AUTH LEVEL
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def is_user_authorized( 
-  user = None,
-  authorized_levels = [ 'owner' ],
-  doc_creator = None,
-  doc_team = None,
+  user: dict = {},
+  doc_auth: DocAuthData = DocAuthData(),
   ):
 
+  # level: str = None
+
+  log_.debug( "function : %s", inspect.stack()[0][3] )
+  log_.debug( "locals() : \n%s", pformat(locals()))
+
+
+  ### user auth data
   user_infos = user.get('infos', None) 
   user_email = user_infos.get('email', 'no_email')
+
+  user_auth  = user.get('auth', None) 
+  user_role  = user_auth.get('role', None) 
+
+  ### doc auth data
+  log_.debug( "doc_auth.dict() : \n%s", pformat(doc_auth.dict()))
+
+  # doc_creator       = doc_auth['owner']
+  # doc_team          = doc_auth.get('team', [])
+  # doc_auth_modif    = doc_auth.get('auth_modif', 'private')
+
+  doc_creator       = doc_auth.owner
+  doc_team          = doc_auth.team
+  doc_auth_preview  = doc_auth.auth_preview
+  doc_auth_modif    = doc_auth.auth_modif
+
+
+
+
+
+
 
   ### check if user == doc_creator
   is_user_creator = user_email == doc_creator 
@@ -48,7 +77,9 @@ def is_user_authorized(
   return is_authorized
 
 
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### INDEX LEVEL
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 ### TO DO 
 def check_index(
@@ -171,7 +202,9 @@ def update_index_check(
 
 
 
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### UTILS
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def generate_new_id( 
   format = 'hex' 
@@ -194,13 +227,15 @@ def generate_new_id(
 
 
 
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 ### GENERIC REQUESTS
+### - - - - - - - - - - - - - - - - - - - - - - - ### 
 
 def view_document(
   index_name: str = None,
   doc_type: str = None,
   doc_uuid: str = None,
-  query_params: dict = None,
+  query_params: dict = {},
   user: dict = None,
   ):
   """ get a document from ES / MongoDB """
@@ -366,7 +401,7 @@ def update_document(
   index_name: str = None,
   doc_type: str = None,
   doc_uuid: str = None,
-  params: dict = None,
+  params: dict = {},
   body = None,
   user: dict = None,
   ):
@@ -392,8 +427,8 @@ def update_document(
 
     ### TO DO ?
     ### compare original with doc_body
-    if full_update == False :
-      pass
+    # if full_update == False :
+    #   pass
 
 
     ### update doc in ES

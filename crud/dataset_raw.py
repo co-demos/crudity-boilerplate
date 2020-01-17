@@ -2,7 +2,8 @@ from log_config import log_, pformat
 import inspect 
 
 from core import config
-from models.config import DSR_DOC_TYPE
+from models.config import DSI_DOC_TYPE, DSR_DOC_TYPE
+from models.auth import *
 
 from .utils import *
 
@@ -29,9 +30,17 @@ def view_dsr(
     query_params = query_params,
     user = user
   )
+  log_.debug( "res : \n%s", pformat(res))
+  log_.debug( "status : \n%s", pformat(status))
 
-  # log_.debug( "res : \n%s", pformat(res))
-  # log_.debug( "status : \n%s", pformat(status))
+  ### TO DO 
+  ### check user's auth 
+
+  has_user_auth = is_user_authorized(
+    user = user,
+    doc_auth = DocAuthData( **res['_source'] ),
+  )
+
 
   return res, status
 
@@ -104,17 +113,22 @@ def update_dsr(
   ### TO DO 
   ### check user's auth 
 
+  ### get corresponding DSI
+  res_dsi, status_dsi = view_document(
+    index_name = DSI_DOC_TYPE,
+    doc_type = 'metadata',
+    doc_uuid = dsi_uuid,
+    query_params = {},
+    user= user,
+  )
+
   ### update DSR document
   res_update, status_update = update_document(
     index_name = dsi_uuid,
     doc_type = DSR_DOC_TYPE,
     doc_uuid = dsr_uuid,
     params = query_params,
-    body = {
-      'data' : { **body.update_data },
-      'modified_at' : body.modified_at,
-      'modified_by' : body.modified_by,
-    },
+    body = body,
     user = user,
   )
 

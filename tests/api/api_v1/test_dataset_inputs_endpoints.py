@@ -1,7 +1,6 @@
 import pytest
 import requests
 import random
-# secure_random = random.SystemRandom()
 
 from log_config import log_, pformat
 
@@ -18,30 +17,36 @@ from .test_login import client_login
 
 def create_one_dsi( 
   as_test = True,
-  access_token = None
+  access_token = None,
+  payload = None,
   ):
 
   # server_api = get_server_api()
   # log_.debug ('=== server_api : %s', server_api)
 
+  ### ACCESS TOKEN
   if access_token == None :
     test_user_access_token = client_login( as_test = False, only_access_token=True )
   else : 
     test_user_access_token = access_token
   log_.debug ('=== create_one_dsi / test_user_access_token : %s', test_user_access_token )
 
-  random_int = random.randint(0, 1000) 
+  ### PAYLOAD
+  if payload == None :
+    random_int = random.randint(0, 1000) 
+    dsi_test_payload = {
+      "title": f"my test DSI - test {random_int}",
+      "description": "my DSI description - test {random_int}",
+      "licence": "MIT",
+      "is_geodata": False,
+      "auth_preview": "opendata",
+      "auth_modif": "private",
+      "is_test_data" : True
+    }
+  else : 
+    dsi_test_payload = payload
 
-  dsi_test_payload = {
-    "title": f"my test DSI - test {random_int}",
-    "description": "my DSI description - test {random_int}",
-    "licence": "MIT",
-    "is_geodata": False,
-    "auth_preview": "opendata",
-    "auth_modif": "private",
-    "is_test_data" : True
-  }
-
+  ### REQUEST
   headers = {
     'accept': 'application/json',
     'access_token' : test_user_access_token,
@@ -151,7 +156,7 @@ def get_random_dsi_uuid(
   ) : 
 
   test_dsi_list = get_list_dsi( as_test = False )
-  log_.debug ('=== get_random_dsi_uuid / test_dsi_list : \n%s', pformat(test_dsi_list))
+  # log_.debug ('=== get_random_dsi_uuid / test_dsi_list : \n%s', pformat(test_dsi_list))
 
   full_dsi_list = test_dsi_list['data']
 
@@ -494,11 +499,11 @@ def test_delete_dsi_full_remove(client_access_token):
 ### this test erases ALL DATA in DBs !! 
 ### comment / uncomment -skip + use at your own risks !!!
 
-# @pytest.mark.delete
-# @pytest.mark.reset
-# @pytest.mark.skip(reason='DANGEROUS')
-# def test_delete_ALL_dsi_full_remove(): 
-#   delete_all_dsi( 
-#     only_test_data = False,
-#     full_remove = True 
-#   )
+@pytest.mark.delete
+@pytest.mark.reset
+@pytest.mark.skip(reason='DANGEROUS')
+def test_delete_ALL_dsi_full_remove(): 
+  delete_all_dsi( 
+    only_test_data = False,
+    full_remove = True 
+  )

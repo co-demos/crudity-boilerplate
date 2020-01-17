@@ -363,7 +363,7 @@ def search_es_documents(
       from_= from_item,
       _source = include_src
     )
-    log_.debug( "res A: \n%s", pformat(res))
+    # log_.debug( "res A: \n%s", pformat(res))
     status['total'] = res['hits']['total']['value']
     res = res['hits']['hits']
 
@@ -375,7 +375,7 @@ def search_es_documents(
     }
 
 
-  log_.debug( "res B: \n%s", pformat(res))
+  # log_.debug( "res B: \n%s", pformat(res))
   print()
   return res, status
 
@@ -432,6 +432,8 @@ def update_es_document(
 
   log_.debug( "function : %s", inspect.stack()[0][3] )
   log_.debug( "locals() : \n%s", pformat(locals()))
+
+  log_.debug( "doc_body (A) : \n%s", pformat(doc_body))
 
   status = { 'status_code' : 200 }
 
