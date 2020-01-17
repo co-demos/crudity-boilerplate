@@ -55,10 +55,12 @@ def is_user_authorized(
   doc_auth_modif    = doc_auth.auth_modif
 
   ### check if user is the doc's owner / creator
-  is_user_owner = user_email == doc_owner
+  is_user_owner     = user_email == doc_owner
+
 
   ### check if user is authorized as team member
   is_user_authorized_in_team = False
+  user_from_team = { 'roles' : None }
 
   if is_user_owner == False :
     
@@ -67,16 +69,22 @@ def is_user_authorized(
 
     if is_user_in_team : 
 
-      user_from_team = None
       for member in doc_team :
         if member['email'] == user_email : 
           user_from_team = member
       
-      if level in user_from_team['roles']: 
+      if user_from_team['roles'] and level in user_from_team['roles']: 
         is_user_authorized_in_team = True
 
+  else : 
+    user_from_team = { 'roles' : ['read', 'edit', 'delete', 'manage', 'comment'] }
 
-  is_authorized = is_user_owner or is_user_authorized_in_team
+
+  is_authorized = {
+    'auth' : is_user_owner or is_user_authorized_in_team,
+    'user_roles' : user_from_team['roles'],
+    'is_owner' : is_user_owner,
+  }
 
   return is_authorized
 
