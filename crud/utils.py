@@ -30,6 +30,7 @@ if MONGODB_ENABLED :
 def is_user_authorized( 
   user: dict = {},
   doc_auth: DocAuthData = DocAuthData(),
+  level = 'read'
   ):
 
   # level: str = None
@@ -48,31 +49,34 @@ def is_user_authorized(
   ### doc auth data
   log_.debug( "doc_auth.dict() : \n%s", pformat(doc_auth.dict()))
 
-  # doc_creator       = doc_auth['owner']
-  # doc_team          = doc_auth.get('team', [])
-  # doc_auth_modif    = doc_auth.get('auth_modif', 'private')
-
-  doc_creator       = doc_auth.owner
+  doc_owner         = doc_auth.owner
   doc_team          = doc_auth.team
   doc_auth_preview  = doc_auth.auth_preview
   doc_auth_modif    = doc_auth.auth_modif
 
-
-
-
-
-
-
-  ### check if user == doc_creator
-  is_user_creator = user_email == doc_creator 
+  ### check if user is the doc's owner / creator
+  is_user_owner = user_email == doc_owner
 
   ### check if user is authorized as team member
   is_user_authorized_in_team = False
-  if is_user_creator == False :
-    ### TO DO 
-    pass
 
-  is_authorized = is_user_creator or is_user_authorized_in_team
+  if is_user_owner == False :
+    
+    # cf : https://workingninja.com/check-if-value-exists-list-dictionaries
+    is_user_in_team = any( team_member.get('email') == user_email for team_member in doc_team )
+
+    if is_user_in_team : 
+
+      user_from_team = None
+      for member in doc_team :
+        if member['email'] == user_email : 
+          user_from_team = member
+      
+      if level in user_from_team['roles']: 
+        is_user_authorized_in_team = True
+
+
+  is_authorized = is_user_owner or is_user_authorized_in_team
 
   return is_authorized
 

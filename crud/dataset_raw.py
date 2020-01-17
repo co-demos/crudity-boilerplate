@@ -39,7 +39,9 @@ def view_dsr(
   has_user_auth = is_user_authorized(
     user = user,
     doc_auth = DocAuthData( **res['_source'] ),
+    level = 'read',
   )
+  log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
 
 
   return res, status
@@ -103,15 +105,13 @@ def update_dsr(
   dsr_uuid: str = None,
   query_params: dict = None,
   body = None,
-  user: dict = None
+  user: dict = None,
+  level = 'edit',
   ):
   """ update a dsr from ES / MongoDB """
 
 
   ### check if DSR exists first 
-
-  ### TO DO 
-  ### check user's auth 
 
   ### get corresponding DSI
   res_dsi, status_dsi = view_document(
@@ -121,6 +121,19 @@ def update_dsr(
     query_params = {},
     user= user,
   )
+
+  ### TO DO 
+  ### check user's auth on DSI
+  has_user_auth_dsi = is_user_authorized(
+    user = user,
+    doc_auth = DocAuthData(**res_dsi['_source']),
+    level = level
+  )
+  log_.debug( "has_user_auth_dsi : \n%s", pformat(has_user_auth_dsi))
+
+
+  ### TO DO : check user's auth on DSR level
+
 
   ### update DSR document
   res_update, status_update = update_document(
@@ -160,16 +173,24 @@ def remove_dsr(
   """ remove a dsr from ES / MongoDB """
 
   ### get dsr infos
-  res_dsr, status_dsr = view_dsr(
-    dsi_uuid = dsi_uuid,
-    dsr_uuid = dsr_uuid,
+  res_dsr, status_dsr = view_document(
+    index_name = dsi_uuid,
+    doc_type = DSR_DOC_TYPE,
+    doc_uuid = dsr_uuid,
     query_params = query_params,
     user = user
   )
   log_.debug( "res_dsr : \n%s", pformat(res_dsr))
+  log_.debug( "status_dsr : \n%s", pformat(status_dsr))
 
   ### TO DO 
   ### check user's auth 
+  has_user_auth = is_user_authorized(
+    user = user,
+    doc_auth = DocAuthData( **res_dsr['_source'] ),
+    level = 'delete',
+  )
+  log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
 
 
   ### remove doc

@@ -40,6 +40,7 @@ def view_dsi(
   has_user_auth = is_user_authorized(
     user = user,
     doc_auth = DocAuthData(**res_dsi['_source']),
+    level = 'read',
   )
     # level = level,
   log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
@@ -117,7 +118,8 @@ def update_dsi(
   dsi_uuid: str = None,
   query_params: dict = None,
   body = None,
-  user: dict = None
+  user: dict = None,
+  level: str = 'edit',
   ):
   """ update a dsi from ES / MongoDB """
 
@@ -137,6 +139,7 @@ def update_dsi(
   has_user_auth = is_user_authorized(
     user = user,
     doc_auth = DocAuthData(**res_dsi['_source']),
+    level = level
   )
   log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
 
@@ -193,12 +196,14 @@ def remove_dsi(
     doc_uuid = dsi_uuid,
     user = user,
   )
+  log_.debug( "res_dsi : \n%s", pformat(res_dsi))
 
   ### TO DO 
   ### check user's auth 
   has_user_auth = is_user_authorized(
     user = user,
     doc_auth = DocAuthData(**res_dsi['_source']),
+    level = 'delete'
   )
   log_.debug( "has_user_auth : \n%s", pformat(has_user_auth))
 
