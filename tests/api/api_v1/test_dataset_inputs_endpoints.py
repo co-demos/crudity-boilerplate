@@ -176,15 +176,64 @@ def test_get_list_dsi(
   )
 
 
+
+def search_dsi(
+  access_token = None,
+  dsi_uuid = None,
+  q = None,
+  version = "last",
+  filter_ = None,
+  version_n = None,
+  page_n = 1,
+  per_page = 10,
+  sort_by = None,
+  sort_order = "asc",
+  shuffle_seed = None,
+  field_to_return = None,
+  fields_to_return = None,
+  only_data = False
+  ):
+
+  log_.debug("search_dsi / access_token : %s" , access_token )
+  
+  ### create search params
+
+  query_params = {
+    "dsi_uuid": dsi_uuid,
+    "q": q,
+    "version": "last",
+    "filter": filter_,
+    "version_n": version_n,
+    "page_n": page_n,
+    "per_page": per_page,
+    "sort_by": sort_by,
+    "sort_order": sort_order,
+    "shuffle_seed": shuffle_seed,
+    "field_to_return": field_to_return,
+    "fields_to_return": fields_to_return,
+    "only_data": only_data
+  }
+
+
+  ### launch search
+  test_result = get_list_dsi(
+    access_token = access_token,
+    as_test = False,
+    page_number = 1, 
+    results_per_page = 100, 
+    params = query_params
+  )
+
+  return test_result
+
 @pytest.mark.get
 def test_search_for_dsi(client_access_token):
-  log_.debug("test_get_one_dsi / client_access_token : %s" , client_access_token )
   
   ### create some DSI 
   identifiers = [ 
-    { "title" : "AA", "description" : "aaa", "auth_preview" : "private", "auth_modif" : "commons" }, 
-    { "title" : "BB", "description" : "bbb", "auth_preview" : "opendata", "auth_modif" : "private" }, 
-    { "title" : "CC", "description" : "ccc", "auth_preview" : "private", "auth_modif" : "team" }
+    { "title" : "AA", "description" : "aaa BB", "auth_preview" : "private", "auth_modif" : "commons" }, 
+    { "title" : "BB", "description" : "bbb CC", "auth_preview" : "opendata", "auth_modif" : "private" }, 
+    { "title" : "CC", "description" : "ccc AA BB", "auth_preview" : "private", "auth_modif" : "team" }
   ]
   log_.debug ('=== test_search_for_dsi / identifiers (A) : \n%s', pformat(identifiers) )
 
@@ -208,34 +257,14 @@ def test_search_for_dsi(client_access_token):
 
   log_.debug ('=== test_search_for_dsi / identifiers (B) : \n%s', pformat(identifiers) )
 
-  ### create search params
-  query_params = {
+  ### randomly choose a DSI from its identifier
+  test_dsi = secure_random.choice( identifiers )
 
-    "dsi_uuid": None,
-
-    "q": None,
-
-    "version": "last",
-    "filter": None,
-    "version_n": None,
-    "page_n": 1,
-    "per_page": 10,
-    "sort_by": None,
-    "sort_order": "asc",
-    "shuffle_seed": None,
-    "field_to_return": None,
-    "fields_to_return": None,
-    "only_data": False
-  }
-
-
-  ### launch search
-  test_result = get_list_dsi(
+  results = search_dsi(
     access_token = client_access_token,
-    page_number = 1, 
-    results_per_page = 100, 
-    params = query_params
   )
+  log_.debug ('=== test_search_for_dsi / results : \n%s', pformat(results) )
+
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
