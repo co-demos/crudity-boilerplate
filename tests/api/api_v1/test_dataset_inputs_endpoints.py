@@ -81,6 +81,35 @@ def test_create_one_dsi(
   )
   
 
+def create_dsi_payload(
+
+  index_int = None,
+
+  title_content = "",
+  description_content = "",
+  licence = "MIT",
+  is_geodata = False,
+  auth_preview = "opendata",
+  auth_modif = "private",
+
+  ):
+
+  if index_int == None : 
+    index_int = random.randint(0, 1000) 
+
+  dsi_test_payload = {
+
+    "title": f"my test DSI - test {index_int} - {title_content}",
+    "description": "my DSI description - test {index_int} - {description_content}",
+
+    "licence": licence,
+    "is_geodata": is_geodata,
+    "auth_preview": auth_preview,
+    "auth_modif": auth_modif,
+
+    "is_test_data" : True
+  }
+  return dsi_test_payload
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -91,7 +120,8 @@ def get_list_dsi(
   as_test = True, 
   page_number = 1, 
   results_per_page = 100, 
-  access_token = None
+  access_token = None,
+  params = None,
   ):
 
   # server_api = get_server_api()
@@ -103,10 +133,11 @@ def get_list_dsi(
     test_user_access_token = access_token
   log_.debug ('=== test_user_access_token : %s', test_user_access_token )
 
-  params = {
-    'page_n' : page_number,
-    'per_page' : results_per_page
-  }
+  if params == None :
+    params = {
+      'page_n' : page_number,
+      'per_page' : results_per_page
+    }
 
   headers = {
     'accept': 'application/json',
@@ -145,6 +176,66 @@ def test_get_list_dsi(
   )
 
 
+@pytest.mark.get
+def test_search_for_dsi(client_access_token):
+  log_.debug("test_get_one_dsi / client_access_token : %s" , client_access_token )
+  
+  ### create some DSI 
+  identifiers = [ 
+    { "title" : "AA", "description" : "aaa", "auth_preview" : "private", "auth_modif" : "commons" }, 
+    { "title" : "BB", "description" : "bbb", "auth_preview" : "opendata", "auth_modif" : "private" }, 
+    { "title" : "CC", "description" : "ccc", "auth_preview" : "private", "auth_modif" : "team" }
+  ]
+  log_.debug ('=== test_search_for_dsi / identifiers (A) : \n%s', pformat(identifiers) )
+
+  for id in identifiers : 
+    payload_ = create_dsi_payload( 
+      title_content=id['title'],
+      description_content=id['description'],
+      auth_preview=id['auth_preview'],
+      auth_modif=id['auth_modif']
+    )
+    log_.debug ('=== test_search_for_dsi / payload_ : \n%s', pformat(payload_) )
+    
+    test_dsi = create_one_dsi(
+      access_token = client_access_token,
+      as_test = False,
+      payload = payload_,
+    )
+    log_.debug ('=== test_search_for_dsi / test_dsi : \n%s', pformat(test_dsi) )
+    assert test_dsi['data']['is_test_data'] == True
+    id['dsi_uuid'] = test_dsi['data']['dsi_uuid']
+
+  log_.debug ('=== test_search_for_dsi / identifiers (B) : \n%s', pformat(identifiers) )
+
+  ### create search params
+  query_params = {
+
+    "dsi_uuid": None,
+
+    "q": None,
+
+    "version": "last",
+    "filter": None,
+    "version_n": None,
+    "page_n": 1,
+    "per_page": 10,
+    "sort_by": None,
+    "sort_order": "asc",
+    "shuffle_seed": None,
+    "field_to_return": None,
+    "fields_to_return": None,
+    "only_data": False
+  }
+
+
+  ### launch search
+  test_result = get_list_dsi(
+    access_token = client_access_token,
+    page_number = 1, 
+    results_per_page = 100, 
+    params = query_params
+  )
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
@@ -181,6 +272,7 @@ def get_one_dsi(
   only_test_data = False,
   dsi_uuid = None,
   access_token = None,
+  params = None
   ):
 
   server_api = get_server_api()
@@ -234,6 +326,13 @@ def test_get_one_dsi(client_access_token):
   get_one_dsi(
     access_token = client_access_token,
   )
+
+
+
+
+
+
+
 
 
 ### - - - - - - - - - - - - - - - - - - - - - - - ### 
